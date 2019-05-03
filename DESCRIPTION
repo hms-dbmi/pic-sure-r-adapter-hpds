@@ -1,0 +1,13 @@
+Package: PicSureHpdsLib
+Title: Package to interact with HPDS Resources hosted on PIC-SURE endpoints
+Version: 0.1.0
+Authors@R: person("Nick", "Benik", email="nbenik@gmail.com", role = c("aut", "cre"))
+Description: Package to interact with HPDS Resources hosted on PIC-SURE endpoints.
+    You will also need the PIC-SURE Connector Client to connect the Adapter to an endpoint.
+Depends: R (>= 3.1.0), PicSureClient
+License: Apache License 2.0
+Imports:
+  R6,
+  rjson,
+  stringr
+
