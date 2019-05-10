@@ -46,3 +46,32 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                   buildQuery = function(resultType="COUNT") {}
                                 )
 )
+
+
+#' export
+HpdsAttribList <- R6::R6Class("HpdsAttribList",
+                                portable = FALSE,
+                                lock_objects = FALSE,
+                                public = list(
+                                  initialize = function(inst_list=FALSE, help_text=FALSE) {
+                                    self$helpstr = " [Help] valid commands are:
+        |    add(): add a value
+        |  delete(): delete a value
+        |   show(): lists all current values
+        |  clear(): clears all values from list
+        |   help(): this command...
+        "
+                                    self$data = list()
+                                    if (help_text != FALSE) {
+                                      self$helpstr = help_text
+                                    }
+                                  },
+                                  add = function() {},
+                                  delete = function() {},
+                                  show = function() {},
+                                  clear = function() {},
+                                  help = function() {}
+                                )
+)
+                                  
+                                  
