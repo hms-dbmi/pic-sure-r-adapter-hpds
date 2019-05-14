@@ -33,7 +33,11 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                   public = list(
                                     initialize = function(connection, resource_uuid) {
                                       self$connection_reference <- connection
-                                      self$resourceUUID <- resource_uuid
+                                      if (missing(resource_uuid)) {
+                                        self$resourceUUID <- FALSE
+                                      } else {
+                                        self$resourceUUID <- resource_uuid
+                                      }
                                     },
                                     help = function() {
                                       cat("
@@ -75,8 +79,12 @@ BypassAdapter <- R6::R6Class("PicSureHpdsBypassAdapter",
                                             self$token <- token_arg
                                             self$connection_reference <- PicSureHpdsLib::PicSureHpdsBypassConnection$new(self$url, self$token)
                                           },
-                                          useResource = function(resource_uuid=FALSE) {
-                                            temp <- PicSureHpdsLib::PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid)
+                                          useResource = function(resource_uuid) {
+                                            if (missing(resource_uuid)) {
+                                              temp <- PicSureHpdsLib::PicSureHpdsResourceConnection$new(self$connection_reference, FALSE)
+                                            } else {
+                                              temp <- PicSureHpdsLib::PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid)
+                                            }
                                             return(temp)
                                           },
                                           help = function() {
@@ -142,20 +150,24 @@ PicSureHpdsBypassConnectionAPI <- R6::R6Class("PicSureHpdsBypassConnectionAPI",
                                                   }
                                                 },
                                                 asynchQuery = function(resource_uuid, query) { writeLines(c(resource_uuid, query)) },
-                                                synchQuery = function(resource_uuid, query) { 
-                                                  full_url = paste(self$url, "query/sync/", resource_uuid, sep="")
+                                                synchQuery = function(resource_uuid, query) {
+                                                  if (resource_uuid == FALSE) {
+                                                    full_url = paste(self$url, "query/sync/", sep="")
+                                                  } else {
+                                                    full_url = paste(self$url, "query/sync/", resource_uuid, sep="")
+                                                  }
                                                   if (query == FALSE) {
                                                     query <- list()
                                                     query$query <- ""
                                                     query = jsonlite::toJSON(query, auto_unbox=TRUE)
                                                   }
-                                                  request = POST(full_url, body=query, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',self$token)))
+                                                  request = POST(full_url, body=query, content_type_json(), add_headers(Authorization=paste('Bearer',self$token)))
                                                   if (request$status_code != 200) { 
                                                     writeLines("ERROR: HTTP response was bad")
                                                     print(request)
                                                     return('{"results":{}, error":"True"}') 
                                                   } else {
-                                                    return(content(request, text))
+                                                    return(content(request, "text"))
                                                   }
                                                 },
                                                 queryStatus = function(resource_uuid, query_uuid) { writeLines(c(resource_uuid, query_uuid)) },
