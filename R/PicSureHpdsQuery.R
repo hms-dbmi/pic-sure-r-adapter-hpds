@@ -64,7 +64,14 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     cat("        also accept options that run queries differently which might help with\n")
                                     cat("        connection timeouts. Example: myQry$getResults(async=True, timeout=60)\n")
                                   },
-                                  show = function() {},
+                                  show = function() {
+                                    queryJSON = self$buildQuery("DATAFRAME")
+                                    # bugfix for jsonlite
+                                    queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
+                                    queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
+                                    queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    print(jsonlite::prettify(queryJSON))
+                                  },
                                   select = function() {
                                     return(self$listSelect)
                                   },
@@ -75,33 +82,86 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     return(self$listFilter)
                                   },
                                   getCount = function(asAsync = FALSE, timeout=30) {
+                                    self$performance['running'] <- TRUE
+                                    self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("COUNT")
                                     # bugfix for jsonlite
                                     queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
                                     queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
                                     queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
-                                    return(as.integer(httpResults))
+                                    self$performance['tmr_recv'] <- Sys.time()
+                                    ret = as.integer(httpResults)
+                                    self$performance['tmr_proc'] <- Sys.time()
+                                    self$performance['running'] <- FALSE
+                                    return(ret)
                                   },
                                   getResults = function(asAsync = FALSE, timeout=30) {
+                                    self$performance['running'] <- TRUE
+                                    self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     # bugfix for jsonlite
                                     queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
                                     queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
                                     queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
-                                    return(read.csv(text=httpResults))
+                                    self$performance['tmr_recv'] <- Sys.time()
+                                    ret = read.csv(text=httpResults)
+                                    self$performance['tmr_proc'] <- Sys.time()
+                                    self$performance['running'] <- FALSE
+                                    return(ret)
                                   },
                                   getResultsDataFrame = function(asAsync = FALSE, timeout=30) {
+                                    self$performance['running'] <- TRUE
+                                    self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     # bugfix for jsonlite
                                     queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
                                     queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
                                     queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
-                                    return(read.csv(text=httpResults))
+                                    self$performance['tmr_recv'] <- Sys.time()
+                                    ret = read.csv(text=httpResults)
+                                    self$performance['tmr_proc'] <- Sys.time()
+                                    self$performance['running'] <- FALSE
+                                    return(ret)
                                   },
-                                  getRunDetails = function() {},
+                                  getRunDetails = function() {
+                                    print('This function returns None or details about the last run of the query')
+                                    if (self$performance['tmr_start'] > 0) {
+                                      if (self$performance['running'] == TRUE) {
+                                        print('Query is RUNNING...')
+                                      } else {
+                                        print('Query is FINISHED...')
+                                      }
+                                      if (self$performance['tmr_query'] < self$performance['tmr_start']) {
+                                        print("   Query Build: --- ms")
+                                        print(" Query Execute: --- ms")
+                                        print("Process Result: --- ms")
+                                      } else {
+                                        t = str((self$performance['tmr_query'] - self$performance['tmr_start'])*1000)
+                                        print(paste("   Query Build: ", t, " ms", sep=""))
+                                        if (self$performance['tmr_recv'] < self$performance['tmr_query']) {
+                                          print(" Query Execute: --- ms")
+                                          print("Process Result: --- ms")
+                                        } else {
+                                          t = str((self$performance['tmr_recv'] - self$performance['tmr_query'])*1000)
+                                          print(paste(" Query Execute: ", t, " ms", sep=""))
+                                          if (self$performance['tmr_proc'] < self$performance['tmr_recv']) {
+                                            print("Process Result: --- ms")
+                                          } else {
+                                            t = str((self$performance['tmr_proc'] - self$performance['tmr_recv'])*1000)
+                                            print(paste("Process Result: ", t, " ms", sep=''))
+                                            t = str((self$performance['tmr_proc'] - self$performance['tmr_start'])*1000)
+                                            print(paste("____Total Time: ", t, " ms", sep=''))
+                                          }
+                                        } 
+                                      }
+                                    }
+                                  },
                                   getQueryCommand = function() {},
                                   buildQuery = function(resultType="COUNT") {
                                     ret <- jsonlite::fromJSON('{
