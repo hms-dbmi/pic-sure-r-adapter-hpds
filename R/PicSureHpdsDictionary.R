@@ -43,10 +43,12 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
                                            new_results <- list()
                                            for (idx1 in 1:length(self$results$results)) {
                                              result_type = names(self$results$results[idx1])
-                                             for (idx2 in 1:length(self$results$results[[idx1]])) {
-                                               self$results$results[[idx1]][[idx2]]$HpdsDataType <- result_type
-                                               idx3 <- self$results$results[[idx1]][[idx2]]$name
-                                               updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
+                                             if (length(self$results$results[[idx1]]) > 0) {
+                                               for (idx2 in 1:length(self$results$results[[idx1]])) {
+                                                 self$results$results[[idx1]][[idx2]]$HpdsDataType <- result_type
+                                                 idx3 <- self$results$results[[idx1]][[idx2]]$name
+                                                 updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
+                                               }
                                              }
                                            }
                                            self$results$results <- updated_list
