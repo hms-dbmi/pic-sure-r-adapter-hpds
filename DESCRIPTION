@@ -10,6 +10,4 @@ Imports:
   R6,
   httr,
   stringr,
-  hash,
-  DescTools
-
+  hash
