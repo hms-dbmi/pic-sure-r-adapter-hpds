@@ -112,13 +112,13 @@ PicSureHpdsBypassConnection <- R6::R6Class("PicSureHpdsBypassConnection",
                                              list = function() {
                                                res = self$getResources()
                                                if (nrow(res) > 0) {
-                                                 print(paste(DescTools::StrPad("+", width=39, pad="-"), DescTools::StrPad("+", width=55, pad="-"), sep=""))
-                                                 print(paste(DescTools::StrPad("| Resource UUID", width=38, pad=" "), DescTools::StrPad("| Resource Name", width=55, pad=" "), sep=""))
-                                                 print(paste(DescTools::StrPad("+", width=39, pad="-"), DescTools::StrPad("+", width=55, pad="-"), sep=""))
+                                                 print(paste(stringr::str_pad("+", 39, pad="-"), stringr::str_pad("+", 55, pad="-"), sep=""))
+                                                 print(paste(stringr::str_pad("| Resource UUID", 38, pad=" "), stringr::str_pad("| Resource Name", 55, pad=" "), sep=""))
+                                                 print(paste(stringr::str_pad("+", 39, pad="-"), stringr::str_pad("+", 55, pad="-"), sep=""))
                                                  for (idx in 1:nrow(res)) {
-                                                   print(paste(DescTools::StrPad(paste("|", res$uuid[[idx]], sep=""), width=34, pad=" "), "| ", res$name[[idx]]))
+                                                   print(paste(stringr::str_pad(paste("|", res$uuid[[idx]], sep=""), 34, pad=" "), "| ", res$name[[idx]]))
                                                    print(paste("| Description: ", res$description[[idx]], sep=""))
-                                                   print(paste(DescTools::StrPad("+", width=39, pad="-"), DescTools::StrPad("+", width=55, pad="-"), sep=""))
+                                                   print(paste(stringr::str_pad("+", 39, pad="-"), stringr::str_pad("+", 55, pad="-"), sep=""))
                                                  }
                                                }
                                              },
