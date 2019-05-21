@@ -48,7 +48,7 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                       cat("            $dictionary()       Used to access data dictionary of the resource\n")
                                       cat("            $query()            Used to query against data in the resource\n")
                                       cat("        [ENVIRONMENT]\n")
-                                      cat(paste("            URL: \n", self$connection_reference$url, sep=""))
+                                      cat(paste("            URL: \n", self$connection_reference$url, "\n", sep=""))
                                       cat(paste("  Resource UUID: \n", self$resourceUUID, sep=""))
                                     },
                                     dictionary = function() {
@@ -67,7 +67,7 @@ BypassAdapter <- R6::R6Class("PicSureHpdsBypassAdapter",
                                         lock_objects = FALSE,
                                         inherit = Adapter,
                                         public = list(
-                                          initialize = function(url_arg, token_arg) {
+                                          initialize = function(url_arg, token_arg = FALSE) {
                                             # trim and make sure URL ends in "/"
                                             endpoint <- str_trim(url_arg)
                                             if (str_detect(endpoint, "/$") == FALSE) {
@@ -176,7 +176,7 @@ PicSureHpdsBypassConnectionAPI <- R6::R6Class("PicSureHpdsBypassConnectionAPI",
                                                   if (request$status_code != 200) {
                                                     writeLines("ERROR: HTTP response was bad")
                                                     print(request)
-                                                    return('{"results":{}, error":"True"}') 
+                                                    return('{"results":{}, "error":"True"}') 
                                                   } else {
                                                     return(content(request, "text"))
                                                   }
@@ -193,7 +193,7 @@ PicSureHpdsBypassConnectionAPI <- R6::R6Class("PicSureHpdsBypassConnectionAPI",
                                                   if (request$status_code != 200) { 
                                                     writeLines("ERROR: HTTP response was bad")
                                                     print(request)
-                                                    return('{"results":{}, error":"True"}') 
+                                                    return('{"results":{}, "error":"True"}') 
                                                   } else {
                                                     return(content(request, "text"))
                                                   }
