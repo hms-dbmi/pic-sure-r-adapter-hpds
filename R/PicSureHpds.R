@@ -48,8 +48,8 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                       cat("            $dictionary()       Used to access data dictionary of the resource\n")
                                       cat("            $query()            Used to query against data in the resource\n")
                                       cat("        [ENVIRONMENT]\n")
-                                      cat(paste("            URL: \n", self$connection_reference$url, "\n", sep=""))
-                                      cat(paste("  Resource UUID: \n", self$resourceUUID, sep=""))
+                                      cat(paste("            URL: ", self$connection_reference$url, "\n", sep=""))
+                                      cat(paste("  Resource UUID: ", self$resourceUUID, "\n", sep=""))
                                     },
                                     dictionary = function() {
                                       return(PicSureHpdsDictionary$new(self))

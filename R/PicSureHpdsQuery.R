@@ -205,78 +205,90 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       self$helpstr <- help_text
                                     }
                                   },
-                                  add = function(key, ...) {
-                                    if (key==FALSE) {
-                                      cat("ERROR: No key specified!")
-                                      return(FALSE)  
+                                  add = function(keys = FALSE, ...) {
+                                    args = list(...)
+                                    if (typeof(keys) == "logical") { 
+                                      if (keys == FALSE) {
+                                        cat("ERROR: No key specified!")
+                                        return(FALSE)  
+                                      }
                                     }
-                                    if (has.key(key, self$data) == TRUE) {
-                                      print('ERROR: cannot add, key already exists')
-                                      print(key)
-                                    } else {
-                                      #setting the key depending on input arguments
-                                      args = list(...)
-                                      if (length(args) == 0) {
-                                        entry <- list()
-                                        entry["type"] <- "exists"
-                                        .set(self$data, key, entry)
+                                    if (typeof(keys) != "list") {
+                                      keys <- list(keys)
+                                    }
+                                    for (key in keys) {
+                                      if (has.key(key, self$data) == TRUE) {
+                                        print('ERROR: cannot add, key already exists')
+                                        print(key)
                                       } else {
-                                        if (length(args) == 1 & typeof(args[[1]]) == "list") {
+                                        #setting the key depending on input arguments
+                                        if (length(args) == 0) {
+                                          entry <- list()
+                                          entry["type"] <- "exists"
+                                          .set(self$data, key, entry)
+                                        } else {
+                                          if (length(args) == 1 & typeof(args[[1]]) == "list") {
                                             # handle categorical filter
                                             entry <- list()
                                             entry["type"] <- "categorical"
                                             entry["values"] <- args[1]
-                                        } else {
-                                          if (length(args) == 1 & (is.null(args[["min"]]) & is.null(args[["max"]]))) {
-                                            # handle single value
-                                            entry <- list()
-                                            entry["type"] <- "value"
-                                            entry["value"] <- args[[1]]
                                           } else {
-                                            # handle minmax
-                                            entry<- list()
-                                            entry["type"] <- "minmax"
-                                            if (!is.null(args[["min"]])) {
-                                              entry["min"] <- args[["min"]]
-                                            } 
-                                            if (!is.null(args[["max"]])) {
-                                              entry["max"] <- args[["max"]]
-                                            }
-                                            # handle unnamed value(s)
-                                            if (is.null(names(args[[1]])) & typeof(args[[1]]) == "double") {
-                                              entry["min"] <- args[[1]]
-                                            }
-                                            if (length(args) > 1) {
-                                              if (is.null(names(args[[2]])) & typeof(args[[2]]) == "double") {
-                                                entry["max"] <- args[[2]]
+                                            if (length(args) == 1 & (is.null(args[["min"]]) & is.null(args[["max"]]))) {
+                                              # handle single value
+                                              entry <- list()
+                                              entry["type"] <- "value"
+                                              entry["value"] <- args[[1]]
+                                            } else {
+                                              # handle minmax
+                                              entry<- list()
+                                              entry["type"] <- "minmax"
+                                              if (!is.null(args[["min"]])) {
+                                                entry["min"] <- args[["min"]]
+                                              } 
+                                              if (!is.null(args[["max"]])) {
+                                                entry["max"] <- args[["max"]]
+                                              }
+                                              # handle unnamed value(s)
+                                              if (is.null(names(args[[1]])) & typeof(args[[1]]) == "double") {
+                                                entry["min"] <- args[[1]]
+                                              }
+                                              if (length(args) > 1) {
+                                                if (is.null(names(args[[2]])) & typeof(args[[2]]) == "double") {
+                                                  entry["max"] <- args[[2]]
+                                                }
                                               }
                                             }
                                           }
                                         }
+                                        .set(self$data, key, entry)
                                       }
-                                      .set(self$data, key, entry)
                                     }
                                     invisible(self)
                                   },
-                                  delete = function(key, ...) {
+                                  delete = function(keys, ...) {
                                     args <- list(...)
-                                    if (has.key(key, self$data) == FALSE) {
-                                      print('ERROR: the specified key does not exist')
-                                    } else {
-                                      # TODO: implement deleting a single category value from a key
-                                      if (length(args) == 0) {
-                                        del(key, self$data)
+                                    if (typeof(keys) != "list") {
+                                      keys <- list(keys)
+                                    }
+                                    for (key in keys) {
+                                      if (has.key(key, self$data) == FALSE) {
+                                        print('ERROR: the specified key does not exist')
                                       } else {
-                                        temp <- get(key, self$data)
-                                        if (temp$type == "categorical") {
-                                          for (x in seq(length(temp$values), 1)) {
-                                           if (temp$values[[x]] == args[[1]]) {
-                                             temp$values[[x]] <- NULL
-                                           } 
-                                          }
-                                          # replace the data in the hash array
+                                        # TODO: implement deleting a single category value from a key
+                                        if (length(args) == 0) {
                                           del(key, self$data)
-                                          .set(self$data, key, temp)
+                                        } else {
+                                          temp <- get(key, self$data)
+                                          if (temp$type == "categorical") {
+                                            for (x in seq(length(temp$values), 1)) {
+                                              if (temp$values[[x]] == args[[1]]) {
+                                                temp$values[[x]] <- NULL
+                                              } 
+                                            }
+                                            # replace the data in the hash array
+                                            del(key, self$data)
+                                            .set(self$data, key, temp)
+                                          }
                                         }
                                       }
                                     }
@@ -287,7 +299,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                   },
                                   clear = function() {
                                     self$data <- hash()
-#                                    cat("cleared list")
                                     invisible(self)
                                   },
                                   help = function() {
@@ -314,16 +325,12 @@ HpdsAttribListKeys <- R6::R6Class("HpdsAttribListKeys",
                                     super$initialize(help_text=help_text) 
                                   }
                                 },
-                                add = function(key, ...) {
-                                  if (key==FALSE) {
-                                    cat("ERROR: No key specified!")
-                                  } else {
-                                    #setting the key as exists filter
-                                    super$add(key)
-                                  }
+                                add = function(key = FALSE, ...) {
+                                  #setting the key as exists filter
+                                  super$add(key)
                                   invisible(self)
                                 },
-                                delete = function(key, ...) {
+                                delete = function(key = FALSE, ...) {
                                   super$delete(key)
                                   invisible(self)
                                 },
@@ -357,12 +364,12 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                         super$initialize(help_text=help_text) 
                                       }
                                     },
-                                    add = function(key, ...) {
+                                    add = function(key=FALSE, ...) {
                                       #setting the key as exists filter
                                       super$add(key, ...)
                                       invisible(self)
                                     },
-                                    delete = function(key, ...) {
+                                    delete = function(key=FALSE, ...) {
                                       super$delete(key, ...)
                                       invisible(self)
                                     },
