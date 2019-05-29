@@ -56,7 +56,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     cat("           [ Numerical Ranges are inclusive of their start and end points   ]\n\n")
                                     cat("        $getCount()             returns a count indicating the number of matching numbers\n")
                                     cat("        $getResults()           returns a CSV-like string containing the matching records\n")
-                                    cat("        $getResultsDataFrame()  returns a pandas DataFrame containing the matching records\n")
+                                    cat("        $getResultsDataFrame()  returns a DataFrame containing the matching records\n")
                                     cat("        $getRunDetails()        returns details about the last run of the query\n")
                                     cat("        $getQueryCommand()      returns the JSON-formatted query request\n")
                                     cat("        $show()                 lists all current query parameters\n\n")
