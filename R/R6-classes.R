@@ -365,6 +365,7 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
 #' @docType class
 #' @importFrom R6 R6Class
 #' @import jsonlite
+#' @import stringr
 #' @export
 #' @keywords data
 #' @return Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.
@@ -425,7 +426,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     return(self$listRequire)
                                   },
                                   anyof = function() {
-                                    return(self$listAnyOff)
+                                    return(self$listAnyOf)
                                   },
                                   filter = function() {
                                     return(self$listFilter)
