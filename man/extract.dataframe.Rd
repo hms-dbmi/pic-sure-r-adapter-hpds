@@ -17,3 +17,11 @@ Results in a dataframe format.
 \description{
 Extract all the results of a given data dictionary lookup in a data frame format.
 }
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
+# extract.dataframe(asthma.terms)
+
+}

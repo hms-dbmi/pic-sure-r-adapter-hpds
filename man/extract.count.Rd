@@ -17,3 +17,11 @@ An integer of how many data dictionary entries were found in
 \description{
 Extract the number of results in the given data dictionary lookup.
 }
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
+# extract.count(asthma.terms)
+
+}

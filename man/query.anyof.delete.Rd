@@ -16,3 +16,13 @@ query.anyof.delete(query, keys, verbose = FALSE)
 \description{
 Delete an "AnyOf" restriction from a query instance.
 }
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# myquery <- hpds::new.query(resource=myres)
+# hpds::query.anyof.add(query=myquery, keys="\\\\demographics\\\\SEX\\\\")
+## ...opps, added wrong term, lets delete it...
+# hpds::query.anyof.delete(query=myquery, keys="\\\\demographics\\\\SEX\\\\")
+
+}

@@ -17,4 +17,5 @@ Imports:
   R6,
   httr,
   jsonlite,
-  stringr
+  stringr,
+  hash
