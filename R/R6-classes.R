@@ -1,47 +1,9 @@
-
+library(hash)
 
 
 # ======================
 #    ADAPTER CODE
 # ======================
-
-
-#' R6 class that selects a HPDS-hosted resources on a PIC-SURE network.
-#'
-#' @docType class
-#' @importFrom R6 R6Class
-#' @export
-#' @keywords data
-#' @return Object of \code{\link{R6Class}} with various utility methods for PIC-SURE network and to access a HPDS-hosted resource.
-#' @format \code{PicSureHpdsAdapter} object.
-#' @section Methods:
-#' \describe{
-#'   \item{Documentation}{For full documentation of each method go to https://github.com/hms-dbmi/pic-sure-r-adapter-hpds}
-#'   \item{\code{new(PicSureConnection)}}{This method is used to create new object of this class which uses the passed PicSureConnection object for communication with the PIC-SURE network.}
-#'
-#'   \item{\code{version()}}{This method prints the current package version.}
-#'   \item{\code{list()}}{This method prints a list of UUIDs of all resources hosted by the currently connected PIC-SURE network.}
-#'   \item{\code{useResource(resource_uuid)}}{This method returns a new \code{PicSureHpdsResourceConnection} object configured to connect the specified HPDS-hosted resource on the PIC-SURE Network identified by the given \code{resource_uuid}.}}
-Adapter <- R6::R6Class("PicSureHpdsAdapter",
-                       portable = FALSE,
-                       lock_objects = FALSE,
-                       public = list(
-                         initialize = function(PicSureConnection) {
-                           self$connection_reference <- PicSureConnection
-                         },
-                         version = function() {
-                           cat(paste("PicSureHpdsLib Library (version ", packageVersion("PicSureHpdsLib"), ")\n", sep=""))
-                           cat(paste("URL: ", self$connection_reference$url, "\n", sep=""))
-                           invisible(self)
-                         },
-                         list = function() {
-                           self$connection_reference$list()
-                         },
-                         useResource = function(resource_uuid) {
-                           return(PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid))
-                         }
-                       )
-)
 
 
 #' R6 class that allows access to the data dictionary and query services of a selected HPDS-hosted resources on a PIC-SURE network.
@@ -70,6 +32,11 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                  } else {
                                                    self$resourceUUID <- resource_uuid
                                                  }
+                                               },
+                                               version = function() {
+                                                 cat(paste("PicSureHpdsLib Library (version ", packageVersion("PicSureHpdsLib"), ")\n", sep=""))
+                                                 cat(paste("URL: ", self$connection_reference$url, "\n", sep=""))
+                                                 invisible(self)
                                                },
                                                dictionary = function() {
                                                  return(PicSureHpdsDictionary$new(self))
@@ -118,9 +85,6 @@ BypassAdapter <- R6::R6Class("PicSureHpdsBypassAdapter",
                                    temp <- PicSureHpdsLib::PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid)
                                  }
                                  return(temp)
-                               },
-                               list = function() {
-                                 self$connection_reference$list()
                                }
                              )
 )
@@ -577,6 +541,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
 #' @docType class
 #' @importFrom R6 R6Class
 #' @import jsonlite
+#' @import hash
 #' @export
 #' @keywords data
 #' @return Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.
@@ -602,7 +567,7 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                     self$helpstr <- help_text
                                   }
                                 },
-                                add = function(keys = FALSE, ...) {
+                                add = function(keys=FALSE, ...) {
                                   args = list(...)
                                   if (typeof(keys) == "logical") {
                                     if (keys == FALSE) {
@@ -710,6 +675,7 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
 #' @docType class
 #' @importFrom R6 R6Class
 #' @import jsonlite
+#' @import hash
 #' @export
 #' @keywords data
 #' @return Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.
@@ -765,6 +731,7 @@ HpdsAttribListKeys <- R6::R6Class("HpdsAttribListKeys",
 #' @docType class
 #' @importFrom R6 R6Class
 #' @import jsonlite
+#' @import hash
 #' @export
 #' @keywords data
 #' @return Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.

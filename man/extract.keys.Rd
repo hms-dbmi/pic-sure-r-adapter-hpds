@@ -17,3 +17,11 @@ A list of unique keys for all the data dictionary search results.
 \description{
 Extract the unique keys of all the results in a given data dictionary lookup.
 }
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
+# extract.keys(asthma.terms)
+
+}

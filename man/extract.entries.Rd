@@ -2,7 +2,7 @@
 % Please edit documentation in R/hpds.R
 \name{extract.entries}
 \alias{extract.entries}
-\title{Extract the unique keys of all the results in a given data dictionary lookup.}
+\title{Extract the entries of all the results in a given data dictionary lookup.}
 \usage{
 extract.entries(dictionary.results, verbose = FALSE)
 }
@@ -15,5 +15,13 @@ extract.entries(dictionary.results, verbose = FALSE)
 A collection of result entries.
 }
 \description{
-Extract the unique keys of all the results in a given data dictionary lookup.
+Extract the entries of all the results in a given data dictionary lookup.
+}
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
+# extract.entries(asthma.terms)
+
 }

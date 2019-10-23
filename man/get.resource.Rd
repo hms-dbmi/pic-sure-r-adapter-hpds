@@ -2,7 +2,7 @@
 % Please edit documentation in R/hpds.R
 \name{get.resource}
 \alias{get.resource}
-\title{Get a new instance reference of a PIC-SURE resource.}
+\title{Get a new reference to a HPDS-based PIC-SURE resource.}
 \usage{
 get.resource(connection, resourceUUID, verbose = FALSE)
 }
@@ -17,5 +17,11 @@ get.resource(connection, resourceUUID, verbose = FALSE)
 An object which provides access to the requested Resource.
 }
 \description{
-Get a new instance reference of a PIC-SURE resource.
+Get a new reference to a HPDS-based PIC-SURE resource.
+}
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+
 }

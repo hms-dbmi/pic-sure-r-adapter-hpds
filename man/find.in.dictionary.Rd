@@ -4,7 +4,7 @@
 \alias{find.in.dictionary}
 \title{Search the data dictionary of a PIC-SURE resource.}
 \usage{
-find.in.dictionary(resource, term, verbose = FALSE)
+find.in.dictionary(resource, term = "", verbose = FALSE)
 }
 \arguments{
 \item{resource}{A PIC-SURE resource object.}
@@ -18,4 +18,11 @@ An object representing the search results.
 }
 \description{
 Search the data dictionary of a PIC-SURE resource.
+}
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
+
 }

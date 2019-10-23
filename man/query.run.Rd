@@ -16,3 +16,14 @@ query.run(query, result.type = "dataframe", verbose = FALSE)
 \description{
 Run a query instance using any restrictions that have been added to it.
 }
+\examples{
+
+# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# myquery <- hpds::new.query(resource=myres)
+
+## ...modify the query by adding search criteria... ##
+
+# results <- hpds::query.run(query=myquery)
+
+}
