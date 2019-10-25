@@ -6,7 +6,7 @@ library(hpds)
 
 # Connect to the PIC-SURE network
 myendpoint <- "https://copdgene-dev.hms.harvard.edu/picsure/"
-mytoken <- "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsIm5hbWUiOiJOaWNrIEJlbmlrIiwiZXhwIjoxNTcxODc1OTI3LCJpYXQiOjE1NzE4NzIzMjcsImVtYWlsIjoibmJlbmlrQGdtYWlsLmNvbSJ9.Jq0IU_-FLTwCiYRT7ABDhnJdF-W0GGVnTUfYMu8W2Ts"
+mytoken <- "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsIm5hbWUiOiJOaWNrIEJlbmlrIiwiZXhwIjoxNTcyMDMyOTA3LCJpYXQiOjE1NzIwMjkzMDcsImVtYWlsIjoibmJlbmlrQGdtYWlsLmNvbSJ9.u7bnkfDethJjoC-u5Z4pCXHIGa-8v2VZV2640dLFWxU"
 myconn <- picsure::connect(url=myendpoint, token=mytoken)
 
 

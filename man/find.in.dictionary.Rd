@@ -21,8 +21,8 @@ Search the data dictionary of a PIC-SURE resource.
 }
 \examples{
 
-# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 # asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
 
 }

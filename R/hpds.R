@@ -20,8 +20,8 @@ NULL
 #' @return An object which provides access to the requested Resource.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'
 #' @export
 get.resource <- function(connection, resourceUUID, verbose=FALSE) {
@@ -47,8 +47,8 @@ get.resource <- function(connection, resourceUUID, verbose=FALSE) {
 #' @return An object representing the search results.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
 #'
 #' @export
@@ -73,8 +73,8 @@ find.in.dictionary <- function(resource, term="", verbose=FALSE){
 #' @return An integer of how many data dictionary entries were found in
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
 #'# extract.count(asthma.terms)
 #'
@@ -97,8 +97,8 @@ extract.count <- function(dictionary.results, verbose=FALSE) {
 #' @return A list of unique keys for all the data dictionary search results.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
 #'# extract.keys(asthma.terms)
 #'
@@ -121,8 +121,8 @@ extract.keys <- function(dictionary.results, verbose=FALSE) {
 #' @return A collection of result entries.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
 #'# extract.entries(asthma.terms)
 #'
@@ -145,8 +145,8 @@ extract.entries <- function(dictionary.results, verbose=FALSE) {
 #' @return Results in a dataframe format.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# asthma.terms <- hpds::find.in.dictionary(resource=myres, term="asthma")
 #'# extract.dataframe(asthma.terms)
 #'
@@ -171,8 +171,8 @@ extract.dataframe <- function(dictionary.results, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'
 #' @export
@@ -195,8 +195,8 @@ new.query <- function(resource, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'
 #'## ...modify the query by adding search criteria... ##
@@ -227,8 +227,8 @@ query.run <- function(query, result.type="dataframe", verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.select.add(query=myquery, keys="\\demographics\\SEX\\")
 #'
@@ -250,8 +250,8 @@ query.select.add <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.select.add(query=myquery, keys="\\demographics\\SEX\\")
 #'## ...opps, added wrong term, lets delete it...
@@ -275,8 +275,8 @@ query.select.delete <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.crosscounts.add(query=myquery, keys="\\demographics\\SEX\\")
 #'
@@ -298,8 +298,8 @@ query.crosscounts.add <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.crosscounts.add(query=myquery, keys="\\demographics\\SEX\\")
 #'## ...opps, added wrong term, lets delete it...
@@ -323,8 +323,8 @@ query.crosscounts.delete <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.require.add(query=myquery, keys="\\demographics\\SEX\\")
 #'
@@ -346,8 +346,8 @@ query.require.add <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.require.add(query=myquery, keys="\\demographics\\SEX\\")
 #'## ...opps, added wrong term, lets delete it...
@@ -371,8 +371,8 @@ query.require.delete <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.anyof.add(query=myquery, keys="\\demographics\\SEX\\")
 #'
@@ -394,8 +394,8 @@ query.anyof.add <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.anyof.add(query=myquery, keys="\\demographics\\SEX\\")
 #'## ...opps, added wrong term, lets delete it...
@@ -417,17 +417,18 @@ query.anyof.delete <- function(query, keys, verbose=FALSE) {
 #' @param query A query instance object.
 #' @param keys One or more keys to add to the given query object's filter list.
 #' @param verbose Flag to display additional runtime information.
+#' @param ... Extra entries such as "min", "max" and "value"
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.select.add(query=myquery, keys="\\demographics\\SEX\\", values="Male")
 #'
 #' @export
-query.filter.add <- function(query, keys, verbose=FALSE) {
+query.filter.add <- function(query, keys, ..., verbose=FALSE) {
   if (class(query) == "Hpds_Query") {
-    query$filter()$add(keys)
+    query$filter()$add(keys, ...)
   } else {
     message("The query given to query.filter.add() is not a Hpds_Query typed object")
     stop()
@@ -442,8 +443,8 @@ query.filter.add <- function(query, keys, verbose=FALSE) {
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.filter.add(query=myquery, keys="\\demographics\\SEX\\", values="Male")
 #'## ...opps, added wrong term, lets delete it...
@@ -467,8 +468,8 @@ query.filter.delete <- function(query, keys, verbose=FALSE) {
 #' @export
 #' @examples
 #'
-#'# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 #'# myquery <- hpds::new.query(resource=myres)
 #'# hpds::query.select.add(query=myquery, keys="\\demographics\\SEX\\")
 #'# hpds::query.select.add(query=myquery, keys="\\demographics\\AGE\\")

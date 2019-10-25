@@ -4,12 +4,14 @@
 \alias{query.filter.add}
 \title{Add a "Filter" restriction to a query instance.}
 \usage{
-query.filter.add(query, keys, verbose = FALSE)
+query.filter.add(query, keys, ..., verbose = FALSE)
 }
 \arguments{
 \item{query}{A query instance object.}
 
 \item{keys}{One or more keys to add to the given query object's filter list.}
+
+\item{...}{Extra entries such as "min", "max" and "value"}
 
 \item{verbose}{Flag to display additional runtime information.}
 }
@@ -18,8 +20,8 @@ Add a "Filter" restriction to a query instance.
 }
 \examples{
 
-# myconn <- picsure::connect(url="http://your.pic-sure.server/PIC-SURE/", token="your-security-token")
-# myres <- hpds::get.resource(connection=myconn, resourceUUID="612d00b7-YOUR-UUID-0000-1efe587f0bcd")
+# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 # myquery <- hpds::new.query(resource=myres)
 # hpds::query.select.add(query=myquery, keys="\\\\demographics\\\\SEX\\\\", values="Male")
 

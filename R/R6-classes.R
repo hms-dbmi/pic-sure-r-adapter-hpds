@@ -391,29 +391,34 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                 private = list(),
                                 public = list(
                                   initialize = function(connection) {
-                                    self$listSelect = HpdsAttribListKeys$new(help_text='')
-                                    self$listCrossCounts = HpdsAttribListKeys$new(help_text='')
-                                    self$listRequire = HpdsAttribListKeys$new(help_text='')
-                                    self$listAnyOf = HpdsAttribListKeys$new(help_text='')
-                                    self$listFilter = HpdsAttribListKeyValues$new(help_text='')
                                     self$connection <- connection
                                     self$resourceUUID <- connection$resourceUUID
-
-                                    #                                    if (missing(resource_uuid)) {
-                                    #                                      self$resourceUUID <- FALSE
-                                    #                                    } else {
-                                    #                                      self$resourceUUID <- resource_uuid
-                                    #                                    }
                                     self$INTERNAL_API_OBJ <- connection$connection_reference$INTERNAL_api_obj()
+
+                                    self$listSelect = HpdsAttribListKeys$new(help_text='',
+                                                                             resource_uuid=self$resourceUUID,
+                                                                             api_obj=self$INTERNAL_API_OBJ,
+                                                                             allow_variants=FALSE)
+                                    self$listCrossCounts = HpdsAttribListKeys$new(help_text='',
+                                                                                  resource_uuid=self$resourceUUID,
+                                                                                  api_obj=self$INTERNAL_API_OBJ)
+                                    self$listRequire = HpdsAttribListKeys$new(help_text='',
+                                                                              resource_uuid=self$resourceUUID,
+                                                                              api_obj=self$INTERNAL_API_OBJ)
+                                    self$listAnyOf = HpdsAttribListKeys$new(help_text='',
+                                                                            resource_uuid=self$resourceUUID,
+                                                                            api_obj=self$INTERNAL_API_OBJ)
+                                    self$listFilter = HpdsAttribListKeyValues$new(help_text='',
+                                                                                  resource_uuid=self$resourceUUID,
+                                                                                  api_obj=self$INTERNAL_API_OBJ)
                                     self$performance <- c(FALSE, 0, 0, 0, 0)
                                     names(self$performance) <- c("running","tmr_start","tmr_query","tmr_recv","tmr_proc")
                                   },
                                   show = function() {
                                     queryJSON = self$buildQuery("DATAFRAME")
+                                    queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
                                     # bugfix for jsonlite
-                                    queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
-                                    queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    queryJSON = self$fixJsonlite_bug(queryJSON)
                                     print(jsonlite::prettify(queryJSON))
                                   },
                                   select = function() {
@@ -435,10 +440,9 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['running'] <- TRUE
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("COUNT")
+                                    queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
                                     # bugfix for jsonlite
-                                    queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
-                                    queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    queryJSON = self$fixJsonlite_bug(queryJSON)
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
@@ -451,10 +455,9 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['running'] <- TRUE
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
+                                    queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
                                     # bugfix for jsonlite
-                                    queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
-                                    queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    queryJSON = self$fixJsonlite_bug(queryJSON)
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
@@ -467,10 +470,9 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['running'] <- TRUE
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
+                                    queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
                                     # bugfix for jsonlite
-                                    queryJSON <- jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
-                                    queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                    queryJSON = self$fixJsonlite_bug(queryJSON)
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
@@ -492,41 +494,50 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                         print(" Query Execute: --- ms")
                                         print("Process Result: --- ms")
                                       } else {
-                                        t = str((self$performance['tmr_query'] - self$performance['tmr_start'])*1000)
+                                        t = as.character((self$performance['tmr_query'] - self$performance['tmr_start'])*1000)
                                         print(paste("   Query Build: ", t, " ms", sep=""))
                                         if (self$performance['tmr_recv'] < self$performance['tmr_query']) {
                                           print(" Query Execute: --- ms")
                                           print("Process Result: --- ms")
                                         } else {
-                                          t = str((self$performance['tmr_recv'] - self$performance['tmr_query'])*1000)
+                                          t = as.character((self$performance['tmr_recv'] - self$performance['tmr_query'])*1000)
                                           print(paste(" Query Execute: ", t, " ms", sep=""))
                                           if (self$performance['tmr_proc'] < self$performance['tmr_recv']) {
                                             print("Process Result: --- ms")
                                           } else {
-                                            t = str((self$performance['tmr_proc'] - self$performance['tmr_recv'])*1000)
+                                            t = as.character((self$performance['tmr_proc'] - self$performance['tmr_recv'])*1000)
                                             print(paste("Process Result: ", t, " ms", sep=''))
-                                            t = str((self$performance['tmr_proc'] - self$performance['tmr_start'])*1000)
+                                            t = as.character((self$performance['tmr_proc'] - self$performance['tmr_start'])*1000)
                                             print(paste("____Total Time: ", t, " ms", sep=''))
                                           }
                                         }
                                       }
                                     }
                                   },
+                                  fixJsonlite_bug = function(queryJSON) {
+                                    queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
+                                    queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
+                                  },
                                   getQueryCommand = function() {},
                                   buildQuery = function(resultType="COUNT") {
-                                    ret <- jsonlite::fromJSON('{
-                                                              "query": {
+                                    ret <- jsonlite::fromJSON('{"query": {
                                                               "fields":[],
+                                                              "crossCountFields":[],
                                                               "requiredFields":[],
+                                                              "anyRecordOf": [],
                                                               "numericFilters":{},
-                                                              "categoryFilters":{}
+                                                              "categoryFilters":{},
+                                                              "variantInfoFilters": []
                                                               }
                                     }')
-                                    ret$query$fields <- self$listSelect$getQueryValues()
-                                    ret$query$requiredFields <- self$listRequire$getQueryValues()
-                                    temp <- self$listFilter$getQueryValues()
-                                    ret$query$numericFilters <- temp$numericFilters
-                                    ret$query$categoryFilters <- temp$categoryFilters
+                                    ret$query$fields = self$listSelect$getQueryValues()
+                                    ret$query$crossCountFields = self$listCrossCounts$getQueryValues()
+                                    ret$query$requiredFields = self$listRequire$getQueryValues()
+                                    ret$query$anyRecordOf = self$listAnyOf$getQueryValues()
+                                    temp = self$listFilter$getQueryValues()
+                                    ret$query$numericFilters = temp$numericFilters
+                                    ret$query$categoryFilters = temp$categoryFilters
+
                                     if (self$resourceUUID != FALSE) {
                                       ret[['resourceUUID']] <- self$resourceUUID
                                     }
@@ -543,6 +554,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
 #' @importFrom R6 R6Class
 #' @import jsonlite
 #' @import hash
+#' @import stringr
 #' @export
 #' @keywords data
 #' @return Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.
@@ -561,9 +573,12 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               portable = FALSE,
                               lock_objects = FALSE,
                               public = list(
-                                initialize = function(inst_list=FALSE, help_text=FALSE) {
+                                initialize = function(inst_list=FALSE, help_text=FALSE, allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
                                   self$helpstr <- ""
+                                  self$variants_enabled <- allow_variants
                                   self$data <- hash()
+                                  self$resource_uuid <- resource_uuid
+                                  self$api_obj <- api_obj
                                   if (help_text != FALSE) {
                                     self$helpstr <- help_text
                                   }
@@ -579,23 +594,113 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                   if (typeof(keys) != "list") {
                                     keys <- list(keys)
                                   }
+
+                                  new_keys = list()
                                   for (key in keys) {
                                     if (has.key(key, self$data) == TRUE) {
-                                      print('ERROR: cannot add, key already exists')
-                                      print(key)
+                                      # filter out keys that already exist
+                                      print(paste('ERROR: cannot add, key already exists', key, sep=": "))
                                     } else {
-                                      #setting the key depending on input arguments
+                                      # do not lookup the key if it is in VariantSpec format
+                                      if (self$is_VariantSpec(key)) {
+                                        # add variant spec entry
+                                        if (self$variants_enabled == TRUE) {
+                                          entry <- list()
+                                          entry["type"] <- "HpdsVariantSpec"
+                                          .set(self$data, key, entry)
+                                        } else {
+                                          # variant spec is not allowed
+                                          print(paste('ERROR: cannot add key, it is of type HpdsVariantSpec', key, sep=": "))
+                                        }
+                                      } else {
+                                        # add to the list of keys to lookup
+                                        new_keys = c(new_keys, key)
+                                      }
+                                    }
+                                  }
+
+
+                                  # TODO: Lookup keys and only add keys that have matches in the data dictionary
+                                  keys = new_keys
+                                  for (key in keys) {
+                                    add_key = FALSE
+                                    variant_key = FALSE
+                                    key_typename = "NA"
+                                    is_categorical = FALSE
+                                    valid_categories = list()
+                                    if (self$is_VariantSpec(key)) {
+                                      # add variant spec entry
+                                      variant_key = TRUE
+                                      key_typename = "HpdsVariantSpec"
+                                      if (self$variants_enabled == TRUE) {
+                                        add_key = TRUE
+                                      } else {
+                                        # variant spec is not allowed
+                                        print(paste('ERROR: cannot add key, it is of type HpdsVariantSpec', key, sep=": "))
+                                      }
+                                    } else {
+                                      add_key = TRUE
+                                    }
+
+                                    # perform a lookup of the key if needed
+                                    if (isFALSE(variant_key) && isTRUE(add_key)) {
+                                      add_key = FALSE
+                                      query <- {}
+                                      query$query <- as.character(key)
+                                      results <- self$api_obj$search(resource_uuid=self$resource_uuid, query=query)
+                                      results <- jsonlite::fromJSON(results)
+                                      # loop though the result types
+                                      for (typename in names(results)) {
+                                        if (!is.null(results[[typename]][[key]])) {
+                                          # the key exists in the data dictionary, insert it
+                                          add_key = TRUE
+                                          key_typename = typename
+                                          # save categorical info
+                                          is_categorical = results[[typename]][[key]]$categorical
+                                          valid_categories = results[[typename]][[key]]$categoryValues
+                                          break
+                                        }
+                                      }
+                                    }
+
+                                    # add the key if it was found in the data dictionary
+                                    if (isFALSE(add_key)) {
+                                      print(paste('ERROR: cannot add, key does not exist in resource', key, sep=": "))
+                                    } else {
+                                      # add key depending on input arguments
                                       if (length(args) == 0) {
                                         entry <- list()
                                         entry["type"] <- "exists"
                                         .set(self$data, key, entry)
                                       } else {
-                                        if (length(args) == 1 & typeof(args[[1]]) == "list") {
+                                        if (isTRUE(is_categorical)) {
                                           # handle categorical filter
-                                          entry <- list()
-                                          entry["type"] <- "categorical"
-                                          entry["values"] <- args[1]
+                                          if (typeof(args[[1]]) != "list") {
+                                            args[[1]] = list(args[[1]])
+                                          }
+                                          # check that all passed values are valid
+                                          for (catval in args[[1]]) {
+                                            if (!(catval %in% valid_categories)) {
+                                              print('ERROR: cannot add, invalid category specified for key', key, sep=": ")
+                                              add_key = FALSE
+                                              break
+                                            }
+                                          }
+                                          # add entry if passed above check
+                                          if (isTRUE(add_key)) {
+                                            entry <- list()
+                                            entry["type"] <- "categorical"
+                                            entry["values"] <- args[1]
+                                            add_key = FALSE
+                                          }
                                         } else {
+                                          # see if user specified a categorical list on non-categorical key
+                                          if (length(args) == 1 & typeof(args[[1]]) == "list") {
+                                            print('ERROR: cannot add key, it does not take categorical values', key, sep=": ")
+                                            add_key = FALSE
+                                          }
+                                        }
+                                        if (isTRUE(add_key)) {
                                           if (length(args) == 1 & (is.null(args[["min"]]) & is.null(args[["max"]]))) {
                                             # handle single value
                                             entry <- list()
@@ -603,26 +708,31 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                             entry["value"] <- args[[1]]
                                           } else {
                                             # handle minmax
-                                            entry<- list()
-                                            entry["type"] <- "minmax"
-                                            if (!is.null(args[["min"]])) {
-                                              entry["min"] <- args[["min"]]
-                                            }
-                                            if (!is.null(args[["max"]])) {
-                                              entry["max"] <- args[["max"]]
-                                            }
-                                            # handle unnamed value(s)
-                                            if (is.null(names(args[[1]])) & typeof(args[[1]]) == "double") {
-                                              entry["min"] <- args[[1]]
-                                            }
-                                            if (length(args) > 1) {
-                                              if (is.null(names(args[[2]])) & typeof(args[[2]]) == "double") {
-                                                entry["max"] <- args[[2]]
+                                            if (key_typename == "HpdsVariantSpec") {
+                                              print(paste('ERROR: cannot add key, HpdsVariantSpec cannot filter a range', key, sep=": "))
+                                            } else {
+                                              entry<- list()
+                                              entry["type"] <- "minmax"
+                                              if (!is.null(args[["min"]])) {
+                                                entry["min"] <- args[["min"]]
+                                              }
+                                              if (!is.null(args[["max"]])) {
+                                                entry["max"] <- args[["max"]]
+                                              }
+                                              # handle unnamed value(s)
+                                              if (is.null(names(args[[1]])) & typeof(args[[1]]) == "double") {
+                                                entry["min"] <- args[[1]]
+                                              }
+                                              if (length(args) > 1) {
+                                                if (is.null(names(args[[2]])) & typeof(args[[2]]) == "double") {
+                                                  entry["max"] <- args[[2]]
+                                                }
                                               }
                                             }
                                           }
                                         }
                                       }
+                                      entry$HpdsDataType = key_typename
                                       .set(self$data, key, entry)
                                     }
                                   }
@@ -666,6 +776,21 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                 },
                                 getQueryValues = function() {
                                   return(jsonlite::toJSON(self$data, auto_unbox = TRUE))
+                                },
+                                normalize_VariantSpec = function(teststr) {
+                                  return(paste(str_split(teststr,"[:_/]"), sep=","))
+                                },
+                                is_VariantSpec = function(teststr) {
+                                  norm_str = self$normalize_VariantSpec(teststr)
+                                  # is the string of a variant spec type
+                                  is_variant = FALSE
+                                  if (str_detect(norm_str, 'rs[0-9]+$')) {
+                                    is_variant = TRUE
+                                  }
+                                  if (str_detect(norm_str, '[0-9]+,[0-9\\.]+,.*')) {
+                                    is_variant = TRUE
+                                  }
+                                  return(is_variant)
                                 }
                               )
 )
