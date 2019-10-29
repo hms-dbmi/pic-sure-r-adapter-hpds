@@ -6,7 +6,7 @@ library(hpds)
 
 # Connect to the PIC-SURE network
 myendpoint <- "https://copdgene-dev.hms.harvard.edu/picsure/"
-mytoken <- "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsIm5hbWUiOiJOaWNrIEJlbmlrIiwiZXhwIjoxNTcyMDMyOTA3LCJpYXQiOjE1NzIwMjkzMDcsImVtYWlsIjoibmJlbmlrQGdtYWlsLmNvbSJ9.u7bnkfDethJjoC-u5Z4pCXHIGa-8v2VZV2640dLFWxU"
+mytoken <- ""
 myconn <- picsure::connect(url=myendpoint, token=mytoken)
 
 
@@ -32,30 +32,34 @@ myquery <- hpds::new.query(resource=myres)
 
 
 # SELECT: test add and delete
-hpds::query.select.add(query=myquery, keys="select-test-key")
+keySelect = "\\03 Clinical data\\Respiratory disease form\\04 Respiratory Conditions\\01 Asthma\\01 Have you ever had asthma\\"
+hpds::query.select.add(query=myquery, keys=keySelect)
 hpds::query.show(query=myquery)
-hpds::query.select.delete(query=myquery, keys="select-test-key")
+hpds::query.select.delete(query=myquery, keys=keySelect)
 hpds::query.show(query=myquery)
 
 
 # REQUIRE: test add and delete
-hpds::query.require.add(query=myquery, keys="require-test-key")
+keyRequire = "\\03 Clinical data\\Respiratory disease form\\04 Respiratory Conditions\\01 Asthma\\01 Have you ever had asthma\\"
+hpds::query.require.add(query=myquery, keys=keyRequire)
 hpds::query.show(query=myquery)
-hpds::query.require.delete(query=myquery, keys="require-test-key")
+hpds::query.require.delete(query=myquery, keys=keyRequire)
 hpds::query.show(query=myquery)
 
 
 # ANYOF: test add and delete
-hpds::query.anyof.add(query=myquery, keys="anyof-test-key")
+keyAnyof = "\\03 Clinical data\\Respiratory disease form\\04 Respiratory Conditions\\01 Asthma\\01 Have you ever had asthma\\"
+hpds::query.anyof.add(query=myquery, keys=keyAnyof)
 hpds::query.show(query=myquery)
-hpds::query.anyof.delete(query=myquery, keys="anyof-test-key")
+hpds::query.anyof.delete(query=myquery, keys=keyAnyof)
 hpds::query.show(query=myquery)
 
 
 # CROSSCOUNTS: test add and delete
-hpds::query.crosscounts.add(query=myquery, keys="crosscounts-test-key")
+keyCrossCount = "\\03 Clinical data\\Respiratory disease form\\04 Respiratory Conditions\\01 Asthma\\01 Have you ever had asthma\\"
+hpds::query.crosscounts.add(query=myquery, keys=keyCrossCount)
 hpds::query.show(query=myquery)
-hpds::query.crosscounts.delete(query=myquery, keys="crosscounts-test-key")
+hpds::query.crosscounts.delete(query=myquery, keys=keyCrossCount)
 hpds::query.show(query=myquery)
 
 
@@ -66,19 +70,26 @@ hpds::query.show(query=myquery)
 #hpds::query.filter.delete(query=myquery, keys="filter-test-key")
 #hpds::query.show(query=myquery)
 # --- filter by category
-hpds::query.filter.add(query=myquery, keys="filter-test-key", c("categoryName"))
+keyFilterCategory = "\\03 Clinical data\\Respiratory disease form\\04 Respiratory Conditions\\01 Asthma\\01 Have you ever had asthma\\"
+keyFilterCategoryValue = "Yes"
+hpds::query.filter.add(query=myquery, keys=keyFilterCategory, c(keyFilterCategoryValue))
 hpds::query.show(query=myquery)
-hpds::query.filter.delete(query=myquery, keys="filter-test-key")
+hpds::query.filter.delete(query=myquery, keys=keyFilterCategory)
 hpds::query.show(query=myquery)
 # --- filter by single value
-hpds::query.filter.add(query=myquery, keys="filter-test-key", "42")
+keyFilterValue = "\\03 Clinical data\\Respiratory disease form\\04 Respiratory Conditions\\01 Asthma\\05a If you no longer have asthma at what age did it stop\\"
+keyFilterValueValue = "35"
+hpds::query.filter.add(query=myquery, keys=keyFilterValue, keyFilterValueValue)
 hpds::query.show(query=myquery)
-hpds::query.filter.delete(query=myquery, keys="filter-test-key")
+hpds::query.filter.delete(query=myquery, keys=keyFilterValue)
 hpds::query.show(query=myquery)
 # --- filter by range
-hpds::query.filter.add(query=myquery, keys="filter-test-key", min="0", max="100")
+keyFilterRange = "\\03 Clinical data\\Respiratory disease form\\04 Respiratory Conditions\\01 Asthma\\05a If you no longer have asthma at what age did it stop\\"
+keyFilterRangeMinValue = "30"
+keyFilterRangeMaxValue = "40"
+hpds::query.filter.add(query=myquery, keys=keyFilterRange, min=keyFilterRangeMinValue, max=keyFilterRangeMaxValue)
 hpds::query.show(query=myquery)
-hpds::query.filter.delete(query=myquery, keys="filter-test-key")
+hpds::query.filter.delete(query=myquery, keys=keyFilterRange)
 hpds::query.show(query=myquery)
 
 
