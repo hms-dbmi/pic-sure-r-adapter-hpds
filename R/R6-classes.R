@@ -176,7 +176,7 @@ PicSureHpdsBypassConnectionAPI <- R6::R6Class("PicSureHpdsBypassConnectionAPI",
                                                 },
                                                 search = function(resource_uuid, query=FALSE) {
                                                   full_url = paste(self$url, "search", sep="")
-                                                  if (query == FALSE) {
+                                                  if (isFALSE(query)) {
                                                     query <- list()
                                                     query$query <- ""
                                                     query = jsonlite::toJSON(query, auto_unbox=TRUE)
@@ -193,7 +193,7 @@ PicSureHpdsBypassConnectionAPI <- R6::R6Class("PicSureHpdsBypassConnectionAPI",
                                                 asynchQuery = function(resource_uuid, query) { writeLines(c(resource_uuid, query)) },
                                                 synchQuery = function(resource_uuid, query) {
                                                   full_url = paste(self$url, "query/sync/", sep="")
-                                                  if (query == FALSE) {
+                                                  if (isFALSE(query)) {
                                                     query <- list()
                                                     query$query <- ""
                                                     query = jsonlite::toJSON(query, auto_unbox=TRUE)
@@ -247,7 +247,7 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                        },
                                        find = function(term=FALSE) {
                                          query <- list()
-                                         if (term == FALSE) {
+                                         if (isFALSE(term)) {
                                            query$query <- ""
                                          } else {
                                            query$query <- toString(term)
@@ -538,7 +538,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     ret$query$numericFilters = temp$numericFilters
                                     ret$query$categoryFilters = temp$categoryFilters
 
-                                    if (self$resourceUUID != FALSE) {
+                                    if (!(isFALSE(self$resourceUUID))) {
                                       ret[['resourceUUID']] <- self$resourceUUID
                                     }
                                     ret$query[['expectedResultType']] <- resultType
@@ -573,15 +573,19 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               portable = FALSE,
                               lock_objects = FALSE,
                               public = list(
-                                initialize = function(inst_list=FALSE, help_text=FALSE, allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
+                                initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
                                   self$helpstr <- ""
-                                  self$variants_enabled <- allow_variants
-                                  self$data <- hash()
-                                  self$resource_uuid <- resource_uuid
-                                  self$api_obj <- api_obj
-                                  if (help_text != FALSE) {
+                                  if (!(isFALSE(help_text))) {
                                     self$helpstr <- help_text
                                   }
+                                  if (isFALSE(inst_list)) {
+                                    self$data <- hash()
+                                  } else {
+                                    self$data <- inst_list
+                                  }
+                                  self$variants_enabled <- isTRUE(allow_variants)
+                                  self$resource_uuid <- resource_uuid
+                                  self$api_obj <- api_obj
                                 },
                                 add = function(keys=FALSE, ...) {
                                   args = list(...)
@@ -646,20 +650,24 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                     if (isFALSE(variant_key) && isTRUE(add_key)) {
                                       add_key = FALSE
                                       query <- {}
-                                      query$query <- as.character(key)
+                                      query$query <- key
                                       results <- self$api_obj$search(resource_uuid=self$resource_uuid, query=query)
                                       results <- jsonlite::fromJSON(results)
-                                      # loop though the result types
-                                      for (typename in names(results)) {
-                                        if (!is.null(results[[typename]][[key]])) {
-                                          # the key exists in the data dictionary, insert it
-                                          add_key = TRUE
-                                          key_typename = typename
-                                          # save categorical info
-                                          is_categorical = results[[typename]][[key]]$categorical
-                                          valid_categories = results[[typename]][[key]]$categoryValues
-                                          break
+                                      if (is.null(results$error)) {
+                                        # loop though the result types
+                                        for (typename in names(results)) {
+                                          if (!is.null(results[[typename]][[key]])) {
+                                            # the key exists in the data dictionary, insert it
+                                            add_key = TRUE
+                                            key_typename = typename
+                                            # save categorical info
+                                            is_categorical = results[[typename]][[key]]$categorical
+                                            valid_categories = results[[typename]][[key]]$categoryValues
+                                            break
+                                          }
                                         }
+                                      } else {
+                                        print(paste("ERROR: lookup failed for key", key, sep=": "))
                                       }
                                     }
 
@@ -823,11 +831,8 @@ HpdsAttribListKeys <- R6::R6Class("HpdsAttribListKeys",
                                   private = list(
                                   ),
                                   public = list(
-                                    initialize = function(inst_list=FALSE, help_text=FALSE) {
-                                      self$data <- hash()
-                                      if (help_text != FALSE) {
-                                        super$initialize(help_text=help_text)
-                                      }
+                                    initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
+                                      super$initialize(inst_list=inst_list, help_text=help_text, allow_variants=allow_variants, resource_uuid=resource_uuid, api_obj=api_obj)
                                     },
                                     add = function(key = FALSE, ...) {
                                       #setting the key as exists filter
@@ -878,11 +883,8 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                        inherit = HpdsAttribList,
                                        private = list(),
                                        public = list(
-                                         initialize = function(inst_list=FALSE, help_text=FALSE) {
-                                           self$data <- hash()
-                                           if (help_text != FALSE) {
-                                             super$initialize(help_text=help_text)
-                                           }
+                                         initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
+                                           super$initialize(inst_list=inst_list, help_text=help_text, allow_variants=allow_variants, resource_uuid=resource_uuid, api_obj=api_obj)
                                          },
                                          add = function(key=FALSE, ...) {
                                            #setting the key as exists filter
