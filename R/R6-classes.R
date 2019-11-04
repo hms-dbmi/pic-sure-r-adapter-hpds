@@ -66,7 +66,7 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
 BypassAdapter <- R6::R6Class("PicSureHpdsBypassAdapter",
                              portable = FALSE,
                              lock_objects = FALSE,
-                             inherit = Adapter,
+#                             inherit = picsure::Adapter,
                              public = list(
                                initialize = function(url_arg, token_arg = FALSE) {
                                  # trim and make sure URL ends in "/"
@@ -76,13 +76,13 @@ BypassAdapter <- R6::R6Class("PicSureHpdsBypassAdapter",
                                  }
                                  self$url <- endpoint
                                  self$token <- token_arg
-                                 self$connection_reference <- PicSureHpdsLib::PicSureHpdsBypassConnection$new(self$url, self$token)
+                                 self$connection_reference <- hpds::PicSureHpdsBypassConnection$new(self$url, self$token)
                                },
                                useResource = function(resource_uuid) {
                                  if (missing(resource_uuid)) {
-                                   temp <- PicSureHpdsLib::PicSureHpdsResourceConnection$new(self$connection_reference, FALSE)
+                                   temp <- hpds::PicSureHpdsResourceConnection$new(self$connection_reference, FALSE)
                                  } else {
-                                   temp <- PicSureHpdsLib::PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid)
+                                   temp <- hpds::PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid)
                                  }
                                  return(temp)
                                }
@@ -136,7 +136,7 @@ PicSureHpdsBypassConnection <- R6::R6Class("PicSureHpdsBypassConnection",
                                                  print(request)
                                                  return(jsonlite::fromJSON('[]'))
                                                } else {
-                                                 results = content(request, "parsed")
+                                                 results = content(request, "parsed", encoding = "UTF-8")
                                                  ret = paste('[{"uuid":"', results[["id"]], '", "name":"', results[["name"]], '", "description":"[Resource accessed directly (bypassing PIC-SURE framework)]"}]')
                                                  return(jsonlite::fromJSON(ret))
                                                }
@@ -187,7 +187,7 @@ PicSureHpdsBypassConnectionAPI <- R6::R6Class("PicSureHpdsBypassConnectionAPI",
                                                     print(request)
                                                     return('{"results":{}, "error":"True"}')
                                                   } else {
-                                                    return(content(request, "text"))
+                                                    return(content(request, "text", encoding = "UTF-8"))
                                                   }
                                                 },
                                                 asynchQuery = function(resource_uuid, query) { writeLines(c(resource_uuid, query)) },
@@ -204,14 +204,11 @@ PicSureHpdsBypassConnectionAPI <- R6::R6Class("PicSureHpdsBypassConnectionAPI",
                                                     print(request)
                                                     return('{"results":{}, "error":"True"}')
                                                   } else {
-                                                    return(content(request, "text"))
+                                                    return(content(request, "text", encoding = "UTF-8"))
                                                   }
                                                 },
                                                 queryStatus = function(resource_uuid, query_uuid) { writeLines(c(resource_uuid, query_uuid)) },
-                                                queryResult = function(resource_uuid, query_uuid) { writeLines(c(resource_uuid, query_uuid)) },
-                                                help = function() {
-                                                  invisible(self)
-                                                }
+                                                queryResult = function(resource_uuid, query_uuid) { writeLines(c(resource_uuid, query_uuid)) }
                                               )
 )
 
@@ -292,7 +289,7 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
                                                    if (length(self$results$results[[idx1]]) > 0) {
                                                      for (idx2 in 1:length(self$results$results[[idx1]])) {
                                                        self$results$results[[idx1]][[idx2]]$HpdsDataType <- result_type
-                                                       idx3 <- self$results$results[[idx1]][[idx2]]$name
+                                                       idx3 <- names(self$results$results[[idx1]][idx2])[[1]]
                                                        updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
                                                      }
                                                    }
@@ -310,41 +307,60 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
                                                return(self$results[['results']])
                                              },
                                              DataFrame = function() {
+                                               df <- data.frame()
                                                #get a list of all vector names
                                                vn <- list()
-                                               for (idx1 in 1:length(self$results[['results']])) {
-                                                 # for each record
-                                                 tn <- names(self$results[['results']][[idx1]])
-                                                 # for each record's attributes
-                                                 for (idx2 in 1:length(tn)) {
-                                                   if (is.null(vn[[tn[idx2]]])) {
-                                                     # the column name is new, save for later
-                                                     vn[[tn[idx2]]] <- 1
+                                               if (length(self$results[['results']]) > 0) {
+                                                 for (idx1 in 1:length(self$results[['results']])) {
+                                                   # for each record
+                                                   tn <- names(self$results[['results']][[idx1]])
+                                                   # for each record's attributes
+                                                   for (idx2 in 1:length(tn)) {
+                                                     if (is.null(vn[[tn[idx2]]])) {
+                                                       # the column name is new, save for later
+                                                       vn[[tn[idx2]]] <- 1
+                                                     }
                                                    }
                                                  }
-                                               }
-                                               vn <- names(vn)
-
-                                               # we genrate a list of all attributes of all records, then pivot into vectors
-                                               df <- data.frame()
-                                               for (idx1 in 1:length(vn)) {
-                                                 df[1,idx1] <- NA
-                                               }
-                                               names(df) <- vn
-                                               for (idx1 in 1:length(self$results[['results']])) {
-                                                 # for each record
-                                                 e <- self$results[['results']][[idx1]]
-                                                 for (idx2 in 1:length(vn)) {
-                                                   # for each global named-attribute
-                                                   if (is.null(e[[vn[idx2]]])) {
-                                                     # attribute is missing on this record, save as NA
-                                                     df[idx1,idx2] <- NA
-                                                   } else {
-                                                     # attribute is set for this record, save
-                                                     if (length(e[[vn[idx2]]]) > 1) {
-                                                       df[idx1,idx2] <- paste(e[[vn[idx2]]], collapse=",")
+                                                 # make sure we have a column called "name"
+                                                 if (!"name" %in% vn) {
+                                                   vn[["name"]] <- 1
+                                                 }
+                                                 vn <- names(vn)
+                                                 # we genrate a list of all attributes of all records, then pivot into vectors
+                                                 for (idx1 in 1:length(vn)) {
+                                                   df[1,idx1] <- NA
+                                                 }
+                                                 names(df) <- vn
+                                                 for (idx1 in 1:length(self$results[['results']])) {
+                                                   # for each record
+                                                   e <- self$results[['results']][[idx1]]
+                                                   for (idx2 in 1:length(vn)) {
+                                                     # for each global named-attribute
+                                                     if (is.null(e[[vn[idx2]]])) {
+                                                       # attribute is missing on this record, save as NA
+                                                       # unless the missing record is "name"
+                                                       if (vn[idx2] == "name") {
+                                                         df[idx1,idx2] <- names(dictResults$results$results)[[idx1]]
+                                                       } else {
+                                                         df[idx1,idx2] <- NA
+                                                       }
                                                      } else {
-                                                       df[idx1,idx2] <- e[[vn[idx2]]]
+                                                       # attribute is set for this record, save
+                                                       if (typeof(e[[vn[idx2]]]) == "list" || length(e[[vn[idx2]]]) > 1) {
+                                                         df[idx1,idx2] <- paste(e[[vn[idx2]]], collapse=",")
+                                                       } else {
+                                                         if (is.null(e[[vn[idx2]]])) {
+                                                           # Set to NA unless the missing record is "name"
+                                                           if (vn[idx2] == "name") {
+                                                             df[idx1,idx2] <- names(dictResults$results$results)[[idx1]]
+                                                           } else {
+                                                             df[idx1,idx2] <- NA
+                                                           }
+                                                         } else {
+                                                           df[idx1,idx2] <- e[[vn[idx2]]]
+                                                         }
+                                                       }
                                                      }
                                                    }
                                                  }
@@ -417,8 +433,11 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                   show = function() {
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite
-                                    queryJSON = self$fixJsonlite_bug(queryJSON)
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
                                     print(jsonlite::prettify(queryJSON))
                                   },
                                   select = function() {
@@ -441,10 +460,14 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("COUNT")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite
-                                    queryJSON = self$fixJsonlite_bug(queryJSON)
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
+                                    print(httpResults)
                                     self$performance['tmr_recv'] <- Sys.time()
                                     ret = as.integer(httpResults)
                                     self$performance['tmr_proc'] <- Sys.time()
@@ -456,8 +479,11 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite
-                                    queryJSON = self$fixJsonlite_bug(queryJSON)
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
@@ -471,8 +497,11 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite
-                                    queryJSON = self$fixJsonlite_bug(queryJSON)
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
@@ -513,10 +542,6 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                         }
                                       }
                                     }
-                                  },
-                                  fixJsonlite_bug = function(queryJSON) {
-                                    queryJSON <- str_replace_all(queryJSON, '"numericFilters":\\[\\]','"numericFilters":\\{\\}')
-                                    queryJSON <- str_replace_all(queryJSON, '"categoryFilters":\\[\\]','"categoryFilters":\\{\\}')
                                   },
                                   getQueryCommand = function() {},
                                   buildQuery = function(resultType="COUNT") {
@@ -651,18 +676,19 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       add_key = FALSE
                                       query <- {}
                                       query$query <- key
-                                      results <- self$api_obj$search(resource_uuid=self$resource_uuid, query=query)
+                                      results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                      print(jsonlite::prettify(results))
                                       results <- jsonlite::fromJSON(results)
                                       if (is.null(results$error)) {
                                         # loop though the result types
-                                        for (typename in names(results)) {
-                                          if (!is.null(results[[typename]][[key]])) {
+                                        for (typename in names(results$results)) {
+                                          if (!is.null(results$results[[typename]][[key]])) {
                                             # the key exists in the data dictionary, insert it
                                             add_key = TRUE
                                             key_typename = typename
                                             # save categorical info
-                                            is_categorical = results[[typename]][[key]]$categorical
-                                            valid_categories = results[[typename]][[key]]$categoryValues
+                                            is_categorical = results$results[[typename]][[key]]$categorical
+                                            valid_categories = results$results[[typename]][[key]]$categoryValues
                                             break
                                           }
                                         }
@@ -783,7 +809,8 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                   invisible(self)
                                 },
                                 getQueryValues = function() {
-                                  return(jsonlite::toJSON(self$data, auto_unbox = TRUE))
+                                  return(self$data)
+#                                  return(jsonlite::toJSON(self$data, auto_unbox = TRUE))
                                 },
                                 normalize_VariantSpec = function(teststr) {
                                   return(paste(str_split(teststr,"[:_/]"), sep=","))
@@ -897,7 +924,9 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                          },
                                          getQueryValues = function() {
                                            data <- as.list(self$data)
-                                           ret <- list(numericFilters=list(), categoryFilters=list())
+                                           ret <- list(numericFilters=list(), categoryFilters=list(), variantInfoFilters=list())
+                                           ret_variant_numeric = list()
+                                           ret_variant_category = list()
                                            for (key in names(data)) {
                                              rec <- data[[key]]
                                              if (rec$type == "minmax") {
@@ -908,16 +937,42 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                                if (!is.null(rec$max)) {
                                                  t$max <- rec$max
                                                }
-                                               ret$numericFilters[[key]] <- t
+                                               if (rec$HpdsDataType == "info") {
+                                                 ret_variant_numeric[[key]] <- t
+                                               } else {
+                                                 ret$numericFilters[[key]] <- t
+                                               }
                                              } else if (rec$type == "categorical") {
-                                               ret$categoryFilters[[key]] <- rec$values
+                                               if (rec$HpdsDataType == "info") {
+                                                 ret_variant_category[[key]] <- rec$values
+                                               } else {
+                                                 ret$categoryFilters[[key]] <- rec$values
+                                               }
                                              } else if (rec$type == "value") {
                                                if (typeof(rec$value) == "character") {
-                                                 ret$categoryFilters[[key]] <- list(rec$value)
+                                                 if (rec$HpdsDataType == "info") {
+                                                   ret_variant_category[[key]] <- list(rec$value)
+                                                 } else {
+                                                   ret$categoryFilters[[key]] <- list(rec$value)
+                                                 }
                                                } else {
-                                                 ret$numericFilters[[key]] <- rec$value
+                                                 t = list()
+                                                 t$min <- rec$value
+                                                 t$max <- rec$value
+                                                 if (rec$HpdsDataType == "info") {
+                                                   ret_variant_numeric[[key]] <- t
+                                                 } else {
+                                                   ret$numericFilters[[key]] <- t
+                                                 }
                                                }
                                              }
+                                           }
+                                           # add any variant filters if set
+                                           if (length(ret_variant_category) > 0) {
+                                             append(ret$variantInfoFilters, list(categoryVariantInfoFilters=ret_variant_category))
+                                           }
+                                           if (length(ret_variant_numeric) > 0) {
+                                             append(ret$variantInfoFilters, list(numericVariantInfoFilters=ret_variant_numeric))
                                            }
                                            return(ret)
                                          }
