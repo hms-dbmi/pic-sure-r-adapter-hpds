@@ -687,8 +687,16 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                             add_key = TRUE
                                             key_typename = typename
                                             # save categorical info
-                                            is_categorical = results$results[[typename]][[key]]$categorical
-                                            valid_categories = results$results[[typename]][[key]]$categoryValues
+                                            if (is.null(results$results[[typename]][[key]]$categorical)) {
+                                              is_categorical = !results$results[[typename]][[key]]$continuous
+                                            } else {
+                                              is_categorical = results$results[[typename]][[key]]$categorical
+                                            }
+                                            if (is.null(results$results[[typename]][[key]]$categoryValues)) {
+                                              valid_categories = results$results[[typename]][[key]]$values
+                                            } else {
+                                              valid_categories = results$results[[typename]][[key]]$categoryValues
+                                            }
                                             break
                                           }
                                         }
