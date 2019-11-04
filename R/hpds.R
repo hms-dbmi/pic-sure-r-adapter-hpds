@@ -482,5 +482,8 @@ query.show <- function(query, verbose=FALSE) {
   if (class(query) == "Hpds_Query") {
     result <- query$show()
     return(result)
+  } else {
+    message("The query given to query.show() is not a Hpds_Query typed object")
+    stop()
   }
 }
