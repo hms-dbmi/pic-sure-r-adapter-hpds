@@ -433,7 +433,8 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                   show = function() {
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 5 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('\\[\\[\\]\\]','\\[\\]', queryJSON)
                                     queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
@@ -460,14 +461,14 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("COUNT")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 5 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('\\[\\[\\]\\]','\\[\\]', queryJSON)
                                     queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
-                                    print(httpResults)
                                     self$performance['tmr_recv'] <- Sys.time()
                                     ret = as.integer(httpResults)
                                     self$performance['tmr_proc'] <- Sys.time()
@@ -479,7 +480,8 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 5 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('\\[\\[\\]\\]','\\[\\]', queryJSON)
                                     queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
@@ -497,7 +499,8 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("DATAFRAME")
                                     queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
-                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 4 LINES AS R WILL MESS THINGS UP!
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 5 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('\\[\\[\\]\\]','\\[\\]', queryJSON)
                                     queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
                                     queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
@@ -562,6 +565,8 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     temp = self$listFilter$getQueryValues()
                                     ret$query$numericFilters = temp$numericFilters
                                     ret$query$categoryFilters = temp$categoryFilters
+                                    # Hack to make jsonlite work correctly for variant info filters
+                                    ret$query$variantInfoFilters = list(temp$variantInfoFilters)
 
                                     if (!(isFALSE(self$resourceUUID))) {
                                       ret[['resourceUUID']] <- self$resourceUUID
@@ -635,7 +640,14 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                         # add variant spec entry
                                         if (self$variants_enabled == TRUE) {
                                           entry <- list()
-                                          entry["type"] <- "HpdsVariantSpec"
+                                          entry["type"] <- "categorical"
+                                          entry["HpdsDataType"] <- "HpdsVariantSpec"
+                                          # handle categorical filter
+                                          if (typeof(args[[1]]) != "list") {
+                                            entry["values"] <- list(args[[1]])
+                                          } else {
+                                            entry["values"] <- args[1]
+                                          }
                                           .set(self$data, key, entry)
                                         } else {
                                           # variant spec is not allowed
@@ -677,7 +689,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       query <- {}
                                       query$query <- key
                                       results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                      print(jsonlite::prettify(results))
                                       results <- jsonlite::fromJSON(results)
                                       if (is.null(results$error)) {
                                         # loop though the result types
@@ -818,7 +829,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                 },
                                 getQueryValues = function() {
                                   return(self$data)
-#                                  return(jsonlite::toJSON(self$data, auto_unbox = TRUE))
                                 },
                                 normalize_VariantSpec = function(teststr) {
                                   return(paste(str_split(teststr,"[:_/]"), sep=","))
@@ -882,7 +892,7 @@ HpdsAttribListKeys <- R6::R6Class("HpdsAttribListKeys",
                                       data <- as.list(self$data)
                                       ret <- list()
                                       for (key in names(data)) {
-                                        if (data[[key]]$type == "exists") {
+                                        if (data[[key]]$type == "exists" || data[[key]]$type == "HpdsVariantSpec") {
                                           l <- length(ret) + 1
                                           ret[[l]] <- key
                                         }
@@ -950,11 +960,11 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                                } else {
                                                  ret$numericFilters[[key]] <- t
                                                }
-                                             } else if (rec$type == "categorical") {
+                                             } else if (rec$type == "categorical" || rec$type == "HpdsVariantSpec") {
                                                if (rec$HpdsDataType == "info") {
-                                                 ret_variant_category[[key]] <- rec$values
+                                                 ret_variant_category[[key]] <- as.list(rec$values)
                                                } else {
-                                                 ret$categoryFilters[[key]] <- rec$values
+                                                 ret$categoryFilters[[key]] <- as.list(rec$values)
                                                }
                                              } else if (rec$type == "value") {
                                                if (typeof(rec$value) == "character") {
@@ -975,12 +985,12 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                                }
                                              }
                                            }
-                                           # add any variant filters if set
+                                           # add any variant info filters if set
                                            if (length(ret_variant_category) > 0) {
-                                             append(ret$variantInfoFilters, list(categoryVariantInfoFilters=ret_variant_category))
+                                             ret$variantInfoFilters = c(ret$variantInfoFilters, list(categoryVariantInfoFilters=ret_variant_category))
                                            }
                                            if (length(ret_variant_numeric) > 0) {
-                                             append(ret$variantInfoFilters, list(numericVariantInfoFilters=ret_variant_numeric))
+                                             ret$variantInfoFilters = c(ret$variantInfoFilters, list(numericVariantInfoFilters=ret_variant_numeric))
                                            }
                                            return(ret)
                                          }
