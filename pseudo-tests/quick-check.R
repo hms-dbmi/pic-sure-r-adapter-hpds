@@ -5,7 +5,7 @@ library(hpds)
 
 # Connect to the PIC-SURE network
 myendpoint <- "https://copdgene-dev.hms.harvard.edu/picsure/"
-mytoken <- "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsIm5hbWUiOiJOaWNrIEJlbmlrIiwiZXhwIjoxNTcyOTExNDk2LCJpYXQiOjE1NzI5MDc4OTYsImVtYWlsIjoibmJlbmlrQGdtYWlsLmNvbSJ9.x_G23JfNjYzDiLX6OqaMDh6gk0-yWNRJCS3AjwSnCX8"
+mytoken <- "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsInVzZXJfaWQiOiJnb29nbGUtb2F1dGgyfDEwMTY1ODI0NDM2OTk1NjM3ODQzOSIsIm5hbWUiOiJOaWNrIEJlbmlrIiwiZXhwIjoxNTczMjMxMjkwLCJpYXQiOjE1NzMyMjc2OTAsImVtYWlsIjoibmJlbmlrQGdtYWlsLmNvbSJ9.9A_qGFyU50IW5o7aw6-PJMy4VTr8XE789h98dif8XJk"
 myconn <- picsure::connect(url=myendpoint, token=mytoken)
 
 # List the resources and connect to the first one (assumes that the resource will be HPDS-based)
@@ -24,7 +24,7 @@ myquery <- hpds::new.query(resource=myres)
 
 
 # Query the data dictionary for "asthma"
-dictResults <- hpds::find.in.dictionary(resource=myres, term="")
+dictResults <- hpds::find.in.dictionary(resource=myres, term="asthma")
 
 
 # test the various dictionary results functions
@@ -32,6 +32,7 @@ hpds::extract.count(dictionary.results=dictResults)
 hpds::extract.keys(dictionary.results=dictResults)
 hpds::extract.entries(dictionary.results=dictResults)
 hpds::extract.dataframe(dictionary.results=dictResults)
+
 
 
 
