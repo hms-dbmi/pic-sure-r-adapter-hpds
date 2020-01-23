@@ -985,13 +985,9 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                                }
                                              }
                                            }
-                                           # add any variant info filters if set
-                                           if (length(ret_variant_category) > 0) {
-                                             ret$variantInfoFilters = c(ret$variantInfoFilters, list(categoryVariantInfoFilters=ret_variant_category))
-                                           }
-                                           if (length(ret_variant_numeric) > 0) {
-                                             ret$variantInfoFilters = c(ret$variantInfoFilters, list(numericVariantInfoFilters=ret_variant_numeric))
-                                           }
+                                           # add any variant info filters
+                                           ret$variantInfoFilters = c(ret$variantInfoFilters, list(categoryVariantInfoFilters=ret_variant_category, numericVariantInfoFilters=ret_variant_numeric))
+
                                            return(ret)
                                          }
                                        )
