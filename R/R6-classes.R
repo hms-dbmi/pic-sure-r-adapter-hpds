@@ -1,5 +1,5 @@
 library(hash)
-library(readr)
+
 
 # ======================
 #    ADAPTER CODE
@@ -489,7 +489,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
-                                    ret = read_csv(file=httpResults)
+                                    ret = read.csv(text=httpResults)
                                     self$performance['tmr_proc'] <- Sys.time()
                                     self$performance['running'] <- FALSE
                                     return(ret)
@@ -508,7 +508,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
-                                    ret = readr::read_csv(file=httpResults)
+                                    ret = read.csv(text=httpResults)
                                     self$performance['tmr_proc'] <- Sys.time()
                                     self$performance['running'] <- FALSE
                                     return(ret)
