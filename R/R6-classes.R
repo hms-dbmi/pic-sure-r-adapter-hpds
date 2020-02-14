@@ -341,7 +341,7 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
                                                        # attribute is missing on this record, save as NA
                                                        # unless the missing record is "name"
                                                        if (vn[idx2] == "name") {
-                                                         df[idx1,idx2] <- names(dictResults$results$results)[[idx1]]
+                                                         df[idx1,idx2] <- names(self$results[['results']])[[idx1]]
                                                        } else {
                                                          df[idx1,idx2] <- NA
                                                        }
@@ -353,7 +353,7 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
                                                          if (is.null(e[[vn[idx2]]])) {
                                                            # Set to NA unless the missing record is "name"
                                                            if (vn[idx2] == "name") {
-                                                             df[idx1,idx2] <- names(dictResults$results$results)[[idx1]]
+                                                             df[idx1,idx2] <- names(self$results[['results']])[[idx1]]
                                                            } else {
                                                              df[idx1,idx2] <- NA
                                                            }
