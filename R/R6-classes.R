@@ -41,8 +41,12 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                dictionary = function() {
                                                  return(PicSureHpdsDictionary$new(self))
                                                },
-                                               query = function() {
-                                                 return(PicSureHpdsQuery$new(self))
+                                               query = function(loadQuery=NA) {
+                                                 if (is.na(loadQuery)) {
+                                                   return(PicSureHpdsQuery$new(self))
+                                                 } else {
+                                                   return(PicSureHpdsQuery$new(self, loadQuery=loadQuery))
+                                                 }
                                                }
                                              )
 )
@@ -546,7 +550,37 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                       }
                                     }
                                   },
-                                  getQueryCommand = function() {},
+                                  save = function(resultType="COUNT") {
+                                    return(jsonlite::toJSON(self$buildQuery(resultType)))
+                                  },
+                                  load = function(queryStr="", merge=TRUE) {
+                                    queryObj = jsonlite::fromJSON(queryStr)
+
+                                    # clear  the current criteria if we are not merging
+                                    if (merge != TRUE) {
+                                      self$listSelect$clear()
+                                      self$listCrossCounts$clear()
+                                      self$listRequire$clear()
+                                      self$listAnyOf$clear()
+                                      self$listFilter$clear()
+                                    }
+
+                                    # ___ handle key-only fields ___
+                                    self$listSelect$load(queryObj[["query"]][["fields"]])
+                                    self$listCrossCounts$load(queryObj[["query"]][["crossCountFields"]])
+                                    self$listRequire$load(queryObj[["query"]][["requiredFields"]])
+                                    self$listAnyOf$load(queryObj[["query"]][["anyRecordOf"]])
+
+
+                                    # ___ handle various filters ___
+                                    self$listFilter$load(
+                                      queryObj[["query"]][["numericFilters"]],
+                                      queryObj[["query"]][["categoryFilters"]],
+                                      queryObj[["query"]][["variantInfoFilters"]]
+                                    )
+
+                                    return(self)
+                                  },
                                   buildQuery = function(resultType="COUNT") {
                                     ret <- jsonlite::fromJSON('{"query": {
                                                               "fields":[],
@@ -898,6 +932,13 @@ HpdsAttribListKeys <- R6::R6Class("HpdsAttribListKeys",
                                         }
                                       }
                                       return(ret)
+                                    },
+                                    load = function(keys) {
+                                      for (key in keys) {
+                                        entry <- list()
+                                        entry["type"] <- "exists"
+                                        .set(self$data, key, entry)
+                                      }
                                     }
                                   )
 )
@@ -939,6 +980,51 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                          delete = function(key=FALSE, ...) {
                                            super$delete(key, ...)
                                            invisible(self)
+                                         },
+                                         load = function(numericFilters=list(), categoryFilters=list(), variantInfoFilters=list()) {
+                                           self$data$numericFilters=list()
+                                           for (key in names(numericFilters)) {
+                                             rec = list()
+                                             rec$type == "minmax"
+                                             if (!is.null(numericFilters[[key]]$min)) {
+                                               rec$min <- numericFilters[[key]]$min
+                                             }
+                                             if (!is.null(numericFilters[[key]]$max)) {
+                                               rec$max <- numericFilters[[key]]$max
+                                             }
+                                             self$data[[key]] = rec
+                                           }
+
+                                           self$data$categoryFilters=list()
+                                           for (key in names(categoryFilters)) {
+                                             rec = list()
+                                             rec$type == "categorical"
+                                             rec$values = as.list(categoryFilters[[key]])
+                                             self$data[[key]] = rec
+                                           }
+
+                                           for (key in names(variantInfoFilters$categoryVariantInfoFilters)) {
+                                             rec = list()
+                                             rec$HpdsDataType = "info"
+                                             rec$type = "categorical"
+                                             rec$values = as.list(variantInfoFilters$categoryVariantInfoFilters[[key]]$values)
+                                             self$data[[key]] = rec
+                                           }
+
+
+                                           for (key in names(variantInfoFilters$numericVariantInfoFilters)) {
+                                             rec = list()
+                                             rec$HpdsDataType = "info"
+                                             rec$type = "minmax"
+                                             if (!is.null(variantInfoFilters$numericVariantInfoFilters[[key]]$min)) {
+                                               rec$min <- variantInfoFilters$numericVariantInfoFilters[[key]]$min
+                                             }
+                                             if (!is.null(variantInfoFilters$numericVariantInfoFilters[[key]]$max)) {
+                                               rec$max <- variantInfoFilters$numericVariantInfoFilters[[key]]$max
+                                             }
+                                             self$data[[key]] = rec
+                                           }
+
                                          },
                                          getQueryValues = function() {
                                            data <- as.list(self$data)
