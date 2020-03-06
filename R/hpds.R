@@ -207,14 +207,64 @@ new.query <- function(resource, verbose=FALSE) {
 query.run <- function(query, result.type="dataframe", verbose=FALSE) {
   if (class(query) == "Hpds_Query") {
     result <- switch(result.type,
-                    "count" = query$getCount(),
-                    "results" = query$getResults(),
-                    "dataframe" = query$getResultsDataFrame(),
-                    "crosscount" = query$getResultsCrossCounts()
+                     "count" = query$getCount(),
+                     "results" = query$getResults(),
+                     "dataframe" = query$getResultsDataFrame(),
+                     "crosscount" = query$getResultsCrossCounts()
     )
     return(result)
   } else {
     message("The resource given to query.run() is not a Hpds_Query typed object")
+    stop()
+  }
+}
+
+#' Load a query from a JSON-formated string.
+#'
+#' @param query A JSON string that defines the query instance object.
+#' @param verbose Flag to display additional runtime information.
+#' @examples
+#'
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
+#'# myquery <- hpds::new.query(resource=myres)
+#'
+#'## ...modify the query by adding search criteria... ##
+#'
+#'#  myquery <- hpds::query.load(query=myquerydef)
+#'
+#' @export
+query.load<- function(query, query.def="") {
+  if (class(query) == "Hpds_Query") {
+    query$load(query.def)
+    return(query)
+  } else {
+    message("The resource given to query.load() is not a Hpds_Query typed object")
+    stop()
+  }
+}
+
+#' Save a query in JSON-format with any restrictions that have been added to it.
+#'
+#' @param query A query instance object.
+#' @param verbose Flag to display additional runtime information.
+#' @examples
+#'
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
+#'# myquery <- hpds::new.query(resource=myres)
+#'
+#'## ...modify the query by adding search criteria... ##
+#'
+#'# querydef <- hpds::query.save(query=myquery)
+#'
+#' @export
+query.save<- function(query, result.type="dataframe", verbose=FALSE) {
+  if (class(query) == "Hpds_Query") {
+    result = query$save(result.type)
+    return(result)
+  } else {
+    message("The resource given to query.save() is not a Hpds_Query typed object")
     stop()
   }
 }
