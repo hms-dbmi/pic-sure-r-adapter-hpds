@@ -27,11 +27,17 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                              public = list(
                                                initialize = function(connection, resource_uuid) {
                                                  self$connection_reference <- connection
+                                                 self$profile_info = jsonlite::fromJSON("{}")
                                                  if (missing(resource_uuid)) {
                                                    self$resourceUUID <- FALSE
                                                  } else {
                                                    self$resourceUUID <- resource_uuid
                                                  }
+
+                                                 # cache the profile information on startup
+                                                 api = connection$INTERNAL_api_obj()
+                                                 self$profile_info = jsonlite::fromJSON(api$profile())
+
                                                },
                                                version = function() {
                                                  cat(paste("PicSureHpdsLib Library (version ", packageVersion("PicSureHpdsLib"), ")\n", sep=""))
@@ -47,6 +53,23 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                  } else {
                                                    return(PicSureHpdsQuery$new(self, loadQuery=loadQuery))
                                                  }
+                                               },
+                                               retrieveQueryResults = function(query_uuid = NA) {
+                                                 api = connection$INTERNAL_api_obj()
+                                                 repeat {
+                                                   status = jsonlite::fromJSON(api$queryStatus(self$resourceUUID, query_uuid))
+                                                   print(status)
+                                                   if (status$status == "AVAILABLE") {
+                                                     break
+                                                   } else {
+                                                     if (status$status == "ERROR") {
+                                                       print("An error occured retrieving this query! For more information please check the server logs.")
+                                                     } else {
+                                                       Sys.sleep(1)
+                                                     }
+                                                   }
+                                                 }
+                                                 return(api$queryResult(self$resourceUUID, query_uuid))
                                                }
                                              )
 )
@@ -246,7 +269,7 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                          self$resourceUUID <- refHpdsResourceConnection$resourceUUID
                                          self$INTERNAL_API_OBJ <- refHpdsResourceConnection$connection_reference$INTERNAL_api_obj()
                                        },
-                                       find = function(term=FALSE) {
+                                       find = function(term=FALSE, showAll=FALSE) {
                                          query <- list()
                                          if (isFALSE(term)) {
                                            query$query <- ""
@@ -254,7 +277,16 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                            query$query <- toString(term)
                                          }
                                          results = self$INTERNAL_API_OBJ$search(self$resourceUUID, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                         return(PicSureHpdsDictionaryResult$new(results))
+                                         # filter to query scope if needed
+                                         if (showAll != FALSE) {
+                                           return(PicSureHpdsDictionaryResult$new(results))
+                                         } else {
+                                           if (exists("self$connection$profile_info$queryScopes")) {
+                                             return(PicSureHpdsDictionaryResult$new(results, self$connection$profile_info$queryScopes))
+                                           } else {
+                                             return(PicSureHpdsDictionaryResult$new(results))
+                                           }
+                                         }
                                        }
                                      )
 )
@@ -282,19 +314,29 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
                                            portable = FALSE,
                                            lock_objects = FALSE,
                                            public = list(
-                                             initialize = function(results) {
+                                             initialize = function(results, filter.list = FALSE) {
                                                self$results <- jsonlite::fromJSON(results)
                                                updated_list <- list()
                                                if (!is.null(self$results$results$phenotypes)) {
-                                                 # dictionary results are segmented
                                                  new_results <- list()
+                                                 # dictionary results are segmented (phenotype, info, etc)
                                                  for (idx1 in 1:length(self$results$results)) {
                                                    result_type = names(self$results$results[idx1])
                                                    if (length(self$results$results[[idx1]]) > 0) {
                                                      for (idx2 in 1:length(self$results$results[[idx1]])) {
                                                        self$results$results[[idx1]][[idx2]]$HpdsDataType <- result_type
                                                        idx3 <- names(self$results$results[[idx1]][idx2])[[1]]
-                                                       updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
+                                                       if (filter.list != FALSE && length(filter.list) > 0) {
+                                                         for (matchidx in 1:length(filter.list)) {
+                                                           pos = regexpr(idx3, filter.list[[matchidx]])
+                                                           if (pos > -1 && pos < 3) {
+                                                             updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
+                                                             break
+                                                           }
+                                                         }
+                                                       } else {
+                                                         updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
+                                                       }
                                                      }
                                                    }
                                                  }
@@ -433,6 +475,8 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                                                                   api_obj=self$INTERNAL_API_OBJ)
                                     self$performance <- c(FALSE, 0, 0, 0, 0)
                                     names(self$performance) <- c("running","tmr_start","tmr_query","tmr_recv","tmr_proc")
+                                    # load the default queryTemplate values
+                                    self$load(self$connection$profile_info$queryTemplate)
                                   },
                                   show = function() {
                                     queryJSON = self$buildQuery("DATAFRAME")
@@ -553,8 +597,14 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                   save = function(resultType="COUNT") {
                                     return(jsonlite::toJSON(self$buildQuery(resultType)))
                                   },
-                                  load = function(queryStr="", merge=TRUE) {
+                                  load = function(queryStr="{}", merge=TRUE) {
                                     queryObj = jsonlite::fromJSON(queryStr)
+
+                                    if (isTRUE(any("query" %in% names(queryObj)))) {
+                                      load_node = queryObj[["query"]]
+                                    } else {
+                                      load_node = queryObj
+                                    }
 
                                     # clear  the current criteria if we are not merging
                                     if (merge != TRUE) {
@@ -566,19 +616,44 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     }
 
                                     # ___ handle key-only fields ___
-                                    self$listSelect$load(queryObj[["query"]][["fields"]])
-                                    self$listCrossCounts$load(queryObj[["query"]][["crossCountFields"]])
-                                    self$listRequire$load(queryObj[["query"]][["requiredFields"]])
-                                    self$listAnyOf$load(queryObj[["query"]][["anyRecordOf"]])
+                                    if (isTRUE(any("fields" %in% names(load_node)))) {
+                                      self$listSelect$load(load_node[["fields"]])
+                                    }
+
+                                    if (isTRUE(any("crossCountFields" %in% names(load_node)))) {
+                                      self$listCrossCounts$load(load_node[["crossCountFields"]])
+                                    }
+
+                                    if (isTRUE(any("requiredFields" %in% names(load_node)))) {
+                                      self$listRequire$load(load_node[["requiredFields"]])
+                                    }
+
+                                    if (isTRUE(any("anyRecordOf" %in% names(load_node)))) {
+                                      self$listAnyOf$load(load_node[["anyRecordOf"]])
+                                    }
 
 
                                     # ___ handle various filters ___
+                                    if (isTRUE(any("numericFilters" %in% names(load_node)))) {
+                                      filter_numeric = load_node[["numericFilters"]]
+                                    } else {
+                                      filter_numeric = list()
+                                    }
+                                    if (isTRUE(any("categoryFilters" %in% names(load_node)))) {
+                                      filter_categorical = load_node[["categoryFilters"]]
+                                    } else {
+                                      filter_categorical = list()
+                                    }
+                                    if (isTRUE(any("anyRecordOf" %in% names(load_node)))) {
+                                      filter_variant = load_node[["variantInfoFilters"]]
+                                    } else {
+                                      filter_variant = list()
+                                    }
                                     self$listFilter$load(
-                                      queryObj[["query"]][["numericFilters"]],
-                                      queryObj[["query"]][["categoryFilters"]],
-                                      queryObj[["query"]][["variantInfoFilters"]]
+                                      filter_numeric,
+                                      filter_categorical,
+                                      filter_variant
                                     )
-
                                     return(self)
                                   },
                                   buildQuery = function(resultType="COUNT") {
@@ -650,6 +725,7 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                   self$variants_enabled <- isTRUE(allow_variants)
                                   self$resource_uuid <- resource_uuid
                                   self$api_obj <- api_obj
+                                  self$dictionary_cache = NA
                                 },
                                 add = function(keys=FALSE, ...) {
                                   args = list(...)
@@ -719,34 +795,39 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
 
                                     # perform a lookup of the key if needed
                                     if (isFALSE(variant_key) && isTRUE(add_key)) {
-                                      add_key = FALSE
-                                      query <- {}
-                                      query$query <- key
-                                      results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                      results <- jsonlite::fromJSON(results)
-                                      if (is.null(results$error)) {
-                                        # loop though the result types
-                                        for (typename in names(results$results)) {
-                                          if (!is.null(results$results[[typename]][[key]])) {
-                                            # the key exists in the data dictionary, insert it
-                                            add_key = TRUE
-                                            key_typename = typename
-                                            # save categorical info
-                                            if (is.null(results$results[[typename]][[key]]$categorical)) {
-                                              is_categorical = !results$results[[typename]][[key]]$continuous
-                                            } else {
-                                              is_categorical = results$results[[typename]][[key]]$categorical
-                                            }
-                                            if (is.null(results$results[[typename]][[key]]$categoryValues)) {
-                                              valid_categories = results$results[[typename]][[key]]$values
-                                            } else {
-                                              valid_categories = results$results[[typename]][[key]]$categoryValues
-                                            }
-                                            break
-                                          }
+                                      # has the dictionary already been cached?
+                                      if (is.na(self$dictionary_cache)) {
+                                        # pull down the full dictionary and cache it
+                                        query <- {}
+                                        query$query <- ""
+                                        results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                        self$dictionary_cache <- jsonlite::fromJSON(results)
+                                        if (!is.null(self$dictionary_cache$error)) {
+                                          self$dictionary_cache = NA
+                                          print(paste("ERROR: lookup failed for key", key, sep=": "))
                                         }
-                                      } else {
-                                        print(paste("ERROR: lookup failed for key", key, sep=": "))
+                                      }
+                                    }
+
+                                    add_key = FALSE
+                                    # loop though the result types
+                                    for (typename in names(self$dictionary_cache$results)) {
+                                      if (!is.null(self$dictionary_cache$results[[typename]][[key]])) {
+                                        # the key exists in the data dictionary, insert it
+                                        add_key = TRUE
+                                        key_typename = typename
+                                        # save categorical info
+                                        if (is.null(self$dictionary_cache$results[[typename]][[key]]$categorical)) {
+                                          is_categorical = !self$dictionary_cache$results[[typename]][[key]]$continuous
+                                        } else {
+                                          is_categorical = self$dictionary_cache$results[[typename]][[key]]$categorical
+                                        }
+                                        if (is.null(self$dictionary_cache$results[[typename]][[key]]$categoryValues)) {
+                                          valid_categories = self$dictionary_cache$results[[typename]][[key]]$values
+                                        } else {
+                                          valid_categories = self$dictionary_cache$results[[typename]][[key]]$categoryValues
+                                        }
+                                        break
                                       }
                                     }
 
@@ -819,7 +900,7 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                           }
                                         }
                                       }
-                                      entry$HpdsDataType = key_typename
+                                      entry["HpdsDataType"] = key_typename
                                       .set(self$data, key, entry)
                                     }
                                   }
@@ -936,7 +1017,7 @@ HpdsAttribListKeys <- R6::R6Class("HpdsAttribListKeys",
                                     load = function(keys) {
                                       for (key in keys) {
                                         entry <- list()
-                                        entry["type"] <- "exists"
+                                        entry["type"] = "exists"
                                         .set(self$data, key, entry)
                                       }
                                     }
@@ -982,25 +1063,26 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                            invisible(self)
                                          },
                                          load = function(numericFilters=list(), categoryFilters=list(), variantInfoFilters=list()) {
-                                           self$data$numericFilters=list()
                                            for (key in names(numericFilters)) {
                                              rec = list()
-                                             rec$type == "minmax"
+                                             rec["type"] = "minmax"
                                              if (!is.null(numericFilters[[key]]$min)) {
-                                               rec$min <- numericFilters[[key]]$min
+                                               rec["min"] <- numericFilters[[key]]$min
                                              }
                                              if (!is.null(numericFilters[[key]]$max)) {
-                                               rec$max <- numericFilters[[key]]$max
+                                               rec["max"] <- numericFilters[[key]]$max
                                              }
-                                             self$data[[key]] = rec
+                                             rec["HpdsDataType"] = "unknown"
+                                             .set(self$data, key, rec)
                                            }
 
-                                           self$data$categoryFilters=list()
                                            for (key in names(categoryFilters)) {
                                              rec = list()
-                                             rec$type == "categorical"
-                                             rec$values = as.list(categoryFilters[[key]])
-                                             self$data[[key]] = rec
+                                             rec["type"] = "categorical"
+                                             rec["values"] = list(categoryFilters[[key]])
+                                             rec$HpdsDataType = "unknown"
+                                             .set(self$data, key, rec)
+
                                            }
 
                                            for (key in names(variantInfoFilters$categoryVariantInfoFilters)) {
@@ -1008,7 +1090,8 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                              rec$HpdsDataType = "info"
                                              rec$type = "categorical"
                                              rec$values = as.list(variantInfoFilters$categoryVariantInfoFilters[[key]]$values)
-                                             self$data[[key]] = rec
+                                             rec$HpdsDataType = "unknown"
+                                             .set(self$data, key, rec)
                                            }
 
 
@@ -1022,17 +1105,16 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                              if (!is.null(variantInfoFilters$numericVariantInfoFilters[[key]]$max)) {
                                                rec$max <- variantInfoFilters$numericVariantInfoFilters[[key]]$max
                                              }
-                                             self$data[[key]] = rec
+                                             .set(self$data, key, rec)
                                            }
 
                                          },
                                          getQueryValues = function() {
-                                           data <- as.list(self$data)
                                            ret <- list(numericFilters=list(), categoryFilters=list(), variantInfoFilters=list())
                                            ret_variant_numeric = list()
                                            ret_variant_category = list()
-                                           for (key in names(data)) {
-                                             rec <- data[[key]]
+                                           for (key in names(self$data)) {
+                                             rec <- self$data[[key]]
                                              if (rec$type == "minmax") {
                                                t = list()
                                                if (!is.null(rec$min)) {
