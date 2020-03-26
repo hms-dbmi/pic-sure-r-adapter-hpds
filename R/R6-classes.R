@@ -796,15 +796,18 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                     # perform a lookup of the key if needed
                                     if (isFALSE(variant_key) && isTRUE(add_key)) {
                                       # has the dictionary already been cached?
-                                      if (is.na(self$dictionary_cache)) {
-                                        # pull down the full dictionary and cache it
-                                        query <- {}
-                                        query$query <- ""
-                                        results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                        self$dictionary_cache <- jsonlite::fromJSON(results)
-                                        if (!is.null(self$dictionary_cache$error)) {
-                                          self$dictionary_cache = NA
-                                          print(paste("ERROR: lookup failed for key", key, sep=": "))
+                                      for (typename in names(self$dictionary_cache$results)) {
+                                        if (!is.null(self$dictionary_cache$results[[typename]][[key]])) {
+                                          # pull down the full dictionary and cache it
+                                          query <- {}
+                                          query$query <- ""
+                                          results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                          self$dictionary_cache <- jsonlite::fromJSON(results)
+                                          if (!is.null(self$dictionary_cache$error)) {
+                                            self$dictionary_cache = NA
+                                            print(paste("ERROR: lookup failed for key", key, sep=": "))
+                                          }
+                                          break
                                         }
                                       }
                                     }
