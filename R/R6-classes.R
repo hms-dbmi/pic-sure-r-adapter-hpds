@@ -797,7 +797,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                     # has the dictionary already been cached?
                                     if (length(self$dictionary_cache) == 1 && is.na(self$dictionary_cache)) {
                                       # pull down the full dictionary and cache it
-                                      print("caching dictionary")
                                       query <- {}
                                       query$query <- ""
                                       results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
