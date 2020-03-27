@@ -55,10 +55,9 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                  }
                                                },
                                                retrieveQueryResults = function(query_uuid = NA) {
-                                                 api = connection$INTERNAL_api_obj()
+                                                 api = self$connection_reference$INTERNAL_api_obj()
                                                  repeat {
-                                                   status = jsonlite::fromJSON(api$queryStatus(self$resourceUUID, query_uuid))
-                                                   print(status)
+                                                   status = jsonlite::fromJSON(api$queryStatus(resource_uuid = self$resourceUUID, query_uuid = query_uuid))
                                                    if (status$status == "AVAILABLE") {
                                                      break
                                                    } else {
@@ -70,7 +69,7 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                      }
                                                    }
                                                  }
-                                                 return(api$queryResult(self$resourceUUID, query_uuid))
+                                                 return(api$queryResult(resource_uuid = self$resourceUUID, query_uuid = query_uuid))
                                                }
                                              )
 )
