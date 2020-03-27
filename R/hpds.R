@@ -537,3 +537,26 @@ query.show <- function(query, verbose=FALSE) {
     stop()
   }
 }
+
+
+#' Retreve results from a previously run query.
+#'
+#' @param resource    A resource connection instance object.
+#' @param query_uuid  The UUID identifier for the query to get results for.
+#' @export
+#' @examples
+#'
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
+#'# myresults <- hpds::query.getResults(resource=myres, query_uuid="YOUR-QUERY-UUID-0000")
+#'
+#' @export
+query.getResults <- function(resource, query_uuid) {
+  if (class(resource) == "Hpds_Resource") {
+    result <- resource$retrieveQueryResults(query_uuid = query_uuid)
+    return(result)
+  } else {
+    message("The resource given to query.getResults() is not a Hpds_Resource typed object")
+    stop()
+  }
+}
