@@ -64,6 +64,7 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                    } else {
                                                      if (status$status == "ERROR") {
                                                        print("An error occured retrieving this query! For more information please check the server logs.")
+                                                       return(NA)
                                                      } else {
                                                        Sys.sleep(1)
                                                      }
@@ -793,22 +794,17 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       add_key = TRUE
                                     }
 
-                                    # perform a lookup of the key if needed
-                                    if (isFALSE(variant_key) && isTRUE(add_key)) {
-                                      # has the dictionary already been cached?
-                                      for (typename in names(self$dictionary_cache$results)) {
-                                        if (!is.null(self$dictionary_cache$results[[typename]][[key]])) {
-                                          # pull down the full dictionary and cache it
-                                          query <- {}
-                                          query$query <- ""
-                                          results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                          self$dictionary_cache <- jsonlite::fromJSON(results)
-                                          if (!is.null(self$dictionary_cache$error)) {
-                                            self$dictionary_cache = NA
-                                            print(paste("ERROR: lookup failed for key", key, sep=": "))
-                                          }
-                                          break
-                                        }
+                                    # has the dictionary already been cached?
+                                    if (length(self$dictionary_cache) == 1 && is.na(self$dictionary_cache)) {
+                                      # pull down the full dictionary and cache it
+                                      print("caching dictionary")
+                                      query <- {}
+                                      query$query <- ""
+                                      results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                      self$dictionary_cache <- jsonlite::fromJSON(results)
+                                      if (!is.null(self$dictionary_cache$error)) {
+                                        self$dictionary_cache$results = list()
+                                      print("ERROR: Could not cache data dictionary")
                                       }
                                     }
 
