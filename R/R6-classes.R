@@ -29,9 +29,18 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                  self$connection_reference <- connection
                                                  self$profile_info = jsonlite::fromJSON("{}")
                                                  if (missing(resource_uuid)) {
-                                                   self$resourceUUID <- FALSE
+                                                   if (length(self$connection_reference$self$resource_uuids) > 1) {
+                                                     print(self$connection_reference$self$resource_uuids)
+                                                     stop("ERROR: You must specify a valid Resource UUID")
+                                                   } else {
+                                                     self$resourceUUID <- self$connection_reference$resource_uuids[[1]]
+                                                   }
                                                  } else {
-                                                   self$resourceUUID <- resource_uuid
+                                                   if (resource_uuid %in% self$connection_reference$resource_uuids) {
+                                                     self$resourceUUID <- resource_uuid
+                                                   } else {
+                                                     stop("ERROR: You must specify a valid Resource UUID")
+                                                   }
                                                  }
 
                                                  # cache the profile information on startup
@@ -107,9 +116,17 @@ BypassAdapter <- R6::R6Class("PicSureHpdsBypassAdapter",
                                },
                                useResource = function(resource_uuid) {
                                  if (missing(resource_uuid)) {
-                                   temp <- hpds::PicSureHpdsResourceConnection$new(self$connection_reference, FALSE)
+                                   if (length(self$connection_reference$self$resource_uuids) > 1) {
+                                     print(self$connection_reference$self$resource_uuids)
+                                   } else {
+                                     temp <- hpds::PicSureHpdsResourceConnection$new(self$connection_reference, FALSE)
+                                   }
                                  } else {
-                                   temp <- hpds::PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid)
+                                   if (resource_uuid %in% self$connection_reference$self$resource_uuids) {
+                                     temp <- hpds::PicSureHpdsResourceConnection$new(self$connection_reference, resource_uuid)
+                                   } else {
+                                     stop("ERROR: You must specify a valid Resource UUID")
+                                   }
                                  }
                                  return(temp)
                                }
