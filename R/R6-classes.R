@@ -64,9 +64,10 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                  }
                                                },
                                                retrieveQueryResults = function(query_uuid = NA) {
+                                                 query_text = paste('{"resourceUUID":"', self$resourceUUID, '", "resourceCredentials":{}, "query":', self$profile_info$queryTemplate ,' }', sep="")
                                                  api = self$connection_reference$INTERNAL_api_obj()
                                                  repeat {
-                                                   status = jsonlite::fromJSON(api$queryStatus(resource_uuid = self$resourceUUID, query_uuid = query_uuid))
+                                                   status = jsonlite::fromJSON(api$queryStatus(resource_uuid=self$resourceUUID, query_uuid=query_uuid, query_body=query_text))
                                                    if (status$status == "AVAILABLE") {
                                                      break
                                                    } else {
