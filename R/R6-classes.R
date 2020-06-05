@@ -56,6 +56,17 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                dictionary = function() {
                                                  return(PicSureHpdsDictionary$new(self))
                                                },
+                                               showConsents = function() {
+                                                 template = jsonlite::fromJSON(self$profile_info$queryTemplate);
+                                                 consent_filters = template$categoryFilters$`\\_Consents\\Short Study Accession with Consent Code\\`
+                                                 return(consent_filters);
+                                               },
+                                               setConsents = function(consents = c()){
+                                                 template = list()
+                                                 template$categoryFilters = list();
+                                                 template$categoryFilters$`\\_Consents\\Short Study Accession with Consent Code\\` = consents;
+                                                 self$profile_info$queryTemplate = jsonlite::toJSON(template);
+                                               },
                                                query = function(loadQuery=NA) {
                                                  if (is.na(loadQuery)) {
                                                    return(PicSureHpdsQuery$new(self))
