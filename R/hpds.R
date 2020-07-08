@@ -36,6 +36,39 @@ get.resource <- function(connection, resourceUUID, verbose=FALSE) {
 }
 
 
+#' Show the consent filters currently active on a PIC-SURE resource.
+#'
+#' @param resource A PIC-SURE resource object.
+#' @return A vector of conset filter values
+#'
+#' @export
+show.consent.filters <- function(resource, verbose=FALSE){
+  if (class(resource) == "Hpds_Resource") {
+    return(resource$showConsents())
+  } else {
+    message("Invalid resource was passed to show.consent.filters() function")
+    stop()
+  }
+}
+
+
+#' Show the consent filters currently active on a PIC-SURE resource.
+#'
+#' @param resource A PIC-SURE resource object.
+#' @param consents A vector of consent objects
+#' @return A vector of conset filter values
+#'
+#' @export
+set.consent.filters <- function(resource, consents, verbose=FALSE){
+  if (class(resource) == "Hpds_Resource") {
+    return(resource$setConsents(consents))
+  } else {
+    message("Invalid resource was passed to set.consent.filters() function")
+    stop()
+  }
+}
+
+
 # ===== data dictionary functions =====
 
 
