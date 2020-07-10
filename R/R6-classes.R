@@ -737,16 +737,19 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
 #'   \item{\code{clear()}}{This method clears all entries from the query parameter list.}
 #'   \item{\code{show()}}{This method displays the entries of the query parameter list.}
 #'   \item{\code{getQueryValues()}}{This is an internally used method that returns the entries for use by the parent query object.}}
-query <- {}
-query$query <- ""
-results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-global_dictionary_cache <- jsonlite::fromJSON(results)
-                                      
+            
+global_dictionary_cache = NA
 HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               portable = FALSE,
                               lock_objects = FALSE,
                               public = list(
                                 initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
+                                  if(length(dictionary_cache) == 1 && is.na(self$dictionary_cache)) {
+                                      query <- {}
+                                      query$query <- ""
+                                      results <- api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                      global_dictionary_cache <- jsonlite::fromJSON(results)
+                                  }
                                   self$helpstr <- ""
                                   if (!(isFALSE(help_text))) {
                                     self$helpstr <- help_text
