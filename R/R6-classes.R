@@ -737,6 +737,11 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
 #'   \item{\code{clear()}}{This method clears all entries from the query parameter list.}
 #'   \item{\code{show()}}{This method displays the entries of the query parameter list.}
 #'   \item{\code{getQueryValues()}}{This is an internally used method that returns the entries for use by the parent query object.}}
+query <- {}
+query$query <- ""
+results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
+global_dictionary_cache <- jsonlite::fromJSON(results)
+                                      
 HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               portable = FALSE,
                               lock_objects = FALSE,
@@ -754,7 +759,7 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                   self$variants_enabled <- isTRUE(allow_variants)
                                   self$resource_uuid <- resource_uuid
                                   self$api_obj <- api_obj
-                                  self$dictionary_cache = NA
+                                  self$dictionary_cache = global_dictionary_cache
                                 },
                                 add = function(keys=FALSE, ...) {
                                   args = list(...)
