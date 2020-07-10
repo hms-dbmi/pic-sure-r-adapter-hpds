@@ -830,19 +830,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       add_key = TRUE
                                     }
 
-                                    # has the dictionary already been cached?
-                                    if (length(self$dictionary_cache) == 1 && is.na(self$dictionary_cache)) {
-                                      # pull down the full dictionary and cache it
-                                      query <- {}
-                                      query$query <- ""
-                                      results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                      self$dictionary_cache <- jsonlite::fromJSON(results)
-                                      if (!is.null(self$dictionary_cache$error)) {
-                                        self$dictionary_cache$results = list()
-                                      print("ERROR: Could not cache data dictionary")
-                                      }
-                                    }
-
                                     add_key = FALSE
                                     # loop though the result types
                                     for (typename in names(self$dictionary_cache$results)) {
