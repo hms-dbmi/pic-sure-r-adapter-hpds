@@ -744,7 +744,9 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               lock_objects = FALSE,
                               public = list(
                                 initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
-                                  if(length(dictionary_cache) == 1 && is.na(self$dictionary_cache)) {
+                                  self$resource_uuid <- resource_uuid
+                                  self$api_obj <- api_obj
+                                  if(length(global_dictionary_cache) == 1 && is.na(global_dictionary_cache)) {
                                       query <- {}
                                       query$query <- ""
                                       results <- api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
@@ -760,8 +762,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                     self$data <- inst_list
                                   }
                                   self$variants_enabled <- isTRUE(allow_variants)
-                                  self$resource_uuid <- resource_uuid
-                                  self$api_obj <- api_obj
                                   self$dictionary_cache = global_dictionary_cache
                                 },
                                 add = function(keys=FALSE, ...) {
