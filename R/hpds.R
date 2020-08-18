@@ -36,38 +36,6 @@ get.resource <- function(connection, resourceUUID, verbose=FALSE) {
 }
 
 
-#' Show the consent filters currently active on a PIC-SURE resource.
-#'
-#' @param resource A PIC-SURE resource object.
-#' @return A vector of conset filter values
-#'
-#' @export
-show.consent.filters <- function(resource, verbose=FALSE){
-  if (class(resource) == "Hpds_Resource") {
-    return(resource$showConsents())
-  } else {
-    message("Invalid resource was passed to show.consent.filters() function")
-    stop()
-  }
-}
-
-
-#' Show the consent filters currently active on a PIC-SURE resource.
-#'
-#' @param resource A PIC-SURE resource object.
-#' @param consents A vector of consent objects
-#' @return A vector of conset filter values
-#'
-#' @export
-set.consent.filters <- function(resource, consents, verbose=FALSE){
-  if (class(resource) == "Hpds_Resource") {
-    return(resource$setConsents(consents))
-  } else {
-    message("Invalid resource was passed to set.consent.filters() function")
-    stop()
-  }
-}
-
 
 # ===== data dictionary functions =====
 
@@ -273,6 +241,28 @@ query.load<- function(query, query.def="") {
     return(query)
   } else {
     message("The resource given to query.load() is not a Hpds_Query typed object")
+    stop()
+  }
+}
+
+#' Retrieve an existing query by its unique identifier
+#'
+#' @param resource A resource object that the returned query object will execute against.
+#' @param uuid the valid UUID of a query to retrieve
+#' @examples
+#'
+#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
+#'# myquery <- hpds::query.from.uuid(resource=myres, queryUUID="UUID" )
+#'
+#' @export
+query.from.uuid <- function(resource, queryUUID, verbose=FALSE) {
+  if (class(resource) == "Hpds_Resource") {
+    result <- resource$getQueryByUUID(queryUUID)
+    class(result) <- "Hpds_Query"
+    return(result)
+  } else {
+    message("The resource given to new.query() is not a Hpds_Query typed object")
     stop()
   }
 }

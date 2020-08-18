@@ -56,17 +56,6 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                dictionary = function() {
                                                  return(PicSureHpdsDictionary$new(self))
                                                },
-                                               showConsents = function() {
-                                                 template = jsonlite::fromJSON(self$profile_info$queryTemplate);
-                                                 consent_filters = template$categoryFilters$`\\_Consents\\Short Study Accession with Consent Code\\`
-                                                 return(consent_filters);
-                                               },
-                                               setConsents = function(consents = c()){
-                                                 template = list()
-                                                 template$categoryFilters = list();
-                                                 template$categoryFilters$`\\_Consents\\Short Study Accession with Consent Code\\` = consents;
-                                                 self$profile_info$queryTemplate = jsonlite::toJSON(template);
-                                               },
                                                query = function(loadQuery=NA) {
                                                  if (is.na(loadQuery)) {
                                                    return(PicSureHpdsQuery$new(self))
@@ -91,6 +80,18 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                    }
                                                  }
                                                  return(api$queryResult(resource_uuid = self$resourceUUID, query_uuid = query_uuid))
+                                               },
+                                               getQueryByUUID = function(query_uuid){
+                                                 api = self$connection_reference$INTERNAL_api_obj()
+                                                 metadata = jsonlite::fromJSON(api$queryMetadata( query_uuid=query_uuid))
+
+                                                 loadQuery = metadata$resultMetadata$queryJson;
+                                                 print("loadQuery")
+                                                 print(loadQuery)
+                                                 query = PicSureHpdsQuery$new(self)
+                                                 query$loadInternal(loadQuery)
+                                                 return(query)
+
                                                }
                                              )
 )
@@ -628,7 +629,9 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                   },
                                   load = function(queryStr="{}", merge=TRUE) {
                                     queryObj = jsonlite::fromJSON(queryStr)
-
+                                    return =(self$loadInternal(queryObj, merge))
+                                  },
+                                  loadInternal = function(queryObj, merge=TRUE) {
                                     if (isTRUE(any("query" %in% names(queryObj)))) {
                                       load_node = queryObj[["query"]]
                                     } else {
