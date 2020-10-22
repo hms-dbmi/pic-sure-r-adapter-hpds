@@ -299,10 +299,72 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                          self$resourceUUID <- refHpdsResourceConnection$resourceUUID
                                          self$INTERNAL_API_OBJ <- refHpdsResourceConnection$connection_reference$INTERNAL_api_obj()
                                        },
+                                       getAllDataframe = function(useQueryScopes=TRUE) {
+                                         query <- list()
+                                         query$query <- ""
+                                         api <- self$INTERNAL_API_OBJ()
+                                         results <- api$search(resource_id, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                         results <- jsonlite::fromJSON(results)
+                                         output_df <- data.frame()
+                                         # process JSON objects into dataframe
+                                         for (idx1 in 1:length(results$results)) {
+                                           result_type <- names(results$results[idx1])
+                                           temp_list <- unname(results$results[[idx1]])
+                                           if (result_type == "phenotypes") {
+                                             temp_categoricals <- list()
+                                             for (idx1 in 1:length(temp_list)) {
+                                               if (temp_list[[idx1]][["categorical"]] == TRUE) {
+                                                 temp_list[[idx1]][["min"]] <- NA
+                                                 temp_list[[idx1]][["max"]] <- NA
+                                                 temp_categoricals[[idx1]] <- temp_list[[idx1]][["categoryValues"]]
+                                               } else {
+                                                 temp_categoricals[[idx1]] <- NA
+                                               }
+                                               temp_list[[idx1]][["categoryValues"]] <- NULL
+                                             }
+                                             temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
+                                             temp_df$HpdsDataType <- result_type
+                                             temp_df$categoryValues <- temp_categoricals
+                                             temp_df$values <- NA
+                                             temp_df$description <- NA
+                                             temp_df$continuous <- NA
+                                           } else {
+                                             temp_values <- list()
+                                             for (idx1 in 1:length(temp_list)) {
+                                               temp_values[[idx1]] <- temp_list[[idx1]][["values"]]
+                                               temp_list[[idx1]][["values"]] <- NULL
+                                             }
+                                             temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
+                                             temp_df$name <- NA
+                                             temp_df$min <- NA
+                                             temp_df$categorical <- NA
+                                             temp_df$patientCount <- NA
+                                             temp_df$observationCount <- NA
+                                             temp_df$max <- NA
+                                             temp_df$HpdsDataType <- result_type
+                                             temp_df$categoryValues <- NA
+                                             temp_df$values <- temp_values
+                                           }
+                                           output_df <- rbind(output_df, temp_df)
+                                         }
+                                         # filter based on queryScopes
+                                         if (isTRUE(useQueryScopes)) {
+                                           if (length(self$connection$profile_info$queryScopes) > 0) {
+                                             # get the genomic info records
+                                             cumulative <- output_df$HpdsDataType != "phenotypes"
+                                             for (matchidx in 1:length(self$connection$profile_info$queryScopes)) {
+                                               cumulative <- cumulative | str_detect(output_df$name, self$connection$profile_info$queryScopes[[matchidx]])
+                                             }
+                                             output_df <- output_df[cumulative, ]
+                                           }
+                                         }
+                                         return(output_df)
+                                       },
                                        find = function(term=FALSE, showAll=FALSE) {
                                          query <- list()
-                                         if (isFALSE(term)) {
+                                         if (isFALSE(term) || term == '') {
                                            query$query <- ""
+                                           message("This is not optimal code for accessing the full data dictionary. Please use the hpds::get.full.dictionary() function instead.")
                                          } else {
                                            query$query <- toString(term)
                                          }
