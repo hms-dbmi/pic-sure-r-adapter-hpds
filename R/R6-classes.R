@@ -302,8 +302,7 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                        getAllDataframe = function(useQueryScopes=TRUE) {
                                          query <- list()
                                          query$query <- ""
-                                         api <- self$INTERNAL_API_OBJ()
-                                         results <- api$search(resource_id, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                         results <- self$INTERNAL_API_OBJ$search(self$resourceUUID, jsonlite::toJSON(query, auto_unbox=TRUE))
                                          results <- jsonlite::fromJSON(results)
                                          output_df <- data.frame()
                                          # process JSON objects into dataframe
@@ -353,7 +352,7 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                              # get the genomic info records
                                              cumulative <- output_df$HpdsDataType != "phenotypes"
                                              for (matchidx in 1:length(self$connection$profile_info$queryScopes)) {
-                                               cumulative <- cumulative | str_detect(output_df$name, self$connection$profile_info$queryScopes[[matchidx]])
+                                               cumulative <- cumulative | str_detect(output_df$name, fixed(self$connection$profile_info$queryScopes[[matchidx]]))
                                              }
                                              output_df <- output_df[cumulative, ]
                                            }
