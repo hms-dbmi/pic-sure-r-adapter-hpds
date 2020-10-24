@@ -801,11 +801,21 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
 #'   \item{\code{clear()}}{This method clears all entries from the query parameter list.}
 #'   \item{\code{show()}}{This method displays the entries of the query parameter list.}
 #'   \item{\code{getQueryValues()}}{This is an internally used method that returns the entries for use by the parent query object.}}
+            
+global_dictionary_cache = NA
 HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               portable = FALSE,
                               lock_objects = FALSE,
                               public = list(
                                 initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
+                                  self$resource_uuid <- resource_uuid
+                                  self$api_obj <- api_obj
+                                  if(length(global_dictionary_cache) == 1 && is.na(global_dictionary_cache)) {
+                                      query <- {}
+                                      query$query <- ""
+                                      results <- api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
+                                      global_dictionary_cache <- jsonlite::fromJSON(results)
+                                  }
                                   self$helpstr <- ""
                                   if (!(isFALSE(help_text))) {
                                     self$helpstr <- help_text
@@ -816,9 +826,7 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                     self$data <- inst_list
                                   }
                                   self$variants_enabled <- isTRUE(allow_variants)
-                                  self$resource_uuid <- resource_uuid
-                                  self$api_obj <- api_obj
-                                  self$dictionary_cache = NA
+                                  self$dictionary_cache = global_dictionary_cache
                                 },
                                 add = function(keys=FALSE, ...) {
                                   args = list(...)
@@ -884,19 +892,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       }
                                     } else {
                                       add_key = TRUE
-                                    }
-
-                                    # has the dictionary already been cached?
-                                    if (length(self$dictionary_cache) == 1 && is.na(self$dictionary_cache)) {
-                                      # pull down the full dictionary and cache it
-                                      query <- {}
-                                      query$query <- ""
-                                      results <- self$api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                      self$dictionary_cache <- jsonlite::fromJSON(results)
-                                      if (!is.null(self$dictionary_cache$error)) {
-                                        self$dictionary_cache$results = list()
-                                      print("ERROR: Could not cache data dictionary")
-                                      }
                                     }
 
                                     add_key = FALSE
