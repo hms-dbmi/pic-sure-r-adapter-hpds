@@ -309,6 +309,7 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                          for (idx1 in 1:length(results$results)) {
                                            result_type <- names(results$results[idx1])
                                            temp_list <- unname(results$results[[idx1]])
+                                           temp_keys <- names(results$results[[idx1]])
                                            if (result_type == "phenotypes") {
                                              temp_categoricals <- list()
                                              for (idx1 in 1:length(temp_list)) {
@@ -335,7 +336,7 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                                temp_list[[idx1]][["values"]] <- NULL
                                              }
                                              temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
-                                             temp_df$name <- NA
+                                             temp_df$name <- temp_keys # populate the name field for "info" data records
                                              temp_df$min <- NA
                                              # normalize categorical/continuous vars (only categorical)
                                              temp_df$categorical <- !temp_df$continuous
@@ -804,7 +805,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
 #'   \item{\code{clear()}}{This method clears all entries from the query parameter list.}
 #'   \item{\code{show()}}{This method displays the entries of the query parameter list.}
 #'   \item{\code{getQueryValues()}}{This is an internally used method that returns the entries for use by the parent query object.}}
-            
+
 global_dictionary_cache = NA
 HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               portable = FALSE,
