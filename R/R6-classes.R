@@ -326,7 +326,8 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                              temp_df$categoryValues <- temp_categoricals
                                              temp_df$values <- NA
                                              temp_df$description <- NA
-                                             temp_df$continuous <- NA
+                                             # normalize categorical/continuous vars (only categorical)
+                                             # temp_df$continuous <- !temp_df$categorical
                                            } else {
                                              temp_values <- list()
                                              for (idx1 in 1:length(temp_list)) {
@@ -336,7 +337,9 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                              temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
                                              temp_df$name <- NA
                                              temp_df$min <- NA
-                                             temp_df$categorical <- NA
+                                             # normalize categorical/continuous vars (only categorical)
+                                             temp_df$categorical <- !temp_df$continuous
+                                             temp_df$continuous <- NULL
                                              temp_df$patientCount <- NA
                                              temp_df$observationCount <- NA
                                              temp_df$max <- NA
