@@ -829,11 +829,7 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       add_key = TRUE
                                       key_typename = key_details[["HpdsDataType"]]
                                       is_categorical = key_details[["categorical"]]
-                                      if (class(key_details$categoryValues) == "logical" && is.na(key_details$categoryValues)) {
-                                        valid_categories = list()
-                                      } else {
-                                        valid_categories = key_details$categoryValues
-                                      }
+                                      valid_categories = key_details$categoryValues
                                     }
 
                                     # add the key if it was found in the data dictionary
@@ -853,8 +849,9 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                           }
                                           # check that all passed values are valid
                                           for (catval in args[[1]]) {
-                                            temp <- lapply(valid_categories, function(ch) grep(catval, ch))
-                                            if (!(sapply(temp, function(x) length(x) > 0 ))) {
+                                            res <- lapply(valid_categories, function(ch) grep(catval, ch))
+                                            matches <- sum(sapply(res, function(x) length(x) > 0))
+                                            if (matches == 0 ) {
                                               print('ERROR: cannot add, invalid category specified for key', key, sep=": ")
                                               add_key = FALSE
                                               break
