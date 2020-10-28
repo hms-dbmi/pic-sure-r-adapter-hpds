@@ -67,33 +67,6 @@ find.in.dictionary <- function(resource, term="", verbose=FALSE){
 }
 
 
-#' Import the entire data dictionary of a PIC-SURE resource.
-#'
-#' @param resource A PIC-SURE resource object.
-#' @param useQueryScope A boolean indicating if the resource's data dictionary should be filtered by the user's queryScopes variable.
-#' @return A data frame containing the data dictionary records. Phenotype variables may have been filtered by queryScopes.
-#' @examples
-#'
-#'# myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
-#'# myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
-#'# all.terms.df <- hpds::get.full.dictionary(resource=myres, useQueryScope=FALSE)
-#'
-#' @export
-get.full.dictionary <- function(resource, useQueryScope=TRUE){
-  if (class(resource) == "Hpds_Resource") {
-    dictionaryObj <- resource$dictionary()
-    class(dictionaryObj) <- "Hpds_Dictionary"
-    result <- dictionaryObj$getAllDataframe(useQueryScope)
-    return(result)
-  } else {
-    message("Invalid resource was passed to get.full.dictionary() function")
-    stop()
-  }
-}
-
-
-
-
 #' Extract the number of results in the given data dictionary lookup.
 #'
 #' @param dictionary.results A data dictionary search results object.
@@ -180,13 +153,8 @@ extract.entries <- function(dictionary.results, verbose=FALSE) {
 #'
 #' @export
 extract.dataframe <- function(dictionary.results, verbose=FALSE) {
-  if (class(dictionary.results) == "Hpds_DictionaryResults") {
-    result <- dictionary.results$DataFrame()
-    return(result)
-  } else {
-    message("Invalid dictionary results was passed to extract.dataframe() function")
-    stop()
-  }
+  message("The 'extract.dataframe()' function is depricated. Please use `hpds::extract.entries()` instead - it now returns data frames.")
+  stop()
 }
 
 
