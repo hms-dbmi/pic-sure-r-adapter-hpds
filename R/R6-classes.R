@@ -46,6 +46,8 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                  # cache the profile information on startup
                                                  api = connection$INTERNAL_api_obj()
                                                  self$profile_info = jsonlite::fromJSON(api$profile())
+                                                 # use singleton dictionary instance
+                                                 self$dict_instance <- PicSureHpdsDictionary$new(self)
 
                                                },
                                                version = function() {
@@ -54,7 +56,7 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                  invisible(self)
                                                },
                                                dictionary = function() {
-                                                 return(PicSureHpdsDictionary$new(self))
+                                                 return(self$dict_instance)
                                                },
                                                query = function(loadQuery=NA) {
                                                  if (is.na(loadQuery)) {
@@ -84,10 +86,7 @@ PicSureHpdsResourceConnection <- R6::R6Class("PicSureHpdsResourceConnection",
                                                getQueryByUUID = function(query_uuid){
                                                  api = self$connection_reference$INTERNAL_api_obj()
                                                  metadata = jsonlite::fromJSON(api$queryMetadata( query_uuid=query_uuid))
-
                                                  loadQuery = metadata$resultMetadata$queryJson;
-                                                 print("loadQuery")
-                                                 print(loadQuery)
                                                  query = PicSureHpdsQuery$new(self)
                                                  query$loadInternal(loadQuery)
                                                  return(query)
@@ -298,10 +297,34 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                          self$connection <- refHpdsResourceConnection
                                          self$resourceUUID <- refHpdsResourceConnection$resourceUUID
                                          self$INTERNAL_API_OBJ <- refHpdsResourceConnection$connection_reference$INTERNAL_api_obj()
+                                         # populate the dictionary data frame and precalculate queryScope mask
+                                         self$dictionary_cache <- self$getDataframe(useQueryScopes=FALSE)
+                                         if (length(self$connection$profile_info$queryScopes) > 0) {
+                                           # get the genomic info records
+                                           cumulative <- self$dictionary_cache$HpdsDataType != "phenotypes"
+                                           for (matchidx in 1:length(self$connection$profile_info$queryScopes)) {
+                                             cumulative <- cumulative | str_detect(self$dictionary_cache$name, fixed(self$connection$profile_info$queryScopes[[matchidx]]))
+                                           }
+                                           self$dictionary_queryscope_cache <- cumulative
+                                         } else {
+                                           self$dictionary_queryscope_cache <- rep(TRUE, dim(self$dictionary_cache)[[1]])
+                                         }
                                        },
-                                       getAllDataframe = function(useQueryScopes=TRUE) {
+                                       getKeyInfo = function(key) {
+                                         if (sum(self$dictionary_cache$name == toString(key)) > 0) {
+                                           ret <- as.list(self$dictionary_cache[self$dictionary_cache$name == toString(key), ])
+                                           ret$name <- as.character(ret$name)
+                                           if (class(ret$categoryValues) == "list") {
+                                             ret$categoryValues <- ret$categoryValues[[1]]
+                                           }
+                                           return(ret)
+                                         } else {
+                                           return(FALSE)
+                                         }
+                                       },
+                                       getDataframe = function(term="", useQueryScopes=TRUE) {
                                          query <- list()
-                                         query$query <- ""
+                                         query$query <- toString(term)
                                          results <- self$INTERNAL_API_OBJ$search(self$resourceUUID, jsonlite::toJSON(query, auto_unbox=TRUE))
                                          results <- jsonlite::fromJSON(results)
                                          output_df <- data.frame()
@@ -310,45 +333,55 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                            result_type <- names(results$results[idx1])
                                            temp_list <- unname(results$results[[idx1]])
                                            temp_keys <- names(results$results[[idx1]])
-                                           if (result_type == "phenotypes") {
-                                             temp_categoricals <- list()
-                                             for (idx1 in 1:length(temp_list)) {
-                                               if (temp_list[[idx1]][["categorical"]] == TRUE) {
-                                                 temp_list[[idx1]][["min"]] <- NA
-                                                 temp_list[[idx1]][["max"]] <- NA
-                                                 temp_categoricals[[idx1]] <- temp_list[[idx1]][["categoryValues"]]
-                                               } else {
-                                                 temp_categoricals[[idx1]] <- NA
+                                           if (length(temp_list) > 0) {
+                                             if (result_type == "phenotypes") {
+                                               temp_categoricals <- list()
+                                               for (idx2 in 1:length(temp_list)) {
+                                                 if (temp_list[[idx2]][["categorical"]] == TRUE) {
+                                                   temp_list[[idx2]][["min"]] <- NA
+                                                   temp_list[[idx2]][["max"]] <- NA
+                                                   if (length(temp_list[[idx2]][["categoryValues"]]) > 0) {
+                                                     temp_categoricals[[idx2]] <- temp_list[[idx2]][["categoryValues"]]
+                                                   } else {
+                                                     temp_categoricals[[idx2]] <- NA
+                                                   }
+
+                                                 } else {
+                                                   temp_categoricals[[idx2]] <- NA
+                                                 }
+                                                 temp_list[[idx2]][["categoryValues"]] <- NULL
                                                }
-                                               temp_list[[idx1]][["categoryValues"]] <- NULL
+                                               temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
+                                               temp_df$HpdsDataType <- result_type
+                                               temp_df$categoryValues <- temp_categoricals
+                                               temp_df$description <- NA
+                                               # normalize categorical/continuous vars (only categorical)
+                                               # temp_df$continuous <- !temp_df$categorical
+                                             } else {
+                                               temp_values <- list()
+                                               for (idx2 in 1:length(temp_list)) {
+                                                 temp_var = temp_list[[idx2]][["values"]]
+                                                 if (length(temp_var) == 0) {
+                                                   temp_values[[idx2]] <- NA
+                                                 } else {
+                                                   temp_values[[idx2]] <- temp_var
+                                                 }
+                                                 temp_list[[idx2]][["values"]] <- NULL
+                                               }
+                                               temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
+                                               temp_df$name <- temp_keys # populate the name field for "info" data records
+                                               temp_df$min <- NA
+                                               # normalize categorical/continuous vars (only categorical)
+                                               temp_df$categorical <- !temp_df$continuous
+                                               temp_df$continuous <- NULL
+                                               temp_df$patientCount <- NA
+                                               temp_df$observationCount <- NA
+                                               temp_df$max <- NA
+                                               temp_df$HpdsDataType <- result_type
+                                               temp_df$categoryValues <- temp_values
                                              }
-                                             temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
-                                             temp_df$HpdsDataType <- result_type
-                                             temp_df$categoryValues <- temp_categoricals
-                                             temp_df$values <- NA
-                                             temp_df$description <- NA
-                                             # normalize categorical/continuous vars (only categorical)
-                                             # temp_df$continuous <- !temp_df$categorical
-                                           } else {
-                                             temp_values <- list()
-                                             for (idx1 in 1:length(temp_list)) {
-                                               temp_values[[idx1]] <- temp_list[[idx1]][["values"]]
-                                               temp_list[[idx1]][["values"]] <- NULL
-                                             }
-                                             temp_df <- data.frame(do.call(rbind.data.frame, temp_list))
-                                             temp_df$name <- temp_keys # populate the name field for "info" data records
-                                             temp_df$min <- NA
-                                             # normalize categorical/continuous vars (only categorical)
-                                             temp_df$categorical <- !temp_df$continuous
-                                             temp_df$continuous <- NULL
-                                             temp_df$patientCount <- NA
-                                             temp_df$observationCount <- NA
-                                             temp_df$max <- NA
-                                             temp_df$HpdsDataType <- result_type
-                                             temp_df$categoryValues <- NA
-                                             temp_df$values <- temp_values
+                                             output_df <- rbind(output_df, temp_df)
                                            }
-                                           output_df <- rbind(output_df, temp_df)
                                          }
                                          # filter based on queryScopes
                                          if (isTRUE(useQueryScopes)) {
@@ -363,25 +396,18 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
                                          }
                                          return(output_df)
                                        },
-                                       find = function(term=FALSE, showAll=FALSE) {
-                                         query <- list()
-                                         if (isFALSE(term) || term == '') {
-                                           query$query <- ""
-                                           message("This is not optimal code for accessing the full data dictionary. Please use the hpds::get.full.dictionary() function instead.")
-                                         } else {
-                                           query$query <- toString(term)
-                                         }
-                                         results = self$INTERNAL_API_OBJ$search(self$resourceUUID, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                         # filter to query scope if needed
-                                         if (showAll != FALSE) {
-                                           return(PicSureHpdsDictionaryResult$new(results))
-                                         } else {
-                                           if (exists("self$connection$profile_info$queryScopes")) {
-                                             return(PicSureHpdsDictionaryResult$new(results, self$connection$profile_info$queryScopes))
+                                       find = function(term="", showAll=FALSE) {
+                                         if (term == '') {
+                                           # filter to query scope if needed
+                                           if (showAll == TRUE) {
+                                             results <- self$dictionary_cache
                                            } else {
-                                             return(PicSureHpdsDictionaryResult$new(results))
+                                             results <- self$dictionary_cache[self$dictionary_queryscope_cache, ]
                                            }
+                                         } else {
+                                           results <- self$getDataframe(term=term, useQueryScopes=!showAll)
                                          }
+                                         return(PicSureHpdsDictionaryResult$new(results))
                                        }
                                      )
 )
@@ -403,110 +429,22 @@ PicSureHpdsDictionary <- R6::R6Class("PicSureHpdsDictionary",
 #'
 #'   \item{\code{count()}}{This method returns a integer of how many terms were returned by the data dictionary search.}
 #'   \item{\code{keys()}}{This method returns a vector of strings holding the unique record keys of the terms discovered by the data dictionary search.}
-#'   \item{\code{entries()}}{This method returns information about the terms discovered by the data dictionary search.}
-#'   \item{\code{DataFrame()}}{This method returns a dataframe containing the keys and record information that was returned by the data dictionary search.}}
+#'   \item{\code{entries()}}{This method returns information about the terms discovered by the data dictionary search in a data frame format.}
 PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
                                            portable = FALSE,
                                            lock_objects = FALSE,
                                            public = list(
                                              initialize = function(results, filter.list = FALSE) {
-                                               self$results <- jsonlite::fromJSON(results)
-                                               updated_list <- list()
-                                               if (!is.null(self$results$results$phenotypes)) {
-                                                 new_results <- list()
-                                                 # dictionary results are segmented (phenotype, info, etc)
-                                                 for (idx1 in 1:length(self$results$results)) {
-                                                   result_type = names(self$results$results[idx1])
-                                                   if (length(self$results$results[[idx1]]) > 0) {
-                                                     for (idx2 in 1:length(self$results$results[[idx1]])) {
-                                                       self$results$results[[idx1]][[idx2]]$HpdsDataType <- result_type
-                                                       idx3 <- names(self$results$results[[idx1]][idx2])[[1]]
-                                                       if (filter.list != FALSE && length(filter.list) > 0) {
-                                                         for (matchidx in 1:length(filter.list)) {
-                                                           pos = regexpr(idx3, filter.list[[matchidx]])
-                                                           if (pos > -1 && pos < 3) {
-                                                             updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
-                                                             break
-                                                           }
-                                                         }
-                                                       } else {
-                                                         updated_list[[idx3]] <- self$results$results[[idx1]][[idx2]]
-                                                       }
-                                                     }
-                                                   }
-                                                 }
-                                                 self$results$results <- updated_list
-                                               }
+                                               self$results <- results
                                              },
                                              count = function() {
-                                               return(length(self$results[[1]]))
+                                               return(dim(self$results)[[1]])
                                              },
                                              keys = function() {
-                                               return(names(self$results[['results']]))
+                                               return(as.list(as.character(self$results[,'name'])))
                                              },
                                              entries = function() {
-                                               return(self$results[['results']])
-                                             },
-                                             DataFrame = function() {
-                                               df <- data.frame()
-                                               #get a list of all vector names
-                                               vn <- list()
-                                               if (length(self$results[['results']]) > 0) {
-                                                 for (idx1 in 1:length(self$results[['results']])) {
-                                                   # for each record
-                                                   tn <- names(self$results[['results']][[idx1]])
-                                                   # for each record's attributes
-                                                   for (idx2 in 1:length(tn)) {
-                                                     if (is.null(vn[[tn[idx2]]])) {
-                                                       # the column name is new, save for later
-                                                       vn[[tn[idx2]]] <- 1
-                                                     }
-                                                   }
-                                                 }
-                                                 # make sure we have a column called "name"
-                                                 if (!"name" %in% vn) {
-                                                   vn[["name"]] <- 1
-                                                 }
-                                                 vn <- names(vn)
-                                                 # we genrate a list of all attributes of all records, then pivot into vectors
-                                                 for (idx1 in 1:length(vn)) {
-                                                   df[1,idx1] <- NA
-                                                 }
-                                                 names(df) <- vn
-                                                 for (idx1 in 1:length(self$results[['results']])) {
-                                                   # for each record
-                                                   e <- self$results[['results']][[idx1]]
-                                                   for (idx2 in 1:length(vn)) {
-                                                     # for each global named-attribute
-                                                     if (is.null(e[[vn[idx2]]])) {
-                                                       # attribute is missing on this record, save as NA
-                                                       # unless the missing record is "name"
-                                                       if (vn[idx2] == "name") {
-                                                         df[idx1,idx2] <- names(self$results[['results']])[[idx1]]
-                                                       } else {
-                                                         df[idx1,idx2] <- NA
-                                                       }
-                                                     } else {
-                                                       # attribute is set for this record, save
-                                                       if (typeof(e[[vn[idx2]]]) == "list" || length(e[[vn[idx2]]]) > 1) {
-                                                         df[idx1,idx2] <- paste(e[[vn[idx2]]], collapse=",")
-                                                       } else {
-                                                         if (is.null(e[[vn[idx2]]])) {
-                                                           # Set to NA unless the missing record is "name"
-                                                           if (vn[idx2] == "name") {
-                                                             df[idx1,idx2] <- names(self$results[['results']])[[idx1]]
-                                                           } else {
-                                                             df[idx1,idx2] <- NA
-                                                           }
-                                                         } else {
-                                                           df[idx1,idx2] <- e[[vn[idx2]]]
-                                                         }
-                                                       }
-                                                     }
-                                                   }
-                                                 }
-                                               }
-                                               return(df)
+                                               return(self$results)
                                              }
                                            )
 )
@@ -549,25 +487,20 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                 public = list(
                                   initialize = function(connection) {
                                     self$connection <- connection
-                                    self$resourceUUID <- connection$resourceUUID
                                     self$INTERNAL_API_OBJ <- connection$connection_reference$INTERNAL_api_obj()
+                                    self$dictionary <- connection$dict_instance
 
                                     self$listSelect = HpdsAttribListKeys$new(help_text='',
-                                                                             resource_uuid=self$resourceUUID,
-                                                                             api_obj=self$INTERNAL_API_OBJ,
+                                                                             dictionary_obj=self$dictionary,
                                                                              allow_variants=FALSE)
                                     self$listCrossCounts = HpdsAttribListKeys$new(help_text='',
-                                                                                  resource_uuid=self$resourceUUID,
-                                                                                  api_obj=self$INTERNAL_API_OBJ)
+                                                                                  dictionary_obj=self$dictionary)
                                     self$listRequire = HpdsAttribListKeys$new(help_text='',
-                                                                              resource_uuid=self$resourceUUID,
-                                                                              api_obj=self$INTERNAL_API_OBJ)
+                                                                              dictionary_obj=self$dictionary)
                                     self$listAnyOf = HpdsAttribListKeys$new(help_text='',
-                                                                            resource_uuid=self$resourceUUID,
-                                                                            api_obj=self$INTERNAL_API_OBJ)
+                                                                            dictionary_obj=self$dictionary)
                                     self$listFilter = HpdsAttribListKeyValues$new(help_text='',
-                                                                                  resource_uuid=self$resourceUUID,
-                                                                                  api_obj=self$INTERNAL_API_OBJ)
+                                                                                  dictionary_obj=self$dictionary)
                                     self$performance <- c(FALSE, 0, 0, 0, 0)
                                     names(self$performance) <- c("running","tmr_start","tmr_query","tmr_recv","tmr_proc")
                                     # load the default queryTemplate values
@@ -806,20 +739,12 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
 #'   \item{\code{show()}}{This method displays the entries of the query parameter list.}
 #'   \item{\code{getQueryValues()}}{This is an internally used method that returns the entries for use by the parent query object.}}
 
-global_dictionary_cache = NA
 HpdsAttribList <- R6::R6Class("HpdsAttribList",
                               portable = FALSE,
                               lock_objects = FALSE,
                               public = list(
-                                initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
-                                  self$resource_uuid <- resource_uuid
-                                  self$api_obj <- api_obj
-                                  if(length(global_dictionary_cache) == 1 && is.na(global_dictionary_cache)) {
-                                      query <- {}
-                                      query$query <- ""
-                                      results <- api_obj$search(resource_uuid=self$resource_uuid, jsonlite::toJSON(query, auto_unbox=TRUE))
-                                      global_dictionary_cache <- jsonlite::fromJSON(results)
-                                  }
+                                initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, dictionary_obj=FALSE) {
+                                  self$dictionary_obj <- dictionary_obj
                                   self$helpstr <- ""
                                   if (!(isFALSE(help_text))) {
                                     self$helpstr <- help_text
@@ -830,7 +755,6 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                     self$data <- inst_list
                                   }
                                   self$variants_enabled <- isTRUE(allow_variants)
-                                  self$dictionary_cache = global_dictionary_cache
                                 },
                                 add = function(keys=FALSE, ...) {
                                   args = list(...)
@@ -898,25 +822,17 @@ HpdsAttribList <- R6::R6Class("HpdsAttribList",
                                       add_key = TRUE
                                     }
 
+                                    # lookup keys in cached data dictionary
                                     add_key = FALSE
-                                    # loop though the result types
-                                    for (typename in names(self$dictionary_cache$results)) {
-                                      if (!is.null(self$dictionary_cache$results[[typename]][[key]])) {
-                                        # the key exists in the data dictionary, insert it
-                                        add_key = TRUE
-                                        key_typename = typename
-                                        # save categorical info
-                                        if (is.null(self$dictionary_cache$results[[typename]][[key]]$categorical)) {
-                                          is_categorical = !self$dictionary_cache$results[[typename]][[key]]$continuous
-                                        } else {
-                                          is_categorical = self$dictionary_cache$results[[typename]][[key]]$categorical
-                                        }
-                                        if (is.null(self$dictionary_cache$results[[typename]][[key]]$categoryValues)) {
-                                          valid_categories = self$dictionary_cache$results[[typename]][[key]]$values
-                                        } else {
-                                          valid_categories = self$dictionary_cache$results[[typename]][[key]]$categoryValues
-                                        }
-                                        break
+                                    key_details = self$dictionary_obj$getKeyInfo(key)
+                                    if (!isFALSE(key_details)) {
+                                      add_key = TRUE
+                                      key_typename = key_details[["HpdsDataType"]]
+                                      is_categorical = key_details[["categorical"]]
+                                      if (class(key_details$categoryValues) == "logical" && is.na(key_details$categoryValues)) {
+                                        valid_categories = list()
+                                      } else {
+                                        valid_categories = key_details$values
                                       }
                                     }
 
@@ -1080,8 +996,8 @@ HpdsAttribListKeys <- R6::R6Class("HpdsAttribListKeys",
                                   private = list(
                                   ),
                                   public = list(
-                                    initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
-                                      super$initialize(inst_list=inst_list, help_text=help_text, allow_variants=allow_variants, resource_uuid=resource_uuid, api_obj=api_obj)
+                                    initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, dictionary_obj=FALSE) {
+                                      super$initialize(inst_list=inst_list, help_text=help_text, allow_variants=allow_variants, dictionary_obj=dictionary_obj)
                                     },
                                     add = function(key = FALSE, ...) {
                                       #setting the key as exists filter
@@ -1139,8 +1055,8 @@ HpdsAttribListKeyValues <- R6::R6Class("HpdsAttribListKeyValues",
                                        inherit = HpdsAttribList,
                                        private = list(),
                                        public = list(
-                                         initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, resource_uuid=FALSE, api_obj=FALSE) {
-                                           super$initialize(inst_list=inst_list, help_text=help_text, allow_variants=allow_variants, resource_uuid=resource_uuid, api_obj=api_obj)
+                                         initialize = function(inst_list=FALSE, help_text="", allow_variants=TRUE, dictionary_obj=FALSE) {
+                                           super$initialize(inst_list=inst_list, help_text=help_text, allow_variants=allow_variants, dictionary_obj=dictionary_obj)
                                          },
                                          add = function(key=FALSE, ...) {
                                            #setting the key as exists filter
