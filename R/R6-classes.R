@@ -487,6 +487,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                 public = list(
                                   initialize = function(connection) {
                                     self$connection <- connection
+                                    self$resourceUUID <- connection$resourceUUID
                                     self$INTERNAL_API_OBJ <- connection$connection_reference$INTERNAL_api_obj()
                                     self$dictionary <- connection$dict_instance
 
