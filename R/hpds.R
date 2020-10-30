@@ -153,13 +153,8 @@ extract.entries <- function(dictionary.results, verbose=FALSE) {
 #'
 #' @export
 extract.dataframe <- function(dictionary.results, verbose=FALSE) {
-  if (class(dictionary.results) == "Hpds_DictionaryResults") {
-    result <- dictionary.results$DataFrame()
-    return(result)
-  } else {
-    message("Invalid dictionary results was passed to extract.dataframe() function")
-    stop()
-  }
+  message("The 'extract.dataframe()' function is depricated. Please use `hpds::extract.entries()` instead - it now returns data frames.")
+  stop()
 }
 
 
