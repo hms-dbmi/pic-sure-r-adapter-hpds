@@ -590,6 +590,44 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['running'] <- FALSE
                                     return(ret)
                                   },
+                                  getVariantCount = function(asAsync = FALSE, timeout=30) {
+                                    self$performance['running'] <- TRUE
+                                    self$performance['tmr_start'] <- Sys.time()
+                                    queryJSON = self$buildQuery("VARIANT_COUNT_FOR_QUERY")
+                                    queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 5 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('\\[\\[\\]\\]','\\[\\]', queryJSON)
+                                    queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
+                                    self$performance['tmr_query'] <- Sys.time()
+                                    httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
+                                    self$performance['tmr_recv'] <- Sys.time()
+                                    ret = as.integer(httpResults)
+                                    self$performance['tmr_proc'] <- Sys.time()
+                                    self$performance['running'] <- FALSE
+                                    return(ret)
+                                  },
+                                  getVariantsDataFrame = function(asAsync = FALSE, timeout=30) {
+                                    self$performance['running'] <- TRUE
+                                    self$performance['tmr_start'] <- Sys.time()
+                                    queryJSON = self$buildQuery("VCF_EXCERPT")
+                                    queryJSON = jsonlite::toJSON(queryJSON, auto_unbox = TRUE)
+                                    # bugfix for jsonlite !!!! DO NOT REFACTOR BELOW 5 LINES AS R WILL MESS THINGS UP!
+                                    queryJSON <- gsub('\\[\\[\\]\\]','\\[\\]', queryJSON)
+                                    queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+                                    queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
+                                    self$performance['tmr_query'] <- Sys.time()
+                                    httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
+                                    self$performance['tmr_recv'] <- Sys.time()
+                                    ret = read.csv(text=httpResults, sep='\t')
+                                    self$performance['tmr_proc'] <- Sys.time()
+                                    self$performance['running'] <- FALSE
+                                    return(ret)
+                                  },
                                   getRunDetails = function() {
                                     print('This function returns None or details about the last run of the query')
                                     if (self$performance['tmr_start'] > 0) {
