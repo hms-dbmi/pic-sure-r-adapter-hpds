@@ -605,10 +605,12 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
 
-                                    if (is.numeric(httpResults)) {
-                                      ret = as.numeric(httpResults)
+                                    numericResults = as.integer(httpResults)
+                                    if (!is.na(numericResults)) {
+                                      ret = as.integer(httpResults)
                                     } else {
-                                      ret = jsonlite::fromJSON(httpResults)$count
+                                      json = jsonlite::fromJSON(httpResults)
+                                      ret = json$count
                                     }
 
                                     self$performance['tmr_proc'] <- Sys.time()
