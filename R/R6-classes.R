@@ -566,7 +566,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
-                                    ret = read.csv(text=httpResults)
+                                    ret = read.csv(text=httpResults, check.names=FALSE)
                                     self$performance['tmr_proc'] <- Sys.time()
                                     self$performance['running'] <- FALSE
                                     return(ret)
@@ -585,7 +585,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['tmr_query'] <- Sys.time()
                                     httpResults = self$INTERNAL_API_OBJ$synchQuery(self$resourceUUID, queryJSON)
                                     self$performance['tmr_recv'] <- Sys.time()
-                                    ret = read.csv(text=httpResults)
+                                    ret = read.csv(text=httpResults, check.names=FALSE)
                                     self$performance['tmr_proc'] <- Sys.time()
                                     self$performance['running'] <- FALSE
                                     return(ret)
