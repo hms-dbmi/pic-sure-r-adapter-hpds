@@ -9,7 +9,7 @@ query.run(query, result.type = "dataframe", verbose = FALSE)
 \arguments{
 \item{query}{A query instance object.}
 
-\item{result.type}{A string specifying what type of results to return. Possible values: "count", "results", "dataframe" and "crosscount".}
+\item{result.type}{A string specifying what type of results to return. Possible values: "count", "results", "dataframe", "crosscount", "variantsApproximateCount" and "variantsDataFrame".}
 
 \item{verbose}{Flag to display additional runtime information.}
 }

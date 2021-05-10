@@ -187,7 +187,7 @@ new.query <- function(resource, verbose=FALSE) {
 #' Run a query instance using any restrictions that have been added to it.
 #'
 #' @param query A query instance object.
-#' @param result.type A string specifying what type of results to return. Possible values: "count", "results", "dataframe" and "crosscount".
+#' @param result.type A string specifying what type of results to return. Possible values: "count", "results", "dataframe", "crosscount", "variantsApproximateCount" and "variantsDataFrame".
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
