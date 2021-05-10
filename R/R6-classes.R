@@ -590,7 +590,7 @@ PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                     self$performance['running'] <- FALSE
                                     return(ret)
                                   },
-                                  getVariantCount = function(asAsync = FALSE, timeout=30) {
+                                  getVariantsApproximateCount = function(asAsync = FALSE, timeout=30) {
                                     self$performance['running'] <- TRUE
                                     self$performance['tmr_start'] <- Sys.time()
                                     queryJSON = self$buildQuery("VARIANT_COUNT_FOR_QUERY")

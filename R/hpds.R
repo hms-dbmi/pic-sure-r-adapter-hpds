@@ -207,7 +207,7 @@ query.run <- function(query, result.type="dataframe", verbose=FALSE) {
                      "results" = query$getResults(),
                      "dataframe" = query$getResultsDataFrame(),
                      "crosscount" = query$getResultsCrossCounts(),
-                     "variantCount" = query$getVariantCount(),
+                     "variantsApproximateCount" = query$getVariantsApproximateCount(),
                      "variantsDataFrame" = query$getVariantsDataFrame()
     )
     return(result)
