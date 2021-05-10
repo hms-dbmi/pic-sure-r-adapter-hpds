@@ -479,6 +479,8 @@ PicSureHpdsDictionaryResult <- R6::R6Class("PicSureHpdsDictionaryResult",
 #'   \item{\code{getCount()}}{This method returns a count of how many records are discovered by the query.}
 #'   \item{\code{getResults()}}{This method returns the records discovered by the query.}
 #'   \item{\code{getResultsDataFrame()}}{This method returns the discovered records in a dataframe format.}
+#'   \item{\code{getVariantsApproximateCount()}}{This method returns the a count of how many variant records are discovered by the query.}
+#'   \item{\code{getVariantsDataFrame()}}{This method returns the discovered variant records in a dataframe format.}
 #'   \item{\code{getRunDetails()}}{This method returns information the performance of the query.}}
 PicSureHpdsQuery <- R6::R6Class("PicSureHpdsQuery",
                                 portable = FALSE,

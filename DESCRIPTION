@@ -1,6 +1,6 @@
 Package: hpds
 Type: Package
-Version: 0.1.0
+Version: 0.1.1
 Date: 2019-10-17
 Title: Simplified R library to communicate with HPDS-hosted services on a PIC-SURE network
 Authors@R: person("Nick", "Benik", role=c("aut","cre"), email="nicholas_benik@hms.harvard.edu")
