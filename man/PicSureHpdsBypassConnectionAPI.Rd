@@ -4,14 +4,15 @@
 \name{PicSureHpdsBypassConnectionAPI}
 \alias{PicSureHpdsBypassConnectionAPI}
 \title{R6 class that is a code-shim used by the PicSureBypassConnection - DO NOT USE THIS OBJECT DIRECTLY!}
-\format{\code{\link{PicSureHpdsBypassConnectionAPI}} object.}
-\usage{
-PicSureHpdsBypassConnectionAPI
+\format{
+\code{\link{PicSureHpdsBypassConnectionAPI}} object.
 }
 \value{
 Object of \code{\link{R6Class}} used by the \code{PicSureHpdsBypassConnection} to access a HPDS-hosted resource without using a PIC-SURE network.
 }
 \description{
+R6 class that is a code-shim used by the PicSureBypassConnection - DO NOT USE THIS OBJECT DIRECTLY!
+
 R6 class that is a code-shim used by the PicSureBypassConnection - DO NOT USE THIS OBJECT DIRECTLY!
 }
 \section{Methods}{
@@ -21,3 +22,97 @@ R6 class that is a code-shim used by the PicSureBypassConnection - DO NOT USE TH
 }
 
 \keyword{data}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{PicSureHpdsBypassConnectionAPI$new()}}
+\item \href{#method-info}{\code{PicSureHpdsBypassConnectionAPI$info()}}
+\item \href{#method-search}{\code{PicSureHpdsBypassConnectionAPI$search()}}
+\item \href{#method-asynchQuery}{\code{PicSureHpdsBypassConnectionAPI$asynchQuery()}}
+\item \href{#method-synchQuery}{\code{PicSureHpdsBypassConnectionAPI$synchQuery()}}
+\item \href{#method-queryStatus}{\code{PicSureHpdsBypassConnectionAPI$queryStatus()}}
+\item \href{#method-queryResult}{\code{PicSureHpdsBypassConnectionAPI$queryResult()}}
+\item \href{#method-clone}{\code{PicSureHpdsBypassConnectionAPI$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$new(arg_url, arg_token)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-info"></a>}}
+\if{latex}{\out{\hypertarget{method-info}{}}}
+\subsection{Method \code{info()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$info(resource_uuid)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-search"></a>}}
+\if{latex}{\out{\hypertarget{method-search}{}}}
+\subsection{Method \code{search()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$search(resource_uuid, query = FALSE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-asynchQuery"></a>}}
+\if{latex}{\out{\hypertarget{method-asynchQuery}{}}}
+\subsection{Method \code{asynchQuery()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$asynchQuery(resource_uuid, query)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-synchQuery"></a>}}
+\if{latex}{\out{\hypertarget{method-synchQuery}{}}}
+\subsection{Method \code{synchQuery()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$synchQuery(resource_uuid, query)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-queryStatus"></a>}}
+\if{latex}{\out{\hypertarget{method-queryStatus}{}}}
+\subsection{Method \code{queryStatus()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$queryStatus(resource_uuid, query_uuid)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-queryResult"></a>}}
+\if{latex}{\out{\hypertarget{method-queryResult}{}}}
+\subsection{Method \code{queryResult()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$queryResult(resource_uuid, query_uuid)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsBypassConnectionAPI$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}
