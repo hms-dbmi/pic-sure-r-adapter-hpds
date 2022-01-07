@@ -14,7 +14,7 @@ get.resource(connection, resourceUUID, verbose = FALSE)
 \item{verbose}{Flag to display additional runtime information.}
 }
 \value{
-An object which provides access to the requested Resource.
+An object which provides access to the requested Resource. test
 }
 \description{
 Get a new reference to a HPDS-based PIC-SURE resource.

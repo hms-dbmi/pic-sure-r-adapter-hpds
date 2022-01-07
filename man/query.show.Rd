@@ -19,10 +19,10 @@ Prints to screen the contents of a query instance's restriction parameters.
 # myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
 # myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 # myquery <- hpds::new.query(resource=myres)
-# hpds::query.select.add(query=myquery, keys="\\\\demographics\\\\SEX\\\\")
-# hpds::query.select.add(query=myquery, keys="\\\\demographics\\\\AGE\\\\")
-# hpds::query.filter.add(query=myquery, keys="\\\\demographics\\\\SEX\\\\", values="Female")
-# hpds::query.filter.add(query=myquery, keys="\\\\demographics\\\\AGE\\\\", min="10", max="65")
+# hpds::query.select.add(query=myquery, keys="\\demographics\\SEX\\")
+# hpds::query.select.add(query=myquery, keys="\\demographics\\AGE\\")
+# hpds::query.filter.add(query=myquery, keys="\\demographics\\SEX\\", values="Female")
+# hpds::query.filter.add(query=myquery, keys="\\demographics\\AGE\\", min="10", max="65")
 # hpds::query.show(query=myquery)
 
 }

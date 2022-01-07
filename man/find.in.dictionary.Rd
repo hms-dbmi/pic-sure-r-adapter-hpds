@@ -9,7 +9,7 @@ find.in.dictionary(resource, term = "", verbose = FALSE)
 \arguments{
 \item{resource}{A PIC-SURE resource object.}
 
-\item{term}{A string to search for in the resource's data dictionary.}
+\item{term}{A string to search for in the resource's data dictionary. By default, if no term is provided, the whole dictionary will be returned.}
 
 \item{verbose}{Flag to display additional runtime information.}
 }

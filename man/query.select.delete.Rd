@@ -21,8 +21,8 @@ Delete a "select" restriction from a query instance.
 # myconn <- picsure::connect(url="http://your.server/PIC-SURE/", token="your-security-token")
 # myres <- hpds::get.resource(connection=myconn, resourceUUID="YOUR-UUID-0000")
 # myquery <- hpds::new.query(resource=myres)
-# hpds::query.select.add(query=myquery, keys="\\\\demographics\\\\SEX\\\\")
+# hpds::query.select.add(query=myquery, keys="\\demographics\\SEX\\")
 ## ...opps, added wrong term, lets delete it...
-# hpds::query.select.delete(query=myquery, keys="\\\\demographics\\\\SEX\\\\")
+# hpds::query.select.delete(query=myquery, keys="\\demographics\\SEX\\")
 
 }
