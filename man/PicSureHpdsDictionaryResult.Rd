@@ -4,14 +4,83 @@
 \name{PicSureHpdsDictionaryResult}
 \alias{PicSureHpdsDictionaryResult}
 \title{R6 class contain the results of a search against a HPDS resource's data dictionary - DO NOT CREATE THIS OBJECT DIRECTLY!}
-\format{\code{\link{PicSureHpdsDictionaryResult}} object.}
-\usage{
-PicSureHpdsDictionaryResult
+\format{
+\code{\link{PicSureHpdsDictionaryResult}} object.
 }
 \value{
 Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.
 }
 \description{
 R6 class contain the results of a search against a HPDS resource's data dictionary - DO NOT CREATE THIS OBJECT DIRECTLY!
+
+R6 class contain the results of a search against a HPDS resource's data dictionary - DO NOT CREATE THIS OBJECT DIRECTLY!
 }
+\section{}{
+NA
+}
+
 \keyword{data}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{PicSureHpdsDictionaryResult$new()}}
+\item \href{#method-count}{\code{PicSureHpdsDictionaryResult$count()}}
+\item \href{#method-keys}{\code{PicSureHpdsDictionaryResult$keys()}}
+\item \href{#method-entries}{\code{PicSureHpdsDictionaryResult$entries()}}
+\item \href{#method-clone}{\code{PicSureHpdsDictionaryResult$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionaryResult$new(results, filter.list = FALSE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-count"></a>}}
+\if{latex}{\out{\hypertarget{method-count}{}}}
+\subsection{Method \code{count()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionaryResult$count()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-keys"></a>}}
+\if{latex}{\out{\hypertarget{method-keys}{}}}
+\subsection{Method \code{keys()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionaryResult$keys()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-entries"></a>}}
+\if{latex}{\out{\hypertarget{method-entries}{}}}
+\subsection{Method \code{entries()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionaryResult$entries()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionaryResult$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}

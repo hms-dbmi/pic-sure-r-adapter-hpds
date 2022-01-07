@@ -4,14 +4,15 @@
 \name{PicSureHpdsResourceConnection}
 \alias{PicSureHpdsResourceConnection}
 \title{R6 class that allows access to the data dictionary and query services of a selected HPDS-hosted resources on a PIC-SURE network.}
-\format{\code{\link{PicSureHpdsResourceConnection}} object.}
-\usage{
-PicSureHpdsResourceConnection
+\format{
+\code{\link{PicSureHpdsResourceConnection}} object.
 }
 \value{
 Object of \code{\link{R6Class}} used to access the dictionary and query services via the objects it returns.
 }
 \description{
+R6 class that allows access to the data dictionary and query services of a selected HPDS-hosted resources on a PIC-SURE network.
+
 R6 class that allows access to the data dictionary and query services of a selected HPDS-hosted resources on a PIC-SURE network.
 }
 \section{Methods}{
@@ -25,3 +26,87 @@ R6 class that allows access to the data dictionary and query services of a selec
 }
 
 \keyword{data}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{PicSureHpdsResourceConnection$new()}}
+\item \href{#method-version}{\code{PicSureHpdsResourceConnection$version()}}
+\item \href{#method-dictionary}{\code{PicSureHpdsResourceConnection$dictionary()}}
+\item \href{#method-query}{\code{PicSureHpdsResourceConnection$query()}}
+\item \href{#method-retrieveQueryResults}{\code{PicSureHpdsResourceConnection$retrieveQueryResults()}}
+\item \href{#method-getQueryByUUID}{\code{PicSureHpdsResourceConnection$getQueryByUUID()}}
+\item \href{#method-clone}{\code{PicSureHpdsResourceConnection$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsResourceConnection$new(connection, resource_uuid)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-version"></a>}}
+\if{latex}{\out{\hypertarget{method-version}{}}}
+\subsection{Method \code{version()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsResourceConnection$version()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-dictionary"></a>}}
+\if{latex}{\out{\hypertarget{method-dictionary}{}}}
+\subsection{Method \code{dictionary()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsResourceConnection$dictionary()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-query"></a>}}
+\if{latex}{\out{\hypertarget{method-query}{}}}
+\subsection{Method \code{query()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsResourceConnection$query(loadQuery = NA)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-retrieveQueryResults"></a>}}
+\if{latex}{\out{\hypertarget{method-retrieveQueryResults}{}}}
+\subsection{Method \code{retrieveQueryResults()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsResourceConnection$retrieveQueryResults(query_uuid = NA)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-getQueryByUUID"></a>}}
+\if{latex}{\out{\hypertarget{method-getQueryByUUID}{}}}
+\subsection{Method \code{getQueryByUUID()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsResourceConnection$getQueryByUUID(query_uuid)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsResourceConnection$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}

@@ -3,7 +3,6 @@
 \docType{package}
 \name{hpds}
 \alias{hpds}
-\alias{hpds-package}
 \title{hpds: An Adapter Library for HPDS Services on PIC-SURE Networks.}
 \description{
 This package is used to interact with HPDS Services and data hosted

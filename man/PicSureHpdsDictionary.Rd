@@ -4,14 +4,15 @@
 \name{PicSureHpdsDictionary}
 \alias{PicSureHpdsDictionary}
 \title{R6 class that runs searches against a HPDS resource's data dictionary - DO NOT CREATE THIS OBJECT DIRECTLY!}
-\format{\code{\link{PicSureHpdsDictionary}} object.}
-\usage{
-PicSureHpdsDictionary
+\format{
+\code{\link{PicSureHpdsDictionary}} object.
 }
 \value{
 Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.
 }
 \description{
+R6 class that runs searches against a HPDS resource's data dictionary - DO NOT CREATE THIS OBJECT DIRECTLY!
+
 R6 class that runs searches against a HPDS resource's data dictionary - DO NOT CREATE THIS OBJECT DIRECTLY!
 }
 \section{Methods}{
@@ -24,3 +25,67 @@ R6 class that runs searches against a HPDS resource's data dictionary - DO NOT C
 }
 
 \keyword{data}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{PicSureHpdsDictionary$new()}}
+\item \href{#method-getKeyInfo}{\code{PicSureHpdsDictionary$getKeyInfo()}}
+\item \href{#method-getDataframe}{\code{PicSureHpdsDictionary$getDataframe()}}
+\item \href{#method-find}{\code{PicSureHpdsDictionary$find()}}
+\item \href{#method-clone}{\code{PicSureHpdsDictionary$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionary$new(refHpdsResourceConnection)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-getKeyInfo"></a>}}
+\if{latex}{\out{\hypertarget{method-getKeyInfo}{}}}
+\subsection{Method \code{getKeyInfo()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionary$getKeyInfo(key)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-getDataframe"></a>}}
+\if{latex}{\out{\hypertarget{method-getDataframe}{}}}
+\subsection{Method \code{getDataframe()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionary$getDataframe(term = "", useQueryScopes = TRUE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-find"></a>}}
+\if{latex}{\out{\hypertarget{method-find}{}}}
+\subsection{Method \code{find()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionary$find(term = "", showAll = FALSE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PicSureHpdsDictionary$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}
