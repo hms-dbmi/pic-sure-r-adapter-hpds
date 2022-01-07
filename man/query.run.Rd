@@ -9,12 +9,21 @@ query.run(query, result.type = "dataframe", verbose = FALSE)
 \arguments{
 \item{query}{A query instance object.}
 
-\item{result.type}{A string specifying what type of results to return. Possible values: "count", "results", "dataframe", "crosscount", "variantsApproximateCount" and "variantsDataFrame".}
+\item{result.type}{A string specifying what type of results to return. Possible values: "count", "dataframe", "variantsApproximateCount" and "variantsDataFrame".}
 
 \item{verbose}{Flag to display additional runtime information.}
 }
 \description{
 Run a query instance using any restrictions that have been added to it.
+}
+\details{
+Description of result.type values
+\itemize{
+ \item{"count": }{Single count indicating the number of matching records}
+ \item{"dataframe": }{DataFrame containing the matching records}
+ \item{"variantsApproximateCount": }{Single estimated count of the number of matching variants}
+ \item{"variantsDataFrame": }{DataFrame of the matching variants}
+}
 }
 \examples{
 

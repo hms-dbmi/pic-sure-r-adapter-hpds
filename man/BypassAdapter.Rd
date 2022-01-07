@@ -4,14 +4,15 @@
 \name{BypassAdapter}
 \alias{BypassAdapter}
 \title{R6 class that selects a HPDS-hosted resources directly without the use of the PIC-SURE Connection library.}
-\format{\code{PicSureHpdsBypassAdapter} object.}
-\usage{
-BypassAdapter
+\format{
+\code{PicSureHpdsBypassAdapter} object.
 }
 \value{
 Object of \code{\link{R6Class}} used to access a HPDS-hosted resource without using a PIC-SURE network.
 }
 \description{
+R6 class that selects a HPDS-hosted resources directly without the use of the PIC-SURE Connection library.
+
 R6 class that selects a HPDS-hosted resources directly without the use of the PIC-SURE Connection library.
 }
 \section{Methods}{
@@ -25,3 +26,47 @@ R6 class that selects a HPDS-hosted resources directly without the use of the PI
 }
 
 \keyword{data}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{BypassAdapter$new()}}
+\item \href{#method-useResource}{\code{BypassAdapter$useResource()}}
+\item \href{#method-clone}{\code{BypassAdapter$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BypassAdapter$new(url_arg, token_arg = FALSE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-useResource"></a>}}
+\if{latex}{\out{\hypertarget{method-useResource}{}}}
+\subsection{Method \code{useResource()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BypassAdapter$useResource(resource_uuid)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{BypassAdapter$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}

@@ -4,14 +4,15 @@
 \name{HpdsAttribListKeys}
 \alias{HpdsAttribListKeys}
 \title{R6 class used to store/manipulate key-only query parameter lists - DO NOT CREATE THIS OBJECT DIRECTLY!}
-\format{\code{\link{HpdsAttribListKeys}} object.}
-\usage{
-HpdsAttribListKeys
+\format{
+\code{\link{HpdsAttribListKeys}} object.
 }
 \value{
 Object of \code{\link{R6Class}} used to access a HPDS-hosted resource's data dictionary.
 }
 \description{
+R6 class used to store/manipulate key-only query parameter lists - DO NOT CREATE THIS OBJECT DIRECTLY!
+
 R6 class used to store/manipulate key-only query parameter lists - DO NOT CREATE THIS OBJECT DIRECTLY!
 }
 \section{Methods}{
@@ -28,3 +29,95 @@ R6 class used to store/manipulate key-only query parameter lists - DO NOT CREATE
 }
 
 \keyword{data}
+\section{Super class}{
+\code{\link[hpds:HpdsAttribList]{hpds::HpdsAttribList}} -> \code{HpdsAttribListKeys}
+}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{HpdsAttribListKeys$new()}}
+\item \href{#method-add}{\code{HpdsAttribListKeys$add()}}
+\item \href{#method-delete}{\code{HpdsAttribListKeys$delete()}}
+\item \href{#method-getQueryValues}{\code{HpdsAttribListKeys$getQueryValues()}}
+\item \href{#method-load}{\code{HpdsAttribListKeys$load()}}
+\item \href{#method-clone}{\code{HpdsAttribListKeys$clone()}}
+}
+}
+\if{html}{
+\out{<details open ><summary>Inherited methods</summary>}
+\itemize{
+\item \out{<span class="pkg-link" data-pkg="hpds" data-topic="HpdsAttribList" data-id="clear">}\href{../../hpds/html/HpdsAttribList.html#method-clear}{\code{hpds::HpdsAttribList$clear()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="hpds" data-topic="HpdsAttribList" data-id="is_VariantSpec">}\href{../../hpds/html/HpdsAttribList.html#method-is_VariantSpec}{\code{hpds::HpdsAttribList$is_VariantSpec()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="hpds" data-topic="HpdsAttribList" data-id="normalize_VariantSpec">}\href{../../hpds/html/HpdsAttribList.html#method-normalize_VariantSpec}{\code{hpds::HpdsAttribList$normalize_VariantSpec()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="hpds" data-topic="HpdsAttribList" data-id="show">}\href{../../hpds/html/HpdsAttribList.html#method-show}{\code{hpds::HpdsAttribList$show()}}\out{</span>}
+}
+\out{</details>}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{HpdsAttribListKeys$new(
+  inst_list = FALSE,
+  help_text = "",
+  allow_variants = TRUE,
+  dictionary_obj = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-add"></a>}}
+\if{latex}{\out{\hypertarget{method-add}{}}}
+\subsection{Method \code{add()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{HpdsAttribListKeys$add(key = FALSE, ...)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-delete"></a>}}
+\if{latex}{\out{\hypertarget{method-delete}{}}}
+\subsection{Method \code{delete()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{HpdsAttribListKeys$delete(key = FALSE, ...)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-getQueryValues"></a>}}
+\if{latex}{\out{\hypertarget{method-getQueryValues}{}}}
+\subsection{Method \code{getQueryValues()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{HpdsAttribListKeys$getQueryValues()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-load"></a>}}
+\if{latex}{\out{\hypertarget{method-load}{}}}
+\subsection{Method \code{load()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{HpdsAttribListKeys$load(keys)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{HpdsAttribListKeys$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}

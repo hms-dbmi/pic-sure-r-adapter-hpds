@@ -43,7 +43,7 @@ get.resource <- function(connection, resourceUUID, verbose=FALSE) {
 #' Search the data dictionary of a PIC-SURE resource.
 #'
 #' @param resource A PIC-SURE resource object.
-#' @param term A string to search for in the resource's data dictionary.
+#' @param term A string to search for in the resource's data dictionary. By default, if no term is provided, the whole dictionary will be returned.
 #' @param verbose Flag to display additional runtime information.
 #' @return An object representing the search results.
 #' @examples
@@ -187,7 +187,14 @@ new.query <- function(resource, verbose=FALSE) {
 #' Run a query instance using any restrictions that have been added to it.
 #'
 #' @param query A query instance object.
-#' @param result.type A string specifying what type of results to return. Possible values: "count", "results", "dataframe", "crosscount", "variantsApproximateCount" and "variantsDataFrame".
+#' @param result.type A string specifying what type of results to return. Possible values: "count", "dataframe", "variantsApproximateCount" and "variantsDataFrame".
+#' @details Description of result.type values
+##' \itemize{
+##'  \item{"count": }{Single count indicating the number of matching records}
+##'  \item{"dataframe": }{DataFrame containing the matching records}
+##'  \item{"variantsApproximateCount": }{Single estimated count of the number of matching variants}
+##'  \item{"variantsDataFrame": }{DataFrame of the matching variants}
+##' }
 #' @param verbose Flag to display additional runtime information.
 #' @examples
 #'
