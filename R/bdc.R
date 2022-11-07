@@ -4,6 +4,15 @@ bdc.connect <- function(url, token, psama_url=FALSE) {
   return (connection)
 }
 
+bdc.setResource <- function(connection, resourceName) {
+    if (toupper(resourceName) == "OPEN" || toupper(resourceName == "AUTH")) {
+      connection <- c(connection, currentResource = "resourceName")
+    } else {
+      print("Invalid resourceName. Please specify 'OPEN' or 'AUTH'")
+    }
+    return (connection)
+}
+
 
 # todo: remove limit and offset?
 bdc.searchPicsure <- function(connection, keyword = "", resultType = "DATA_FRAME", limit = 0, offset = 0, includeValues = FALSE) {
