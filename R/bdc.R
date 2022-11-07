@@ -5,7 +5,7 @@ bdc.connect <- function(url, token, psama_url=FALSE) {
 }
 
 bdc.setResource <- function(connection, resourceName) {
-    if (toupper(resourceName) == "OPEN" || toupper(resourceName == "AUTH")) {
+    if (toupper(resourceName) == "OPEN" || toupper(resourceName) == "AUTH") {
       connection <- c(connection, currentResource = "resourceName")
     } else {
       print("Invalid resourceName. Please specify 'OPEN' or 'AUTH'")

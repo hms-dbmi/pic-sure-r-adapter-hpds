@@ -5,7 +5,7 @@ export(search)
 export(searchPicsure)
 export(bdc.connect)
 export(bdc.searchPicsure)
-
+export(bdc.setResource)
 
 # for testing, make private later
 export(bdc.search)
