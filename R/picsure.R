@@ -7,7 +7,7 @@ getResources <- function(connection, resourceId = FALSE) {
   getJSON(connection, "info/resources")
 }
 
-connect <- function(url, token, psama_url=FALSE) {
+connect <- function(url, token, psama_url=FALSE, getDictionary = NULL) {
   # Safely parse and set url_picsure for this instance of the PicSureConnection
   url_df = urltools::url_parse(url)
   url_df$path <- str_trim(url_df$path)
@@ -42,24 +42,20 @@ connect <- function(url, token, psama_url=FALSE) {
   for (resourceName in names(resources)) {
     reversedResources[[resources[[resourceName]]]] <- resourceName
   }
-  result <- c(result, resources = reversedResources)
+  result$resources = reversedResources
   message("Loading user profile...")
-  result <- c(result, profile = getProfile(result))
-  result <- c(result, queryTemplate = getQueryTemplate(result))
+  result$profile = getProfile(result)
+  result$queryTemplate = getQueryTemplate(result)
   message("Loading variables...")
-  # todo: limit only for testing
-  result <- c(result, dictionary = bdc.searchPicsure(result, limit = 1000))
+
+  if (is.function(getDictionary)) {
+    result$dictionary = getDictionary(result)
+  } else {
+    result$dictionary <- searchPicsure(result)
+  }
   message("Initialization complete.")
   return (result)
 }
-
-connect_local <- function(token, verbose=FALSE) {
-  result = connect("http://wildfly:8080/pic-sure-api-2/PICSURE/",
-                             token,
-                             "http://wildfly:8080/pic-sure-auth-services/auth/")
-  return (result)
-}
-
 
 getProfile <- function(connection) {
   response = getJSON(connection, "user/me", TRUE)
@@ -77,8 +73,9 @@ postJSON <- function(connection, path, body) {
   response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
 
   if (response$status_code != 200) {
-    writeLines("ERROR: HTTP response was bad")
-    return('{"results":{}, "error":"True"}')
+    writeLines("HTTP response:")
+    print(response$status_code)
+    return(response)
   } else {
     response <- gsub("\\xef\\xbb\\xbf", "", content(response, type="text", encoding="UTF-8"), useBytes = T) # strip BOM characters that are in the json data
     return(jsonlite::fromJSON(response, simplifyVector=FALSE, simplifyDataFrame=FALSE, simplifyMatrix=FALSE))

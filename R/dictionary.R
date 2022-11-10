@@ -1,13 +1,7 @@
-search <- function(connection, keyword, limit = 10000) {
-  searchQuery = jsonlite::toJSON(list(query = keyword), auto_unbox=TRUE)
-  result <- postJSON(connection, "search/bf751312-419f-413e-936b-87975011fe18", searchQuery)
-  #return (data.frame(do.call(rbind.data.frame, result)))
-  return (result)
-}
 
 searchPicsure <- function(connection, keyword = "", resultType = "DATA_FRAME") {
   searchQuery = jsonlite::toJSON(list(query = keyword), auto_unbox=TRUE)
-  result <- postJSON(connection, "search/bf751312-419f-413e-936b-87975011fe18", searchQuery)
+  result <- postJSON(connection, paste("search/", connection$resources$hpds, sep=""), searchQuery)
 
   if(toupper(resultType) == "DICTIONARY")
     return (result$results)

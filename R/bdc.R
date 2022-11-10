@@ -1,5 +1,5 @@
 bdc.connect <- function(url, token, psama_url=FALSE) {
-  connection <- connect(url, token, psama_url)
+  connection <- connect(url, token, psama_url, getDictionary = bdc.searchPicsure)
   # todo: validate resources
   return (connection)
 }
