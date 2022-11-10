@@ -15,7 +15,7 @@ export(bdc.search)
 export(projectAndFilterResults)
 export(postJSON)
 export(getDataFrame)
-export(lookupVariables)
+#export(lookupVariables)
 
 import(hash)
 import(httr)
