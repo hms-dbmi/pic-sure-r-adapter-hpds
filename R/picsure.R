@@ -77,8 +77,23 @@ postJSON <- function(connection, path, body) {
     print(response$status_code)
     return(response)
   } else {
-    response <- gsub("\\xef\\xbb\\xbf", "", content(response, type="text", encoding="UTF-8"), useBytes = T) # strip BOM characters that are in the json data
+    response <- content(response, type="text", encoding="UTF-8")
+    #response <- gsub("\\xef\\xbb\\xbf", "", content(response, type="text", encoding="UTF-8"), useBytes = T) # strip BOM characters that are in the json data
     return(jsonlite::fromJSON(response, simplifyVector=FALSE, simplifyDataFrame=FALSE, simplifyMatrix=FALSE))
+  }
+}
+
+
+postJSONRaw <- function(connection, path, body) {
+  full_url = paste(connection$url_picsure, path, sep="")
+  response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
+
+  if (response$status_code != 200) {
+    writeLines("HTTP response:")
+    print(response$status_code)
+    return(response)
+  } else {
+    return (content(response, type="text", encoding="UTF-8"))
   }
 }
 
