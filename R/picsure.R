@@ -1,7 +1,11 @@
+#' @import jsonlite stringr httr urltools
+NULL
+
 library(jsonlite)
 library(stringr)
 library(httr)
 library(urltools)
+
 
 getResources <- function(connection, resourceId = FALSE) {
   getJSON(connection, "info/resources")
