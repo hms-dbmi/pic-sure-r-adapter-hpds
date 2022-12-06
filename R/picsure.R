@@ -7,7 +7,19 @@ getResources <- function(connection, resourceId = FALSE) {
   getJSON(connection, "info/resources")
 }
 
-connect <- function(url, token, psama_url=FALSE, getDictionary = NULL) {
+#' Creates a session to access a PIC-SURE instance
+#'
+#' @param url Url to a PIC-SURE instance
+#' @param token A user token to access this instance. This can be found in the "User Profile" tab
+#' on the PIC-SURE site
+#' @param psama_url (Optional) URL to override the default PSAMA endpoint
+#' @return An object which provides access to a PIC-SURE instance
+#' @examples
+#'
+#'# session <- picsure::initializeSession(url="http://your.server/PIC-SURE/", token="your-security-token")
+#'
+#' @export
+initializeSession <- function(url, token, psama_url=FALSE, getDictionary = NULL) {
   # Safely parse and set url_picsure for this instance of the PicSureConnection
   url_df = urltools::url_parse(url)
   url_df$path <- str_trim(url_df$path)
@@ -43,10 +55,13 @@ connect <- function(url, token, psama_url=FALSE, getDictionary = NULL) {
     reversedResources[[resources[[resourceName]]]] <- resourceName
   }
   result$resources = reversedResources
+  #todo: test this
+  result$currentResource = reversedResources[[1]]
+
   message("Loading user profile...")
   result$profile = getProfile(result)
   result$queryTemplate = getQueryTemplate(result)
-  message("Loading variables...")
+  message("Loading variables (this may take several minutes)...")
 
   if (is.function(getDictionary)) {
     result$dictionary = getDictionary(result)
@@ -75,10 +90,11 @@ postJSON <- function(connection, path, body) {
   if (response$status_code != 200) {
     writeLines("HTTP response:")
     print(response$status_code)
+    print(full_url)
+    print(content(response))
     return(response)
   } else {
-    response <- content(response, type="text", encoding="UTF-8")
-    #response <- gsub("\\xef\\xbb\\xbf", "", content(response, type="text", encoding="UTF-8"), useBytes = T) # strip BOM characters that are in the json data
+    response <- gsub("\\xef\\xbb\\xbf", "", content(response, type="text", encoding="UTF-8"), useBytes = T) # strip BOM characters that are in the json data
     return(jsonlite::fromJSON(response, simplifyVector=FALSE, simplifyDataFrame=FALSE, simplifyMatrix=FALSE))
   }
 }
@@ -91,6 +107,7 @@ postJSONRaw <- function(connection, path, body) {
   if (response$status_code != 200) {
     writeLines("HTTP response:")
     print(response$status_code)
+    print(content(response))
     return(response)
   } else {
     return (content(response, type="text", encoding="UTF-8"))

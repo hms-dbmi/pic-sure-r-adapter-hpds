@@ -1,4 +1,18 @@
 
+#' Performs a search of variables in PIC-SURE for a given keyword
+#'
+#' @param session Current session
+#' @param keyword Keyword to search for
+#' @param resultType Optional parameter to specify result type: Valid values:
+#' DATA_FRAME (default) which converts the response to a data frame
+#' DICTIONARY which returns a list
+#' VARIABLE_PATHS which returns the unique variable paths
+#' @return A PIC-SURE session
+#' @examples
+#'
+#' searchResults <- picsure::searchPicsure(session, "heart", resultType = "DATA_FRAME")
+#'
+#' @export
 searchPicsure <- function(connection, keyword = "", resultType = "DATA_FRAME") {
   searchQuery = jsonlite::toJSON(list(query = keyword), auto_unbox=TRUE)
   result <- postJSON(connection, paste("search/", connection$resources$hpds, sep=""), searchQuery)
@@ -6,9 +20,11 @@ searchPicsure <- function(connection, keyword = "", resultType = "DATA_FRAME") {
   if(toupper(resultType) == "DICTIONARY")
     return (result$results)
   if (toupper(resultType) == "VARIABLE_PATHS")
-    return (unique(result$paths))
+    return (unique(result$name))
   if (toupper(resultType) == "DATA_FRAME")
     return (getDataFrame(result))
+
+  return (result)
 }
 
 getDataFrame <- function(results) {

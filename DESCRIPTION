@@ -1,4 +1,4 @@
-Package: hpds
+Package: picsure
 Type: Package
 Version: 0.1.1
 Date: 2019-10-17
@@ -11,7 +11,7 @@ Description: Library that is used to connect to access
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 Depends: R (>= 3.1.0)
 Imports:
   R6,
