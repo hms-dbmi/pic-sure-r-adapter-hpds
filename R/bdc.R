@@ -1,3 +1,6 @@
+#' @import jsonlite stringr httr urltools
+NULL
+
 library(jsonlite)
 library(stringr)
 library(httr)
