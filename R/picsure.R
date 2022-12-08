@@ -65,15 +65,36 @@ initializeSession <- function(url, token, psama_url=FALSE, getDictionary = NULL)
   message("Loading user profile...")
   result$profile = getProfile(result)
   result$queryTemplate = getQueryTemplate(result)
-  message("Loading variables (this may take several minutes)...")
+  message("Loading PIC-SURE dictionary (this may take several minutes)...")
 
   if (is.function(getDictionary)) {
     result$dictionary = getDictionary(result)
   } else {
     result$dictionary <- searchPicsure(result)
   }
+
+  message("Loading genotypic data...")
+
+  result$genotypeAnnotations = getGenotypeAnnotations(result)
   message("Initialization complete.")
   return (result)
+}
+
+getGenotypeAnnotations <- function(session) {
+  result <- postJSON(session, paste("search/", session$resources$`auth-hpds`, sep = ""), "{\"query\":\"\"}")
+  result <- result$results$info
+  annotations = list()
+  for (conceptName in names(result)) {
+    concept = result[[conceptName]]
+    print(conceptName)
+    annotations[[(length(annotations) + 1)]] = list(
+      genomic_annotation = conceptName,
+      description = concept$description,
+      values = toString(concept$values),
+      continuous = concept$continuous
+    )
+  }
+  return(data.frame(do.call(rbind.data.frame, annotations)))
 }
 
 getProfile <- function(connection) {
@@ -87,35 +108,26 @@ getQueryTemplate <- function(connection) {
 }
 
 
-postJSON <- function(connection, path, body) {
+postJSON <- function(connection, path, body, responseDeserializer = deserializeJSON) {
   full_url = paste(connection$url_picsure, path, sep="")
   response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
 
   if (response$status_code != 200) {
     writeLines("HTTP response:")
     print(response$status_code)
-    print(full_url)
-    print(content(response))
     return(response)
   } else {
-    response <- gsub("\\xef\\xbb\\xbf", "", content(response, type="text", encoding="UTF-8"), useBytes = T) # strip BOM characters that are in the json data
-    return(jsonlite::fromJSON(response, simplifyVector=FALSE, simplifyDataFrame=FALSE, simplifyMatrix=FALSE))
+    responseText <- content(response, type="text", encoding="UTF-8")
+    if (is.function(responseDeserializer)) {
+      return (responseDeserializer(responseText))
+    }
+    return (responseText)
   }
 }
 
-
-postJSONRaw <- function(connection, path, body) {
-  full_url = paste(connection$url_picsure, path, sep="")
-  response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
-
-  if (response$status_code != 200) {
-    writeLines("HTTP response:")
-    print(response$status_code)
-    print(content(response))
-    return(response)
-  } else {
-    return (content(response, type="text", encoding="UTF-8"))
-  }
+deserializeJSON = function(response) {
+  response <- gsub("\\xef\\xbb\\xbf", "", response, useBytes = T) # strip BOM characters that are in the json data
+  return(jsonlite::fromJSON(response, simplifyVector=FALSE, simplifyDataFrame=FALSE, simplifyMatrix=FALSE))
 }
 
 

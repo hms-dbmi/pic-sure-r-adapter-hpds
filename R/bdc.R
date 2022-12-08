@@ -20,7 +20,7 @@ library(urltools)
 #' @export
 bdc.initializeSession <- function(url, token, psama_url=FALSE) {
   session <- initializeSession(url, token, psama_url, getDictionary = bdc.searchPicsure)
-  session <- bdc.setResource(session, "OPEN")
+  session <- bdc.setResource(session, "AUTH")
   return (session)
 }
 
@@ -79,21 +79,31 @@ bdc.searchPicsure <- function(session, keyword = "", resultType = "DATA_FRAME", 
     return (data.frame(do.call(rbind.data.frame, filteredResults$results)))
 }
 
-bdc.search = function(session, keyword, limit = 0, offset = 0, includeValues = FALSE) {
+#' @export
+bdc.search <- function(session, keyword, limit = 0, offset = 0, includeValues = FALSE) {
   query = list(
     searchTerm = keyword,
     includedTags = list(),
     excludedTags = list(),
     returnTags = FALSE,
     offset = offset,
-    #limit = if(limit == 0) 10000 else limit #revert, testing only
-    limit = if(limit == 0) 1000000 else limit
+    limit = if(limit == 0) 10000 else limit #revert, testing only
+    #limit = if(limit == 0) 1000000 else limit
   )
   if(!includeValues)
     query = c(query, variableValuesLimit = 0)
   queryJSON <- jsonlite::toJSON(list(query = query), auto_unbox=TRUE)
 
   result <- postJSON(session, paste("search/", session$resources$dictionary, sep = ""), queryJSON)
+  return (result)
+}
+
+
+#' @export
+bdc.getInfoColumns <- function(query) {
+  queryJSON = generateQueryJSON(query, expectedResultType = 'INFO_COLUMN_LISTING')
+
+  result = postJSON(query$session, "query/sync/", queryJSON)
   return (result)
 }
 

@@ -63,8 +63,34 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
       return (query)
     }
     if (nrow(variablesToAdd) == 0) {
-      message("Variables not found:")
-      message(keys)
+      variablesToAdd <- lookupGenomicVariables(query, keys)
+      if (nrow(variablesToAdd) == 0) {
+        message("Variables not found:")
+        message(keys)
+        return (query)
+      }
+      # else, add genomic filter
+      variableToAdd <- variablesToAdd[1,]
+      if (variableToAdd$continuous) {
+        filterValue <- list()
+        if (is.numeric(min)) {
+          filterValue$min <- min
+        }
+        if (is.numeric(max)) {
+          filterValue$max <- max
+        }
+        if(length(filterValue) == 0) {
+          message("Continuous variable filters must contain a numeric min or max")
+          return (query)
+        }
+        query$variantInfoFilters$numericVariantInfoFilters[[keys[[1]]]] <- filterValue
+      } else {
+        if(typeof(categories) != "list") {
+          message("Categorical variable filters must contain list of values to filter on")
+          return (query)
+        }
+        query$variantInfoFilters$categoryVariantInfoFilters[[keys[[1]]]] <- list(categories)
+      }
       return (query)
     }
     variableToAdd <- variablesToAdd[1,]
@@ -72,7 +98,7 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
       if(typeof(categories) != "list") {
         message("Categorical variable filters must contain list of values to filter on")
       }
-      query$categoryFilters[[keys[[1]]]] <- categories
+      query$categoryFilters[[keys[[1]]]] <- list(categories)
     } else {
       filterValue <- list()
       if (is.numeric(min)) {
@@ -91,6 +117,11 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
   }
 
 
+  if (is.null(variablesToAdd) || nrow(variablesToAdd) == 0 ) {
+    message("Variables not found:")
+    print(keys)
+    return (query)
+  }
   if (nrow(variablesToAdd) != length(keys)) {
     message("Not all variables were valid. Only the following will be added:")
     print(variablesToAdd[,1])
@@ -110,7 +141,12 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
 }
 
 lookupVariables = function(query, keys) {
-  return (query$session$dictionary[session$dictionary$name %in% keys, ])
+  return (query$session$dictionary[query$session$dictionary$name %in% keys, ])
+}
+
+#' @export
+lookupGenomicVariables <- function(query, keys) {
+  return (query$session$genotypeAnnotations[query$session$genotypeAnnotations$genomic_annotation %in% keys, ])
 }
 
 getCategoryFilters = function(query) {
@@ -187,7 +223,7 @@ getCount = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'COUNT')
 
   print(queryJSON)
-  httpResults = postJSONRaw(query$session, "query/sync/", queryJSON)
+  httpResults = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
   return (httpResults)
 }
 
@@ -195,7 +231,7 @@ getResults = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'DATAFRAME')
 
   print(queryJSON)
-  response = postJSONRaw(query$session, "query/sync/", queryJSON)
+  response = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
 
   return(read.csv(text=response, sep=','))
 }
@@ -206,7 +242,7 @@ determineResource = function(session) {
 
 parseQueryTemplate = function(query) {
   queryTemplateString = query$session$queryTemplate[[1]]
-  if (is.null(queryTemplateString) && queryTemplateString != "null") {
+  if (!is.null(queryTemplateString) && queryTemplateString != "null") {
     queryTemplate = jsonlite::fromJSON(queryTemplateString)
     query$categoryFilters = queryTemplate$categoryFilters
     query$fields = queryTemplate$fields
