@@ -73,20 +73,25 @@ initializeSession <- function(url, token, psama_url=FALSE, getDictionary = NULL)
     result$dictionary <- searchPicsure(result)
   }
 
-  message("Loading genotypic data...")
+  message("Loading genotypic annotations...")
 
-  result$genotypeAnnotations = getGenotypeAnnotations(result)
+  result$genotypeAnnotations = initializeGenotypeAnnotations(result)
   message("Initialization complete.")
   return (result)
 }
 
+
+#' @export
 getGenotypeAnnotations <- function(session) {
+  return (session$genotypeAnnotations)
+}
+
+initializeGenotypeAnnotations <- function(session) {
   result <- postJSON(session, paste("search/", session$resources$`auth-hpds`, sep = ""), "{\"query\":\"\"}")
   result <- result$results$info
   annotations = list()
   for (conceptName in names(result)) {
     concept = result[[conceptName]]
-    print(conceptName)
     annotations[[(length(annotations) + 1)]] = list(
       genomic_annotation = conceptName,
       description = concept$description,

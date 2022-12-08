@@ -87,8 +87,8 @@ bdc.search <- function(session, keyword, limit = 0, offset = 0, includeValues = 
     excludedTags = list(),
     returnTags = FALSE,
     offset = offset,
-    limit = if(limit == 0) 10000 else limit #revert, testing only
-    #limit = if(limit == 0) 1000000 else limit
+    #limit = if(limit == 0) 10000 else limit #revert, testing only
+    limit = if(limit == 0) 1000000 else limit
   )
   if(!includeValues)
     query = c(query, variableValuesLimit = 0)
@@ -124,6 +124,9 @@ projectAndFilterResults = function(results, scopes, showAll) {
 
     paths <- c(paths, resultMetadata$columnmeta_HPDS_PATH)
     results[[index]] <- list(
+      # It is important for HPDS_PATH to be the first variable, as naming is different
+      # than baseline, so the concept path is assumed to be first
+      HPDS_PATH = resultMetadata$columnmeta_HPDS_PATH,
       var_id = resultMetadata$derived_var_id,
       var_name = resultMetadata$derived_var_name,
       var_description = resultMetadata$derived_var_description,
@@ -134,7 +137,6 @@ projectAndFilterResults = function(results, scopes, showAll) {
       study_id = resultMetadata$derived_study_id,
       study_description = resultMetadata$derived_study_description,
       is_stigmatized = resultMetadata$is_stigmatized,
-      HPDS_PATH = resultMetadata$columnmeta_HPDS_PATH,
       min = if (categorical) NA else resultMetadata$columnmeta_min,
       max = if (categorical) NA else resultMetadata$columnmeta_max,
       categorical = categorical,
