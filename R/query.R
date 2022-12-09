@@ -149,6 +149,11 @@ lookupGenomicVariables <- function(query, keys) {
   return (query$session$genotypeAnnotations[query$session$genotypeAnnotations$genomic_annotation %in% keys, ])
 }
 
+#' @export
+showQuery <- function(query) {
+  print(prettify(generateQueryJSON(query, ""), indent = 4))
+}
+
 getCategoryFilters = function(query) {
   keys = c(
     query$fields,
