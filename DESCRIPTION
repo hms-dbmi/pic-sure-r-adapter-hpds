@@ -17,4 +17,5 @@ Depends: R (>= 3.1.0),
   httr,
   jsonlite,
   stringr,
-  hash
+  hash,
+  purrr

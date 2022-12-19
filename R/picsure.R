@@ -23,7 +23,7 @@ getResources <- function(connection, resourceId = FALSE) {
 #'# session <- picsure::initializeSession(url="http://your.server/PIC-SURE/", token="your-security-token")
 #'
 #' @export
-initializeSession <- function(url, token, psama_url=FALSE, getDictionary = NULL) {
+initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary = NULL, defaultResource = NULL) {
   # Safely parse and set url_picsure for this instance of the PicSureConnection
   url_df = urltools::url_parse(url)
   url_df$path <- stringr::str_trim(url_df$path)
@@ -59,23 +59,38 @@ initializeSession <- function(url, token, psama_url=FALSE, getDictionary = NULL)
     reversedResources[[resources[[resourceName]]]] <- resourceName
   }
   result$resources = reversedResources
-  #todo: test this
-  result$currentResource = reversedResources[[1]]
+
+  if (length(reversedResources) > 1) {
+    if (!is.null(defaultResource)) {
+      if (!is.null(reversedResources[[defaultResource]])) {
+        result$currentResource = reversedResources[[defaultResource]]
+      } else {
+        print("Default resource not found, defaulting to:")
+        print(reversedResources[1])
+        result$currentResource = reversedResources[[1]]
+      }
+    } else {
+      print("Multiple resources found, defaulting to:")
+      print(reversedResources[1])
+      result$currentResource = reversedResources[[1]]
+    }
+  } else {
+    result$currentResource = reversedResources[[1]]
+  }
 
   message("Loading user profile...")
   result$profile = getProfile(result)
   result$queryTemplate = getQueryTemplate(result)
   message("Loading PIC-SURE dictionary (this may take several minutes)...")
 
-  if (is.function(getDictionary)) {
-    result$dictionary = getDictionary(result)
+  if (is.function(initializeDictionary)) {
+    searchResult <- initializeDictionary(result)
   } else {
-    result$dictionary <- searchPicsure(result)
+    searchResult <- searchPicsure(result)
   }
+  result$dictionary <- searchResult$phenotypes
+  result$genomicAnnotations = searchResult$info
 
-  message("Loading genotypic annotations...")
-
-  result$genotypeAnnotations = initializeGenotypeAnnotations(result)
   message("Initialization complete.")
   return (result)
 }
@@ -84,22 +99,6 @@ initializeSession <- function(url, token, psama_url=FALSE, getDictionary = NULL)
 #' @export
 getGenotypeAnnotations <- function(session) {
   return (session$genotypeAnnotations)
-}
-
-initializeGenotypeAnnotations <- function(session) {
-  result <- postJSON(session, paste("search/", session$resources$`auth-hpds`, sep = ""), "{\"query\":\"\"}")
-  result <- result$results$info
-  annotations = list()
-  for (conceptName in names(result)) {
-    concept = result[[conceptName]]
-    annotations[[(length(annotations) + 1)]] = list(
-      genomic_annotation = conceptName,
-      description = concept$description,
-      values = toString(concept$values),
-      continuous = concept$continuous
-    )
-  }
-  return(data.frame(do.call(rbind.data.frame, annotations)))
 }
 
 getProfile <- function(connection) {
@@ -112,15 +111,16 @@ getQueryTemplate <- function(connection) {
   return(response)
 }
 
-
 postJSON <- function(connection, path, body, responseDeserializer = deserializeJSON) {
   full_url = paste(connection$url_picsure, path, sep="")
   response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
 
   if (response$status_code != 200) {
-    writeLines("HTTP response:")
-    print(response$status_code)
-    return(response)
+    if (response$status_code == 401) {
+      stop("ERROR: Bad security credentials.")
+    } else {
+      stop(paste("ERROR: Request failed: ", response$status_code, ""))
+    }
   } else {
     responseText <- content(response, type="text", encoding="UTF-8")
     if (is.function(responseDeserializer)) {
@@ -138,15 +138,14 @@ deserializeJSON = function(response) {
 
 getJSON = function(connection, path, psama = FALSE) {
   urlstr = paste(ifelse(psama, connection$url_psama, connection$url_picsure), path, sep="")
-  request = GET(urlstr, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
-  if (request$status_code != 200) {
-    if (request$status_code == 401) {
+  response = GET(urlstr, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
+  if (response$status_code != 200) {
+    if (response$status_code == 401) {
       stop("ERROR: Bad security credentials.")
     } else {
-      print(request)
-      stop("ERROR: HTTP(S) Failed")
+      stop(paste("ERROR: Request failed: ", response$status_code, ""))
     }
   } else {
-    return(jsonlite::fromJSON(content(request, type="text", encoding = "UTF-8")))
+    return(jsonlite::fromJSON(content(response, type="text", encoding = "UTF-8")))
   }
 }

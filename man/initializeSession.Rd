@@ -4,7 +4,13 @@
 \alias{initializeSession}
 \title{Creates a session to access a PIC-SURE instance}
 \usage{
-initializeSession(url, token, psama_url = FALSE, getDictionary = NULL)
+initializeSession(
+  url,
+  token,
+  psama_url = FALSE,
+  initializeDictionary = NULL,
+  defaultResource = NULL
+)
 }
 \arguments{
 \item{url}{Url to a PIC-SURE instance}

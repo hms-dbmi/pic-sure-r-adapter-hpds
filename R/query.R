@@ -19,14 +19,12 @@ newQuery <- function(session) {
   query$numericFilters <- list()
   query$categoryFilters <- list()
   query$variantInfoFilters <- list()
+  query$variantInfoFilters$numericVariantInfoFilters = list()
+  query$variantInfoFilters$categoryVariantInfoFilters = list()
   query$anyRecordOf <- list()
-  query$requiredFields <- list()
-  query$crossCountFields <- list()
 
   query = parseQueryTemplate(query)
 
-  # TODO: load the default queryTemplate values. BDC only?
-  # self$load(self$session$profile_info$queryTemplate)
   return (query)
 }
 
@@ -93,12 +91,14 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
       }
       return (query)
     }
+
+
     variableToAdd <- variablesToAdd[1,]
     if (variableToAdd$categorical) {
       if(typeof(categories) != "list") {
         message("Categorical variable filters must contain list of values to filter on")
       }
-      query$categoryFilters[[keys[[1]]]] <- list(categories)
+      query$categoryFilters[[keys[[1]]]] <- categories
     } else {
       filterValue <- list()
       if (is.numeric(min)) {
@@ -140,15 +140,36 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
   }
 }
 
+#' @export
+deleteClause <- function(query, key) {
+  query$fields <- query$fields[!query$fields == key]
+  query$requiredFields  <- query$requiredFields[!query$requiredFields == key]
+  query$numericFilters[[key]] <- NULL
+  query$categoryFilters[[key]] <- NULL
+  query$variantInfoFilters$categoryVariantInfoFilters[[key]] <- NULL
+  query$variantInfoFilters$numericVariantInfoFilters[[key]] <- NULL
+  query$anyRecordOf <- query$anyRecordOf[!query$anyRecordOf == key]
+  return (query)
+}
+
 lookupVariables = function(query, keys) {
   return (query$session$dictionary[query$session$dictionary$name %in% keys, ])
 }
 
-#' @export
+
 lookupGenomicVariables <- function(query, keys) {
-  return (query$session$genotypeAnnotations[query$session$genotypeAnnotations$genomic_annotation %in% keys, ])
+  return (query$session$genomicAnnotations[query$session$genomicAnnotations$genomic_annotation %in% keys, ])
 }
 
+#' Prints the JSON representation of a query object
+#'
+#' @param query A query object
+#' @examples
+#'
+#'# query <- picsure::newQuery(session)
+#'# query <- picsure::addClause(query, "\\demographics\\AGE\\", max = 10)
+#'# picsure::showQuery(query)
+#'
 #' @export
 showQuery <- function(query) {
   print(prettify(generateQueryJSON(query, ""), indent = 4))
@@ -182,10 +203,8 @@ generateQueryJSON = function(query, expectedResultType) {
     variantInfoFilters = query$variantInfoFilters,
     anyRecordOf = query$anyRecordOf,
     requiredFields = query$requiredFields
-    #crossCountFields = query$crossCountFields
   )
 
-  #requestPayload = list(query = requestQuery, resourceUUID = query$resourceId)
   requestPayload = list(query = requestQuery, resourceUUID = determineResource(query$session))
   requestPayload$query[['expectedResultType']] = expectedResultType
 
@@ -195,8 +214,8 @@ generateQueryJSON = function(query, expectedResultType) {
   queryJSON <- gsub('"requiredFields":\\{\\}','"requiredFields":\\[\\]', queryJSON)
   queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
   queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
-  queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
-  queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
+  #queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+  #queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
 
   return (queryJSON)
 }

@@ -1,3 +1,4 @@
+library(purrr)
 
 #' Performs a search of variables in PIC-SURE for a given keyword
 #'
@@ -13,21 +14,21 @@
 #' searchResults <- picsure::searchPicsure(session, "heart", resultType = "DATA_FRAME")
 #'
 #' @export
-searchPicsure <- function(connection, keyword = "", resultType = "DATA_FRAME") {
+searchPicsure <- function(session, keyword = "", resultType = "DATA_FRAME") {
   searchQuery = jsonlite::toJSON(list(query = keyword), auto_unbox=TRUE)
-  result <- postJSON(connection, paste("search/", connection$resources$hpds, sep=""), searchQuery)
+  result <- postJSON(session, paste("search/", session$currentResource, sep=""), searchQuery)
 
   if(toupper(resultType) == "DICTIONARY")
     return (result$results)
   if (toupper(resultType) == "VARIABLE_PATHS")
     return (unique(result$name))
   if (toupper(resultType) == "DATA_FRAME")
-    return (getDataFrame(result))
+    return (getDataFrame(result$phenotypes))
 
   return (result)
 }
 
-getDataFrame <- function(results) {
+getDataFrameOld <- function(results) {
   output_df <- data.frame()
   # process JSON objects into dataframe
   for (idx1 in 1:length(results$results)) {
@@ -81,20 +82,83 @@ getDataFrame <- function(results) {
         temp_df$HpdsDataType <- result_type
         temp_df$categoryValues <- temp_values
       }
+      print(colnames(temp_df))
       output_df <- rbind(output_df, temp_df)
     }
   }
 
   # filter based on queryScopes
   # if (isTRUE(useQueryScopes)) {
-  #   if (length(connection$queryScopes) > 0) {
+  #   if (length(session$queryScopes) > 0) {
   #     # get the genomic info records
   #     cumulative <- output_df$HpdsDataType != "phenotypes"
-  #     for (matchidx in 1:length(connection$queryScopes)) {
-  #       cumulative <- cumulative | str_detect(output_df$name, fixed(connection$queryScopes[[matchidx]]))
+  #     for (matchidx in 1:length(session$queryScopes)) {
+  #       cumulative <- cumulative | str_detect(output_df$name, fixed(session$queryScopes[[matchidx]]))
   #     }
   #     output_df <- output_df[cumulative, ]
   #   }
   # }
   return(output_df)
+}
+
+#' @export
+getDataFrame <- function(results) {
+  mappedResults <- results$results$phenotypes %>% map(mapPhenotypeResult)
+  mappedResultsDF <- data.frame(do.call(rbind.data.frame, mappedResults))
+  mappedInfoResults <- results$results$info %>% map(mapInfoResult)
+  mappedInfoResultsDF <- data.frame(do.call(rbind.data.frame, mappedInfoResults))
+  return (list(
+    phenotypes = mappedInfoResultsDF,
+    info = mappedInfoResultsDF
+  ))
+}
+
+mapPhenotypeResult = function(result) {
+  if (result$categorical == TRUE) {
+    result$categoryValues <- toString(result$categoryValues)
+    result$min <- NA
+    result$max <- NA
+  } else {
+    result$categoryValues <- NA
+  }
+  result$HpdsDataType <- "phenotypes"
+  if (is.null(result[["description"]])) {
+    result$description <- NA
+  }
+  for (name in names(result)) {
+    if (is.list(result[[name]])) {
+      result[[name]] <- NA
+    }
+  }
+  return (result)
+}
+
+
+mapInfoResult = function(result) {
+  if (!is.null(result$continuous)) {
+    result$categorical = !result$continuous
+  }
+  if (result$categorical == TRUE) {
+    result$categoryValues <- toString(result$categoryValues)
+    result$min <- NA
+    result$max <- NA
+  } else {
+    result$categoryValues <- NA
+    if (is.null(result[["max"]])) {
+      result$max <- NA
+    }
+    if (is.null(result[["min"]])) {
+      result$min <- NA
+    }
+  }
+  result$HpdsDataType <- "info"
+  if (is.null(result[["description"]])) {
+    result$description <- NA
+  }
+  for (name in names(result)) {
+    if (is.list(result[[name]])) {
+      result[[name]] <- NA
+    }
+  }
+  return (result)
 }

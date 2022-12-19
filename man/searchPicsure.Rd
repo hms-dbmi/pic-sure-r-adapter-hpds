@@ -4,17 +4,17 @@
 \alias{searchPicsure}
 \title{Performs a search of variables in PIC-SURE for a given keyword}
 \usage{
-searchPicsure(connection, keyword = "", resultType = "DATA_FRAME")
+searchPicsure(session, keyword = "", resultType = "DATA_FRAME")
 }
 \arguments{
+\item{session}{Current session}
+
 \item{keyword}{Keyword to search for}
 
 \item{resultType}{Optional parameter to specify result type: Valid values:
 DATA_FRAME (default) which converts the response to a data frame
 DICTIONARY which returns a list
 VARIABLE_PATHS which returns the unique variable paths}
-
-\item{session}{Current session}
 }
 \value{
 A PIC-SURE session

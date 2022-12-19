@@ -19,8 +19,7 @@ library(urltools)
 #'
 #' @export
 bdc.initializeSession <- function(url, token, psama_url=FALSE) {
-  session <- initializeSession(url, token, psama_url, getDictionary = bdc.searchPicsure)
-  session <- bdc.setResource(session, "AUTH")
+  session <- initializeSession(url, token, psama_url, initializeDictionary = bdc.initializeDictionary, defaultResource = "auth-hpds")
   return (session)
 }
 
@@ -98,6 +97,43 @@ bdc.search <- function(session, keyword, limit = 0, offset = 0, includeValues = 
   return (result)
 }
 
+bdc.initializeDictionary <- function(session) {
+  dictionary <- bdc.searchPicsure(session)
+  message("Loading genotypic annotations...")
+  genotypeAnnotations <- tryCatch(
+    { initializeGenotypeAnnotations(session) },
+    error = function(error){
+      print(error$message)
+      message("Unable to load genotypic annotations, variant queries will not function properly.")
+      return (data.frame())
+    }
+  )
+  return (list(
+    phenotypes = dictionary,
+    info = genotypeAnnotations
+  ))
+}
+
+initializeGenotypeAnnotations <- function(session) {
+  result <- postJSON(session, paste("search/", session$currentResource, sep = ""), "{\"query\":\"\"}")
+  result <- result$results$info
+  annotations = list()
+  for (conceptName in names(result)) {
+    concept = result[[conceptName]]
+    conceptValues = if (!is.null(concept$values)) {
+      concept$values
+    } else {
+      concept$categoryValues
+    }
+    annotations[[(length(annotations) + 1)]] = list(
+      genomic_annotation = conceptName,
+      description = concept$description,
+      values = toString(conceptValues),
+      continuous = concept$continuous
+    )
+  }
+  return(data.frame(do.call(rbind.data.frame, annotations)))
+}
 
 #' @export
 bdc.getInfoColumns <- function(query) {
@@ -108,7 +144,6 @@ bdc.getInfoColumns <- function(query) {
 }
 
 projectAndFilterResults = function(results, scopes, showAll) {
-  # todo: do this when creating the session?
   scopes = if (is.null(scopes)) c() else str_replace_all(scopes[str_detect(scopes, "^\\\\")], "\\\\", "")
   in_scope = function(study) Reduce(function(acc, scope) (acc | str_detect(study, fixed(scope))), scopes, init=FALSE)
 
