@@ -236,12 +236,12 @@ generateQueryJSON = function(query, expectedResultType) {
 #'# results <- picsure::runQuery(query, "DATA_FRAME")
 #'
 #' @export
-runQuery <- function(query, resultType) {
+runQuery <- function(query, resultType = NULL) {
+  if(is.null(resultType) || toupper(resultType) == "DATA_FRAME") {
+    return (getResults(query))
+  }
   if(toupper(resultType) == "COUNT") {
     return (getCount(query))
-  }
-  if(toupper(resultType) == "DATA_FRAME") {
-    return (getResults(query))
   }
   print("Unrecognized resultType parameter. Valid values are: ('COUNT', 'DATA_FRAME'")
 }
@@ -270,7 +270,7 @@ determineResource = function(session) {
 parseQueryTemplate = function(query) {
   queryTemplateString = query$session$queryTemplate[[1]]
   if (!is.null(queryTemplateString) && queryTemplateString != "null") {
-    queryTemplate = jsonlite::fromJSON(queryTemplateString)
+    queryTemplate = jsonlite::fromJSON(queryTemplateString, simplifyVector = FALSE, flatten = FALSE)
     query$categoryFilters = queryTemplate$categoryFilters
     query$fields = queryTemplate$fields
     query$variantInfoFilters = queryTemplate$variantInfoFilters
