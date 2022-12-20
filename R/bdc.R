@@ -126,7 +126,7 @@ initializeGenotypeAnnotations <- function(session) {
       concept$categoryValues
     }
     annotations[[(length(annotations) + 1)]] = list(
-      genomic_annotation = conceptName,
+      name = conceptName,
       description = concept$description,
       values = toString(conceptValues),
       continuous = concept$continuous

@@ -158,7 +158,7 @@ lookupVariables = function(query, keys) {
 
 
 lookupGenomicVariables <- function(query, keys) {
-  return (query$session$genomicAnnotations[query$session$genomicAnnotations$genomic_annotation %in% keys, ])
+  return (query$session$genomicAnnotations[query$session$genomicAnnotations$name %in% keys, ])
 }
 
 #' Prints the JSON representation of a query object
@@ -200,10 +200,13 @@ generateQueryJSON = function(query, expectedResultType) {
     fields = query$fields,
     numericFilters = query$numericFilters,
     categoryFilters = getCategoryFilters(query),
-    variantInfoFilters = query$variantInfoFilters,
     anyRecordOf = query$anyRecordOf,
     requiredFields = query$requiredFields
   )
+
+  if (length(query$variantInfoFilters$numericVariantInfoFilters) > 0 || length(query$variantInfoFilters$categoryVariantInfoFilters) > 0) {
+    requestQuery$variantInfoFilters <- query$variantInfoFilters
+  }
 
   requestPayload = list(query = requestQuery, resourceUUID = determineResource(query$session))
   requestPayload$query[['expectedResultType']] = expectedResultType
