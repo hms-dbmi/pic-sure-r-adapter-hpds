@@ -271,9 +271,14 @@ parseQueryTemplate = function(query) {
   queryTemplateString = query$session$queryTemplate[[1]]
   if (!is.null(queryTemplateString) && queryTemplateString != "null") {
     queryTemplate = jsonlite::fromJSON(queryTemplateString, simplifyVector = FALSE, flatten = FALSE)
-    query$categoryFilters = queryTemplate$categoryFilters
-    query$fields = queryTemplate$fields
-    query$variantInfoFilters = queryTemplate$variantInfoFilters
+    if (!is.null(queryTemplate$categoryFilters) && length(queryTemplate$categoryFilters) > 0)
+      query$categoryFilters = queryTemplate$categoryFilters
+    if (!is.null(queryTemplate$fields) && length(queryTemplate$fields) > 0)
+      query$fields = queryTemplate$fields
+    if (!is.null(queryTemplate$numericFilters) && length(queryTemplate$numericFilters) > 0)
+      query$numericFilters = queryTemplate$numericFilters
+    if (!is.null(queryTemplate$variantInfoFilters) && length(queryTemplate$variantInfoFilters) > 0)
+      query$variantInfoFilters = queryTemplate$variantInfoFilters
   }
   return (query)
 }
