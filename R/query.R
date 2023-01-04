@@ -16,12 +16,12 @@ newQuery <- function(session) {
 
   query$fields = list()
   query$requiredFields <- list()
-  query$numericFilters <- list()
   query$categoryFilters <- list()
+  query$anyRecordOf <- list()
+  query$numericFilters <- list()
   query$variantInfoFilters <- list()
   query$variantInfoFilters$numericVariantInfoFilters = list()
   query$variantInfoFilters$categoryVariantInfoFilters = list()
-  query$anyRecordOf <- list()
 
   query = parseQueryTemplate(query)
 
@@ -54,17 +54,16 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
     variablesToAdd <- lookupVariables(query, keys)
   }
 
-
   if(toupper(type) == "FILTER") {
     if (length(keys) != 1) {
-      message("Filters must be added one at a time")
+      print("Filters must be added one at a time")
       return (query)
     }
     if (nrow(variablesToAdd) == 0) {
       variablesToAdd <- lookupGenomicVariables(query, keys)
       if (nrow(variablesToAdd) == 0) {
-        message("Variables not found:")
-        message(keys)
+        print("Variables not found:")
+        print(keys)
         return (query)
       }
       # else, add genomic filter
@@ -78,16 +77,16 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
           filterValue$max <- max
         }
         if(length(filterValue) == 0) {
-          message("Continuous variable filters must contain a numeric min or max")
+          print("Continuous variable filters must contain a numeric min or max")
           return (query)
         }
         query$variantInfoFilters$numericVariantInfoFilters[[keys[[1]]]] <- filterValue
       } else {
         if(typeof(categories) != "list") {
-          message("Categorical variable filters must contain list of values to filter on")
+          print("Categorical variable filters must contain list of values to filter on")
           return (query)
         }
-        query$variantInfoFilters$categoryVariantInfoFilters[[keys[[1]]]] <- list(categories)
+        query$variantInfoFilters$categoryVariantInfoFilters[[keys[[1]]]] <- categories
       }
       return (query)
     }
@@ -205,7 +204,7 @@ generateQueryJSON = function(query, expectedResultType) {
   )
 
   if (length(query$variantInfoFilters$numericVariantInfoFilters) > 0 || length(query$variantInfoFilters$categoryVariantInfoFilters) > 0) {
-    requestQuery$variantInfoFilters <- query$variantInfoFilters
+    requestQuery$variantInfoFilters <- list(query$variantInfoFilters)
   }
 
   requestPayload = list(query = requestQuery, resourceUUID = determineResource(query$session))
@@ -217,8 +216,8 @@ generateQueryJSON = function(query, expectedResultType) {
   queryJSON <- gsub('"requiredFields":\\{\\}','"requiredFields":\\[\\]', queryJSON)
   queryJSON <- gsub('"numericFilters":\\[\\]','"numericFilters":\\{\\}', queryJSON)
   queryJSON <- gsub('"categoryFilters":\\[\\]','"categoryFilters":\\{\\}', queryJSON)
-  #queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
-  #queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
+  queryJSON <- gsub('"categoryVariantInfoFilters":\\[\\]','"categoryVariantInfoFilters":\\{\\}', queryJSON)
+  queryJSON <- gsub('"numericVariantInfoFilters":\\[\\]','"numericVariantInfoFilters":\\{\\}', queryJSON)
 
   return (queryJSON)
 }
@@ -275,10 +274,6 @@ parseQueryTemplate = function(query) {
       query$categoryFilters = queryTemplate$categoryFilters
     if (!is.null(queryTemplate$fields) && length(queryTemplate$fields) > 0)
       query$fields = queryTemplate$fields
-    if (!is.null(queryTemplate$numericFilters) && length(queryTemplate$numericFilters) > 0)
-      query$numericFilters = queryTemplate$numericFilters
-    if (!is.null(queryTemplate$variantInfoFilters) && length(queryTemplate$variantInfoFilters) > 0)
-      query$variantInfoFilters = queryTemplate$variantInfoFilters
   }
   return (query)
 }

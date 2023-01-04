@@ -1,13 +1,33 @@
 source("../R/query.R", chdir = TRUE)
 library(testthat)
 
-test_that("parseQueryTemplate full query template", {
-  mockSession <- list(
-    currentResource = 'abc123',
-    queryTemplate = "{\"categoryFilters\":{\"\\\\_consents\\\\\":[\"phs001345.c1\",\"phs000956.c2\",\"phs000287.c3\"],\"\\\\_topmed_consents\\\\\":[\"phs000993.c1\",\"phs001368.c2\",\"phs000993.c2\",\"phs001368.c1\",\"phs000964.c3\",\"phs000964.c4\",\"phs000988.c1\",\"phs000964.c1\",\"phs000964.c2\",\"phs001368.c4\",\"phs001211.c2\",\"phs001211.c1\",\"phs001416.c1\",\"phs001024.c1\",\"phs001416.c2\"],\"\\\\_harmonized_consent\\\\\":[\"phs001238.c1\",\"phs000956.c2\",\"phs001013.c1\"]},\"numericFilters\":{},\"requiredFields\":[],\"fields\":[\"\\\\_Topmed Study Accession with Subject ID\\\\\",\"\\\\_Parent Study Accession with Subject ID\\\\\"],\"variantInfoFilters\":[{\"categoryVariantInfoFilters\":{},\"numericVariantInfoFilters\":{}}],\"expectedResultType\":[\"COUNT\"]}"
+mockDictionary <- list(
+  list(
+    name = "\\phs000001\\unit_test\\test_categorical_variable\\",
+    min = NA,
+    max = NA,
+    categorical = TRUE,
+    values = "Yes,No,Maybe"
+  ),
+  list(
+    name = "\\phs000001\\unit_test\\test_continuous_variable\\",
+    min = 1,
+    max = 42,
+    categorical = FALSE,
+    values = ""
   )
-  mockQuery <- newQuery(mockSession)
+)
+mockDictionaryDF <- data.frame(do.call(rbind.data.frame, mockDictionary))
+mockGenomicAnnotationsDF <- data.frame(do.call(rbind.data.frame, list()))
+mockSession <- list(
+  currentResource = 'abc123',
+  queryTemplate = "{\"categoryFilters\":{\"\\\\_consents\\\\\":[\"phs001345.c1\",\"phs000956.c2\",\"phs000287.c3\"],\"\\\\_topmed_consents\\\\\":[\"phs000993.c1\",\"phs001368.c2\",\"phs000993.c2\",\"phs001368.c1\",\"phs000964.c3\",\"phs000964.c4\",\"phs000988.c1\",\"phs000964.c1\",\"phs000964.c2\",\"phs001368.c4\",\"phs001211.c2\",\"phs001211.c1\",\"phs001416.c1\",\"phs001024.c1\",\"phs001416.c2\"],\"\\\\_harmonized_consent\\\\\":[\"phs001238.c1\",\"phs000956.c2\",\"phs001013.c1\"]},\"numericFilters\":{},\"requiredFields\":[],\"fields\":[\"\\\\_Topmed Study Accession with Subject ID\\\\\",\"\\\\_Parent Study Accession with Subject ID\\\\\"],\"variantInfoFilters\":[{\"categoryVariantInfoFilters\":{},\"numericVariantInfoFilters\":{}}],\"expectedResultType\":[\"COUNT\"]}",
+  dictionary = mockDictionaryDF,
+  genomicAnnotations = mockGenomicAnnotationsDF
+)
+mockQuery <- newQuery(mockSession)
 
+test_that("parseQueryTemplate parses full query template", {
   query = parseQueryTemplate(mockQuery)
 
   expect_equal(query$fields, list("\\_Topmed Study Accession with Subject ID\\", "\\_Parent Study Accession with Subject ID\\"))
@@ -18,13 +38,12 @@ test_that("parseQueryTemplate full query template", {
   expect_equal(query$requiredFields, list())
 })
 
-
-test_that("parseQueryTemplate empty query template", {
-  mockSession <- list(
+test_that("parseQueryTemplate parses empty query template", {
+  mockSession = list(
     currentResource = 'abc123',
     queryTemplate = "{}"
   )
-  mockQuery <- newQuery(mockSession)
+  mockQuery = newQuery(mockSession)
 
   query = parseQueryTemplate(mockQuery)
   expect_equal(query$fields, list())
@@ -33,16 +52,48 @@ test_that("parseQueryTemplate empty query template", {
   expect_equal(query$requiredFields, list())
 })
 
-test_that("parseQueryTemplate null query template", {
-  mockSession <- list(
+test_that("parseQueryTemplate parses null query template", {
+  mockSession = list(
     currentResource = 'abc123',
     queryTemplate = "{}"
   )
-  mockQuery <- newQuery(mockSession)
+  mockQuery = newQuery(mockSession)
 
   query = parseQueryTemplate(mockQuery)
   expect_equal(query$fields, list())
   expect_equal(query$categoryFilters, list())
   expect_equal(query$numericFilters, list())
   expect_equal(query$requiredFields, list())
+})
+
+
+test_that("addClause() adds valid continuous variable filter", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 3, max = 20)
+  expect_equal(length(mockQuery$numericFilters), 1)
+})
+test_that("addClause() adds valid continuous variable filter min only", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 3)
+  expect_equal(length(mockQuery$numericFilters), 1)
+})
+test_that("addClause() adds valid continuous variable filter max only", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", max = 20)
+  expect_equal(length(mockQuery$numericFilters), 1)
+})
+test_that("addClause() does not add continuous variable filter without min or max", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER")
+  expect_equal(length(mockQuery$numericFilters), 0)
+})
+test_that("addClause() adds valid categorical variable filter", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER", categories = list("Yes", "No"))
+  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 2)
+})
+test_that("addClause() does not add categorical variable filter without category value", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER")
+  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 0)
 })

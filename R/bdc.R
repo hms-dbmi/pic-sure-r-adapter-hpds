@@ -159,9 +159,7 @@ projectAndFilterResults = function(results, scopes, showAll) {
 
     paths <- c(paths, resultMetadata$columnmeta_HPDS_PATH)
     results[[index]] <- list(
-      # It is important for HPDS_PATH to be the first variable, as naming is different
-      # than baseline, so the concept path is assumed to be first
-      HPDS_PATH = resultMetadata$columnmeta_HPDS_PATH,
+      name = resultMetadata$columnmeta_HPDS_PATH,
       var_id = resultMetadata$derived_var_id,
       var_name = resultMetadata$derived_var_name,
       var_description = resultMetadata$derived_var_description,
@@ -180,10 +178,6 @@ projectAndFilterResults = function(results, scopes, showAll) {
     include_list <- c(include_list, index)
   }
   return(list(results=results[include_list], paths=paths))
-}
-
-bdc.lookupVariables <- function(query, keys) {
-  return (query$session$dictionary[query$session$dictionary$HPDS_PATH %in% keys, ])
 }
 
 #' Creates a query object to query a PIC-SURE instance
@@ -215,5 +209,5 @@ bdc.newQuery <- function(session) {
 #'
 #' @export
 bdc.addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, categories = NULL) {
-  return (addClause(query, keys, type, min, max, categories, bdc.lookupVariables))
+  return (addClause(query, keys, type, min, max, categories))
 }
