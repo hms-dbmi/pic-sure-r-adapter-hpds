@@ -87,6 +87,25 @@ test_that("addClause() does not add continuous variable filter without min or ma
   mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER")
   expect_equal(length(mockQuery$numericFilters), 0)
 })
+test_that("addClause() does not add continuous variable filter with invalid min", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = -1)
+  expect_equal(length(mockQuery$numericFilters), 0)
+
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 43)
+  expect_equal(length(mockQuery$numericFilters), 0)
+})
+test_that("addClause() does not add continuous variable filter with invalid max", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", max = -1)
+  expect_equal(length(mockQuery$numericFilters), 0)
+
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", max = 43)
+  expect_equal(length(mockQuery$numericFilters), 0)
+})
+
 test_that("addClause() adds valid categorical variable filter", {
   mockQuery = newQuery(mockSession)
   mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER", categories = list("Yes", "No"))
@@ -96,4 +115,87 @@ test_that("addClause() does not add categorical variable filter without category
   mockQuery = newQuery(mockSession)
   mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER")
   expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 0)
+})
+test_that("addClause() does not add multiple variable filter", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\", "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "FILTER", categories = list("Yes", "No"))
+  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 0)
+})
+
+test_that("addClause() does not add invalid filter", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_not_existing_variable\\", type = "FILTER", categories = list("Yes", "No"))
+  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_not_existing_variable\\"]]), 0)
+})
+
+
+test_that("addClause() adds valid select clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "SELECT")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$fields)
+})
+test_that("addClause() adds valid require clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "REQUIRE")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$requiredFields)
+})
+test_that("addClause() adds valid anyof clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "ANYOF")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$anyRecordOf)
+})
+
+test_that("addClause() adds multiple valid select clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "SELECT")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$fields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$fields)
+})
+test_that("addClause() adds only valid select clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_invalid_variable\\"), type = "SELECT")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$fields)
+  expect_false("\\phs000001\\unit_test\\test_invalid_variable\\" %in% mockQuery$fields)
+})
+
+test_that("deleteClause() deletes select clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "SELECT")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$fields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$fields)
+  mockQuery = deleteClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_false("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$fields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$fields)
+})
+
+test_that("deleteClause() deletes require clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "REQUIRE")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$requiredFields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$requiredFields)
+  mockQuery = deleteClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_false("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$requiredFields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$requiredFields)
+})
+
+test_that("deleteClause() deletes anyof clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "ANYOF")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$anyRecordOf)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$anyRecordOf)
+  mockQuery = deleteClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_false("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$anyRecordOf)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$anyRecordOf)
+})
+
+
+test_that("deleteClause() deletes filter clause", {
+  mockQuery = newQuery(mockSession)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER", categories = list("Yes", "No"))
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 3)
+  expect_equal(length(mockQuery$numericFilters), 1)
+  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 2)
+  mockQuery = deleteClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_equal(length(mockQuery$numericFilters), 1)
+  expect_null(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]])
 })

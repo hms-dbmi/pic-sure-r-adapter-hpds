@@ -62,6 +62,7 @@ mapPhenotypeResult = function(result) {
 
 
 mapInfoResult = function(result) {
+  print(names(result))
   if (!is.null(result$continuous)) {
     result$categorical = !result$continuous
   }

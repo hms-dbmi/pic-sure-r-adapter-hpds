@@ -43,27 +43,23 @@ newQuery <- function(session) {
 #'# query <- picsure::addClause(query, "\\demographics\\AGE\\", max = 10)
 #'
 #' @export
-addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, categories = NULL, lookupVariablesOverride = NULL) {
+addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, categories = NULL) {
   if (typeof(keys) != "list") {
     keys <- list(keys)
   }
 
-  if (is.function(lookupVariablesOverride)) {
-    variablesToAdd <- lookupVariablesOverride(query, keys)
-  } else {
-    variablesToAdd <- lookupVariables(query, keys)
-  }
+  variablesToAdd <- lookupVariables(query, keys)
 
   if(toupper(type) == "FILTER") {
     if (length(keys) != 1) {
-      print("Filters must be added one at a time")
+      message("Filters must be added one at a time")
       return (query)
     }
     if (nrow(variablesToAdd) == 0) {
       variablesToAdd <- lookupGenomicVariables(query, keys)
       if (nrow(variablesToAdd) == 0) {
-        print("Variables not found:")
-        print(keys)
+        message("Variables not found:")
+        message(keys)
         return (query)
       }
       # else, add genomic filter
@@ -71,19 +67,23 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
       if (variableToAdd$continuous) {
         filterValue <- list()
         if (is.numeric(min)) {
+          if (min < variableToAdd$min || min > variableToAdd$max) {
+            message(str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+            return (query)
+          }
           filterValue$min <- min
         }
         if (is.numeric(max)) {
           filterValue$max <- max
         }
         if(length(filterValue) == 0) {
-          print("Continuous variable filters must contain a numeric min or max")
+          message("Continuous variable filters must contain a numeric min or max")
           return (query)
         }
         query$variantInfoFilters$numericVariantInfoFilters[[keys[[1]]]] <- filterValue
       } else {
         if(typeof(categories) != "list") {
-          print("Categorical variable filters must contain list of values to filter on")
+          message("Categorical variable filters must contain list of values to filter on")
           return (query)
         }
         query$variantInfoFilters$categoryVariantInfoFilters[[keys[[1]]]] <- categories
@@ -96,14 +96,23 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
     if (variableToAdd$categorical) {
       if(typeof(categories) != "list") {
         message("Categorical variable filters must contain list of values to filter on")
+        return (query)
       }
       query$categoryFilters[[keys[[1]]]] <- categories
     } else {
       filterValue <- list()
       if (is.numeric(min)) {
+        if (min < variableToAdd$min || min > variableToAdd$max) {
+          message(str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+          return (query)
+        }
         filterValue$min <- min
       }
       if (is.numeric(max)) {
+        if (max < variableToAdd$min || max > variableToAdd$max) {
+          message(str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+          return (query)
+        }
         filterValue$max <- max
       }
       if(length(filterValue) == 0) {
