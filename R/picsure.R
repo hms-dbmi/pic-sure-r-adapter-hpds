@@ -1,4 +1,4 @@
-#' @import jsonlite stringr httr urltools
+#' @import jsonlite stringr httr urltools tidyverse
 NULL
 
 library(jsonlite)
@@ -6,10 +6,11 @@ library(stringr)
 library(httr)
 library(urltools)
 library(purrr)
+library(tidyverse)
 
 
-getResources <- function(connection, resourceId = FALSE) {
-  getJSON(connection, "info/resources")
+fetchResources <- function(session, resourceId = FALSE) {
+  getJSON(session, "info/resources")
 }
 
 #' Creates a session to access a PIC-SURE instance
@@ -54,7 +55,7 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
   message("Loading resources...")
   # for some reason, these are returned with the ID as the key and the name as the value, which
   # is not useful
-  resources = getResources(result)
+  resources = fetchResources(result)
   reversedResources = list()
   for (resourceName in names(resources)) {
     reversedResources[[resources[[resourceName]]]] <- resourceName

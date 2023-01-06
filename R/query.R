@@ -266,8 +266,7 @@ getCount = function(query) {
 getResults = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'DATAFRAME')
   response = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
-
-  return(read.csv(text=response, sep=','))
+  return(read.csv(text=response, sep=',', check.names=FALSE))
 }
 
 determineResource = function(session) {

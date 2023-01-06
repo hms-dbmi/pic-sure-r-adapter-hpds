@@ -5,6 +5,7 @@ library(jsonlite)
 library(stringr)
 library(httr)
 library(urltools)
+library(tidyverse)
 
 #' Creates a session to access a PIC-SURE instance
 #'
@@ -99,6 +100,8 @@ bdc.search <- function(session, keyword, limit = 0, offset = 0, includeValues = 
 
 bdc.initializeDictionary <- function(session) {
   dictionary <- bdc.searchPicsure(session)
+  dictionary <- dictionary %>% add_row(name = "\\_consents", categorical = TRUE)
+  dictionary <- dictionary %>% add_row(name = "\\_harmonized_consent", categorical = TRUE)
   message("Loading genotypic annotations...")
   genotypeAnnotations <- tryCatch(
     { initializeGenotypeAnnotations(session) },
