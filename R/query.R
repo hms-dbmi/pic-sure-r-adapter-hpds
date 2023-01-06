@@ -148,6 +148,9 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
   }
 }
 
+#' Deletes all clauses from this query for a given key
+#'
+#' @return The updated query
 #' @export
 deleteClause <- function(query, key) {
   query$fields <- query$fields[!query$fields == key]
@@ -256,16 +259,12 @@ runQuery <- function(query, resultType = NULL) {
 
 getCount = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'COUNT')
-
-  print(queryJSON)
   httpResults = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
   return (httpResults)
 }
 
 getResults = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'DATAFRAME')
-
-  print(queryJSON)
   response = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
 
   return(read.csv(text=response, sep=','))

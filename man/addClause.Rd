@@ -10,8 +10,7 @@ addClause(
   type = "FILTER",
   min = NULL,
   max = NULL,
-  categories = NULL,
-  lookupVariablesOverride = NULL
+  categories = NULL
 )
 }
 \arguments{

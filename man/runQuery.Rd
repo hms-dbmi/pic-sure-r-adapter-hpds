@@ -4,7 +4,7 @@
 \alias{runQuery}
 \title{Executes a query}
 \usage{
-runQuery(query, resultType)
+runQuery(query, resultType = NULL)
 }
 \arguments{
 \item{query}{A query object}

@@ -5,6 +5,7 @@ library(jsonlite)
 library(stringr)
 library(httr)
 library(urltools)
+library(purrr)
 
 
 getResources <- function(connection, resourceId = FALSE) {
@@ -96,9 +97,20 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
 }
 
 
+#' Returns the genotype annotations for this session, as a data frame
+#'
+#' @param session Current PIC-SURE session
 #' @export
 getGenotypeAnnotations <- function(session) {
   return (session$genotypeAnnotations)
+}
+
+#' Returns a list of resources for this session
+#'
+#' @param session Current PIC-SURE session
+#' @export
+getResources <- function(session) {
+  return (session$resources)
 }
 
 getProfile <- function(connection) {
