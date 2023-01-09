@@ -102,22 +102,22 @@ bdc.initializeDictionary <- function(session) {
   dictionary <- dictionary %>% add_row(name = "\\_consents\\", categorical = TRUE)
   dictionary <- dictionary %>% add_row(name = "\\_harmonized_consent\\", categorical = TRUE)
   dictionary <- dictionary %>% add_row(name = "\\_topmed_consents\\", categorical = TRUE)
-  message("Loading genotypic annotations...")
-  genotypeAnnotations <- tryCatch(
-    { initializeGenotypeAnnotations(session) },
+  message("Loading genomic annotations...")
+  genomicAnnotations <- tryCatch(
+    { initializeGenomicAnnotations(session) },
     error = function(error){
       print(error$message)
-      message("Unable to load genotypic annotations, variant queries will not function properly.")
+      message("Unable to load genomic annotations, variant queries will not function properly.")
       return (data.frame())
     }
   )
   return (list(
     phenotypes = dictionary,
-    info = genotypeAnnotations
+    info = genomicAnnotations
   ))
 }
 
-initializeGenotypeAnnotations <- function(session) {
+initializeGenomicAnnotations <- function(session) {
   result <- postJSON(session, paste("search/", session$currentResource, sep = ""), "{\"query\":\"\"}")
   result <- result$results$info
   annotations = list()

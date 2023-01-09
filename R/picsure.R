@@ -98,12 +98,12 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
 }
 
 
-#' Returns the genotype annotations for this session, as a data frame
+#' Returns the genomic annotations for this session, as a data frame
 #'
 #' @param session Current PIC-SURE session
 #' @export
-getGenotypeAnnotations <- function(session) {
-  return (session$genotypeAnnotations)
+getGenomicAnnotations <- function(session) {
+  return (session$genomicAnnotations)
 }
 
 #' Returns a list of resources for this session
