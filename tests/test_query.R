@@ -11,7 +11,7 @@ mockDictionary <- list(
   ),
   list(
     name = "\\phs000001\\unit_test\\test_continuous_variable\\",
-    min = 1,
+    min = 1.1,
     max = 42,
     categorical = FALSE,
     values = ""
@@ -69,7 +69,7 @@ test_that("parseQueryTemplate parses null query template", {
 
 test_that("addClause() adds valid continuous variable filter", {
   mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 3, max = 20)
+  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 1.1, max = 20)
   expect_equal(length(mockQuery$numericFilters), 1)
 })
 test_that("addClause() adds valid continuous variable filter min only", {
