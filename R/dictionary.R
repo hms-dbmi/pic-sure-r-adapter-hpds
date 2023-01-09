@@ -28,7 +28,6 @@ searchPicsure <- function(session, keyword = "", resultType = "DATA_FRAME") {
   return (result)
 }
 
-#' @export
 getDataFrame <- function(results) {
   mappedResults <- results$results$phenotypes %>% map(mapPhenotypeResult)
   mappedResultsDF <- data.frame(do.call(rbind.data.frame, mappedResults))
