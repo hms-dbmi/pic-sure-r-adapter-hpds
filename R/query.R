@@ -45,7 +45,7 @@ newQuery <- function(session) {
 #' @export
 addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, categories = NULL) {
   if (typeof(keys) != "list") {
-    keys <- list(keys)
+    keys <- as.list(keys)
   }
 
   variablesToAdd <- lookupVariables(query, keys)
