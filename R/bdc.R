@@ -79,7 +79,6 @@ bdc.searchPicsure <- function(session, keyword = "", resultType = "DATA_FRAME", 
     return (data.frame(do.call(rbind.data.frame, filteredResults$results)))
 }
 
-#' @export
 bdc.search <- function(session, keyword, limit = 0, offset = 0, includeValues = FALSE) {
   query = list(
     searchTerm = keyword,
@@ -174,8 +173,8 @@ projectAndFilterResults = function(results, scopes, showAll) {
       study_id = resultMetadata$derived_study_id,
       study_description = resultMetadata$derived_study_description,
       is_stigmatized = resultMetadata$is_stigmatized,
-      min = if (categorical) NA else resultMetadata$columnmeta_min,
-      max = if (categorical) NA else resultMetadata$columnmeta_max,
+      min = if (categorical) NA else as.numeric(resultMetadata$columnmeta_min),
+      max = if (categorical) NA else as.numeric(resultMetadata$columnmeta_max),
       categorical = categorical,
       values = toString(results[[index]]$result$values)
     )

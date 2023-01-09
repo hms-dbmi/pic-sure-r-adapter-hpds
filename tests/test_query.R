@@ -11,8 +11,8 @@ mockDictionary <- list(
   ),
   list(
     name = "\\phs000001\\unit_test\\test_continuous_variable\\",
-    min = 1.1,
-    max = 42,
+    min = "1.1",
+    max = "42",
     categorical = FALSE,
     values = ""
   )
