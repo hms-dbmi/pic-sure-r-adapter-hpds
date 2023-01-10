@@ -19,6 +19,6 @@ Set the resource to use for queries.
 }
 \examples{
 
-# session <- picsure::bdc.setResource(session, AUTH)
+# session <- picsure::bdc.setResource(session, 'AUTH')
 
 }

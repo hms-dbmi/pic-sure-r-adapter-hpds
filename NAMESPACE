@@ -2,7 +2,6 @@
 
 export(addClause)
 export(bdc.addClause)
-export(bdc.getInfoColumns)
 export(bdc.initializeSession)
 export(bdc.newQuery)
 export(bdc.searchPicsure)

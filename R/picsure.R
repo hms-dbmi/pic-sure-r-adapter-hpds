@@ -9,16 +9,13 @@ library(purrr)
 library(tidyverse)
 
 
-fetchResources <- function(session, resourceId = FALSE) {
-  getJSON(session, "info/resources")
-}
-
 #' Creates a session to access a PIC-SURE instance
 #'
 #' @param url Url to a PIC-SURE instance
 #' @param token A user token to access this instance. This can be found in the "User Profile" tab
 #' on the PIC-SURE site
 #' @param psama_url (Optional) URL to override the default PSAMA endpoint
+#' @param initializeDictionary (Optional, for internal use only) Function to override dictionary initialization
 #' @return An object which provides access to a PIC-SURE instance
 #' @examples
 #'
@@ -53,8 +50,8 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
   result <- c(result, token = token)
 
   message("Loading resources...")
-  # for some reason, these are returned with the ID as the key and the name as the value, which
-  # is not useful
+  # for some reason, these are returned with the ID as the key and the name as
+  # the value, which is not useful
   resources = fetchResources(result)
   reversedResources = list()
   for (resourceName in names(resources)) {
@@ -122,6 +119,10 @@ getProfile <- function(connection) {
 getQueryTemplate <- function(connection) {
   response = getJSON(connection, "user/me/queryTemplate", TRUE)
   return(response)
+}
+
+fetchResources <- function(session, resourceId = FALSE) {
+  getJSON(session, "info/resources")
 }
 
 postJSON <- function(connection, path, body, responseDeserializer = deserializeJSON) {

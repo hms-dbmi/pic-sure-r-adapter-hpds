@@ -31,7 +31,7 @@ bdc.initializeSession <- function(url, token, psama_url=FALSE) {
 #' @return A PIC-SURE session
 #' @examples
 #'
-#'# session <- picsure::bdc.setResource(session, AUTH)
+#'# session <- picsure::bdc.setResource(session, 'AUTH')
 #'
 #' @export
 bdc.setResource <- function(session, resourceName) {
@@ -86,7 +86,6 @@ bdc.search <- function(session, keyword, limit = 0, offset = 0, includeValues = 
     excludedTags = list(),
     returnTags = FALSE,
     offset = offset,
-    #limit = if(limit == 0) 10000 else limit #revert, testing only
     limit = if(limit == 0) 1000000 else limit
   )
   if(!includeValues)
@@ -136,14 +135,6 @@ initializeGenomicAnnotations <- function(session) {
     )
   }
   return(data.frame(do.call(rbind.data.frame, annotations)))
-}
-
-#' @export
-bdc.getInfoColumns <- function(query) {
-  queryJSON = generateQueryJSON(query, expectedResultType = 'INFO_COLUMN_LISTING')
-
-  result = postJSON(query$session, "query/sync/", queryJSON)
-  return (result)
 }
 
 projectAndFilterResults = function(results, scopes, showAll) {
@@ -208,7 +199,22 @@ bdc.newQuery <- function(session) {
 #' @examples
 #'
 #'# query <- picsure::bdc.newQuery(session)
-#'# query <- picsure::bdc.addClause(query, "\\phs000284\\pht001902\\phv00122593\\ZM\\", "FILTER", min = 1)
+#'# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable1\\", "FILTER", min = 1, max = 2)
+#'# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable2\\", "FILTER", categories = list("Yes", "Maybe"))
+#'# count <- picsure::getCount(query)
+#'# results <- picsure::getResults(query)
+#'
+#'# query <- picsure::bdc.newQuery(session)
+#'# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable3\\", "SELECT")
+#'# results <- picsure::getResults(query)
+#'
+#'# query <- picsure::bdc.newQuery(session)
+#'# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable4\\", "REQUIRE")
+#'# results <- picsure::getResults(query)
+#'
+#'# query <- picsure::bdc.newQuery(session)
+#'# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable5\\", "ANYOF")
+#'# results <- picsure::getResults(query)
 #'
 #' @export
 bdc.addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, categories = NULL) {

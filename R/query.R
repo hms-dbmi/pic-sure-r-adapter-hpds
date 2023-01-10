@@ -42,6 +42,23 @@ newQuery <- function(session) {
 #'# query <- picsure::newQuery(session)
 #'# query <- picsure::addClause(query, "\\demographics\\AGE\\", max = 10)
 #'
+#'#'# query <- picsure::newQuery(session)
+#'# query <- picsure::addClause(query, "\\demographics\\AGE\\", "FILTER", min =18, max = 35)
+#'# query <- picsure::addClause(query, "\\demographics\\AGE\\", "FILTER", categories = list("Yes", "Maybe"))
+#'# count <- picsure::getCount(query)
+#'# results <- picsure::getResults(query)
+#'
+#'# query <- picsure::newQuery(session)
+#'# query <- picsure::addClause(query, "\\demographics\\AGE\\", "SELECT")
+#'# results <- picsure::getResults(query)
+#'
+#'# query <- picsure::newQuery(session)
+#'# query <- picsure::addClause(query, "\\demographics\\AGE\\", "REQUIRE")
+#'# results <- picsure::getResults(query)
+#'
+#'# query <- picsure::newQuery(session)
+#'# query <- picsure::addClause(query, "\\demographics\\AGE\\", "ANYOF")
+#'# results <- picsure::getResults(query)
 #' @export
 addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, categories = NULL) {
   if (typeof(keys) != "list") {
@@ -200,7 +217,7 @@ getCategoryFilters = function(query) {
   if(length(query$variantInfoFilters$categoryVariantInfoFilters) == 0 && length(query$variantInfoFilters$numericVariantInfoFilters) == 0) {
     categoryFilters["\\_topmed_consents\\"] = NULL
   }
-  if (length(keys[str_detect(keys, "\\DCC Harmonized data set")]) > 0) {
+  if (length(keys[str_detect(keys, "\\DCC Harmonized data set")]) == 0) {
     categoryFilters["\\_harmonized_consent\\"] = NULL
   }
   return (categoryFilters)
@@ -254,7 +271,7 @@ runQuery <- function(query, resultType = NULL) {
   if(toupper(resultType) == "COUNT") {
     return (getCount(query))
   }
-  print("Unrecognized resultType parameter. Valid values are: ('COUNT', 'DATA_FRAME'")
+  print("Unrecognized resultType parameter. Valid values are: ('COUNT', 'DATA_FRAME')")
 }
 
 getCount = function(query) {
