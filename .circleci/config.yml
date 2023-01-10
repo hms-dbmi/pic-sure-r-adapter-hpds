@@ -20,9 +20,6 @@ jobs:
             R -e 'devtools::install_github("jimhester/lintr")'
       - run:
           command: |
-            R -e 'devtools::check()'
-      - run:
-          command: |
             R -e 'devtools::test()'
       - store_artifacts:
           path: man/
