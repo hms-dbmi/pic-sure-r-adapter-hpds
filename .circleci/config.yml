@@ -4,7 +4,7 @@ version: 2.1
 
 jobs:
   build:
-    working_directory: ~/
+    working_directory: ~/main
     docker:
       - image: appsilon/ci-base:1.0
     steps:
