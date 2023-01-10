@@ -1,4 +1,4 @@
-source("../R/query.R", chdir = TRUE)
+source("../../R/query.R", chdir = TRUE)
 library(testthat)
 
 mockDictionary <- list(
