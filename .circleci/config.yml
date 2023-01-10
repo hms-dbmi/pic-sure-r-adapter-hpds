@@ -14,6 +14,9 @@ jobs:
             R -e 'devtools:::install_deps(dependencies = TRUE)'
       - run:
           command: |
+            R -e 'install.packages("testthat")'
+      - run:
+          command: |
             R -e 'devtools::install_github("jimhester/lintr")'
       - run:
           command: |
