@@ -11,10 +11,16 @@ jobs:
       - checkout
       - run:
           command: |
-            R -e 'devtools::install_deps(dependencies = TRUE)'
+            R -e 'devtools:::install_deps(dependencies = TRUE)'
       - run:
           command: |
-            R -e 'testthat::test_dir("tests")'
+            R -e 'devtools::install_github("jimhester/lintr")'
+      - run:
+          command: |
+            R -e 'devtools::check()'
+      - run:
+          command: |
+            R -e 'devtools::test()'
       - store_artifacts:
           path: man/
           destination: man
