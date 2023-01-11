@@ -19,7 +19,6 @@ jobs:
             R -e 'devtools::install_deps(dependencies = TRUE)'
       - run:
           command: |
-            R -e 'devtools::test()'
-      - store_artifacts:
-          path: man/
-          destination: man
+            R -e 'testthat::test_dir("tests/testthat", reporter = JunitReporter$new(file = "results/junit_result.xml"))'
+      - store_test_results:
+          path: tests/testthat/results

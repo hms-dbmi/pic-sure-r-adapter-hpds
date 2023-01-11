@@ -9,4 +9,4 @@
 library(testthat)
 library(picsure)
 
-test_check("picsure")
+test_check("picsure", reporter = JunitReporter$new(file = "junit_result.xml"))
