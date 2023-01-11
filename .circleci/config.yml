@@ -19,9 +19,9 @@ jobs:
             R -e 'options(testthat.output_file = "results/test-out.xml")'
       - run:
           command: |
-            R -e 'options(testthat.output_file = "results/test-out.xml"); testthat::test_dir("tests/testthat", reporter = "junit")'
+            R -e 'options(testthat.output_file = "test-out.xml"); testthat::test_dir("tests/testthat", reporter = "junit")'
       - store_artifacts:
-          path: tests/testthat/results
-          destination: tests/testthat/results/rspec
+          path: tests/testthat/test-out.xml
+          destination: tests/testthat/rspec
       - store_test_results:
-          path: tests/testthat/results/rspec
+          path: tests/testthat/rspec
