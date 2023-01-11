@@ -6,7 +6,7 @@ jobs:
   build:
     working_directory: ~/main
     docker:
-      - image: appsilon/ci-base:1.0
+      - image: rocker/r-ver:4.2.1
     steps:
       - checkout
       - run:
