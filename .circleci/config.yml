@@ -24,4 +24,4 @@ jobs:
           path: tests/testthat/test-out.xml
           destination: tests/testthat/rspec
       - store_test_results:
-          path: tests/testthat/rspec
+          path: tests/testthat/test-out.xml
