@@ -22,6 +22,6 @@ jobs:
             R -e 'testthat::test_dir("tests/testthat", reporter = "junit")'
       - store_artifacts:
           path: tests/testthat/results
-          destination: test-results
+          destination: tests/testthat/results/rspec
       - store_test_results:
-          path: tests/testthat/results
+          path: tests/testthat/results/rspec
