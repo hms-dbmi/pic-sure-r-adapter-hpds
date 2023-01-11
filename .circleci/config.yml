@@ -11,6 +11,9 @@ jobs:
       - checkout
       - run:
           command: |
+            R -e 'install.packages("devtools")'
+      - run:
+          command: |
             R -e 'devtools::install_deps(dependencies = TRUE)'
       - run:
           command: |
