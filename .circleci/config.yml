@@ -9,7 +9,7 @@ jobs:
       - image: rocker/r-ver:4.2.1
     steps:
       - checkout
-      - run: apt-get install -y libxml2
+      - run: apt-get install -y libxml2-utils
       - run:
           command: |
             R -e 'install.packages(c("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse"))'
