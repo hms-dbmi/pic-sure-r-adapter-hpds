@@ -7,11 +7,9 @@ jobs:
     working_directory: ~/main
     docker:
       - image: rocker/r-ver:4.2.1
-    dependencies:
-      pre:
-        - sudo apt-get install libxml2-utils
     steps:
       - checkout
+      - run: sudo yum install libxml2
       - run:
           command: |
             R -e 'install.packages(c("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse"))'
