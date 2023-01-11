@@ -1,4 +1,4 @@
-#' @import jsonlite stringr httr urltools tidyverse purr
+#' @import jsonlite stringr httr urltools tidyverse purrr
 NULL
 
 library(jsonlite)

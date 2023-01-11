@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run:
           command: |
-            R -e 'install.packages(list("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse","purr"))'
+            R -e 'install.packages(list("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse"))'
       - run:
           command: |
             R -e 'devtools::install_deps(dependencies = TRUE)'
