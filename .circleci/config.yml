@@ -9,6 +9,7 @@ jobs:
       - image: rocker/r-ver:4.2.1
     steps:
       - checkout
+      - run: apt-get update
       - run: apt-get install -y libxml2-utils
       - run:
           command: |
