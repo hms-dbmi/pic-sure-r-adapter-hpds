@@ -38,3 +38,5 @@ rsconnect/
 
 *.iml
 .idea/*
+
+tests/testthat/results
