@@ -16,9 +16,9 @@ jobs:
             R -e 'install.packages(c("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse"))'
       - run:
           command: |
-            R -e 'devtools::install_deps(dependencies = TRUE)'
+            R -e 'options(testthat.output_file = "results/test-out.xml")'
       - run:
           command: |
-            R -e 'testthat::test_dir("tests/testthat", reporter = JunitReporter$new(file = "results/junit_result.xml"))'
+            R -e 'testthat::test_dir("tests/testthat", reporter = "junit")'
       - store_test_results:
           path: tests/testthat/results
