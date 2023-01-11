@@ -11,6 +11,9 @@ jobs:
       - checkout
       - run:
           command: |
+            sudo yum install libxml2
+      - run:
+          command: |
             R -e 'install.packages(c("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse"))'
       - run:
           command: |
