@@ -144,12 +144,12 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
 
   if (is.null(variablesToAdd) || nrow(variablesToAdd) == 0 ) {
     message("Variables not found:")
-    print(keys)
+    message(keys)
     return (query)
   }
   if (nrow(variablesToAdd) != length(keys)) {
     message("Not all variables were valid. Only the following will be added:")
-    print(variablesToAdd[,1])
+    message(variablesToAdd[,1])
   }
   if(toupper(type) == "SELECT") {
     query$fields <- append(query$fields, variablesToAdd[,1])
