@@ -11,16 +11,10 @@ jobs:
       - checkout
       - run:
           command: |
-            R -e 'install.packages("devtools")'
+            R -e 'install.packages(list("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse","purr"))'
       - run:
           command: |
             R -e 'devtools::install_deps(dependencies = TRUE)'
-      - run:
-          command: |
-            R -e 'install.packages("testthat")'
-      - run:
-          command: |
-            R -e 'install.packages("purrr")'
       - run:
           command: |
             R -e 'devtools::test()'
