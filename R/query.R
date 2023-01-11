@@ -85,7 +85,7 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
         filterValue <- list()
         if (is.numeric(min)) {
           if (min < variableToAdd$min || min > variableToAdd$max) {
-            message(str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+            message(stringr::str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
             return (query)
           }
           filterValue$min <- min
@@ -120,14 +120,14 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
       filterValue <- list()
       if (is.numeric(min)) {
         if (min < variableToAdd$min || min > variableToAdd$max) {
-          message(str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+          message(stringr::str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
           return (query)
         }
         filterValue$min <- min
       }
       if (is.numeric(max)) {
         if (max < variableToAdd$min || max > variableToAdd$max) {
-          message(str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+          message(stringr::str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
           return (query)
         }
         filterValue$max <- max
