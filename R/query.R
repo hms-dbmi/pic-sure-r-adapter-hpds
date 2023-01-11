@@ -127,7 +127,7 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
       }
       if (is.numeric(max)) {
         if (max < variableToAdd$min || max > variableToAdd$max) {
-          message(str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+          message(stringr::str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
           return (query)
         }
         filterValue$max <- max
