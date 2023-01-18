@@ -7,21 +7,18 @@
 getResultByQueryUUID(session, queryUUID)
 }
 \arguments{
-\item{query}{A query object}
+\item{session}{The current session object}
 
-\item{resultType}{The result type to query for:
-"COUNT" queries only for the number of results
-"DATA_FRAME" queries for the entire result set}
+\item{queryUUID}{The unique id of the query to run}
 }
 \value{
-The result of the query
+The result of the query as a data frame
 }
 \description{
 Executes a query with a given queryUUID
 }
 \examples{
 
-# count <- picsure::runQuery(query, "COUNT")
-# results <- picsure::runQuery(query, "DATA_FRAME")
+# result <- picsure::getResultByQueryUUID(session, "e10882ae-542a-4e38-ae28-399e13ac38c1")
 
 }

@@ -1,3 +1,6 @@
+#' @importFrom purrr map
+NULL
+
 library(purrr)
 
 #' Performs a search of variables in PIC-SURE for a given keyword

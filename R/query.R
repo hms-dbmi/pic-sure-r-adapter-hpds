@@ -12,7 +12,7 @@ NULL
 newQuery <- function(session) {
   query = list(session = session)
 
-  query$resourceId = determineResource(session)
+  query$resourceId = session$currentResource
 
   query$fields = list()
   query$requiredFields <- list()
@@ -236,7 +236,7 @@ generateQueryJSON = function(query, expectedResultType) {
     requestQuery$variantInfoFilters <- list(query$variantInfoFilters)
   }
 
-  requestPayload = list(query = requestQuery, resourceUUID = determineResource(query$session))
+  requestPayload = list(query = requestQuery, resourceUUID = query$resourceId)
   requestPayload$query[['expectedResultType']] = expectedResultType
 
   queryJSON = jsonlite::toJSON(requestPayload, auto_unbox = TRUE)
@@ -300,10 +300,6 @@ getResults = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'DATAFRAME')
   response = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
   return(read.csv(text=response, sep=',', check.names=FALSE))
-}
-
-determineResource = function(session) {
-  return (session$currentResource)
 }
 
 parseQueryTemplate = function(query) {

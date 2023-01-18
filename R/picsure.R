@@ -1,11 +1,10 @@
-#' @import jsonlite stringr httr urltools tidyverse purrr
+#' @import jsonlite stringr httr urltools tidyverse
 NULL
 
 library(jsonlite)
 library(stringr)
 library(httr)
 library(urltools)
-library(purrr)
 library(tidyverse)
 
 
