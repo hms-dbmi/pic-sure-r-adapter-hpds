@@ -274,6 +274,25 @@ runQuery <- function(query, resultType = NULL) {
   print("Unrecognized resultType parameter. Valid values are: ('COUNT', 'DATA_FRAME')")
 }
 
+#' Executes a query with a given queryUUID
+#'
+#' @param query A query object
+#' @param resultType The result type to query for:
+#' "COUNT" queries only for the number of results
+#' "DATA_FRAME" queries for the entire result set
+#' @return The result of the query
+#' @examples
+#'
+#'# count <- picsure::runQuery(query, "COUNT")
+#'# results <- picsure::runQuery(query, "DATA_FRAME")
+#'
+#' @export
+getResultByQueryUUID <- function(session, queryUUID) {
+  queryJSON = "{}"
+  response = postJSON(session, paste("query/", queryUUID, "/result", sep=""), queryJSON, responseDeserializer = NULL)
+  return(read.csv(text=response, sep=',', check.names=FALSE))
+}
+
 getCount = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'COUNT')
   httpResults = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)

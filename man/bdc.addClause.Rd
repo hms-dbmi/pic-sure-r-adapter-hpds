@@ -35,6 +35,21 @@ Add a clause to a query
 \examples{
 
 # query <- picsure::bdc.newQuery(session)
-# query <- picsure::bdc.addClause(query, "\\phs000284\\pht001902\\phv00122593\\ZM\\", "FILTER", min = 1)
+# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable1\\", "FILTER", min = 1, max = 2)
+# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable2\\", "FILTER", categories = list("Yes", "Maybe"))
+# count <- picsure::getCount(query)
+# results <- picsure::getResults(query)
+
+# query <- picsure::bdc.newQuery(session)
+# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable3\\", "SELECT")
+# results <- picsure::getResults(query)
+
+# query <- picsure::bdc.newQuery(session)
+# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable4\\", "REQUIRE")
+# results <- picsure::getResults(query)
+
+# query <- picsure::bdc.newQuery(session)
+# query <- picsure::bdc.addClause(query, "\\phs000001\\pht000001\\phv00000001\\variable5\\", "ANYOF")
+# results <- picsure::getResults(query)
 
 }

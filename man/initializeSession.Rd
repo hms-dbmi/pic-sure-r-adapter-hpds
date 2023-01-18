@@ -19,6 +19,8 @@ initializeSession(
 on the PIC-SURE site}
 
 \item{psama_url}{(Optional) URL to override the default PSAMA endpoint}
+
+\item{initializeDictionary}{(Optional, for internal use only) Function to override dictionary initialization}
 }
 \value{
 An object which provides access to a PIC-SURE instance

@@ -37,4 +37,21 @@ Add a clause to a query
 # query <- picsure::newQuery(session)
 # query <- picsure::addClause(query, "\\demographics\\AGE\\", max = 10)
 
+#'# query <- picsure::newQuery(session)
+# query <- picsure::addClause(query, "\\demographics\\AGE\\", "FILTER", min =18, max = 35)
+# query <- picsure::addClause(query, "\\demographics\\AGE\\", "FILTER", categories = list("Yes", "Maybe"))
+# count <- picsure::getCount(query)
+# results <- picsure::getResults(query)
+
+# query <- picsure::newQuery(session)
+# query <- picsure::addClause(query, "\\demographics\\AGE\\", "SELECT")
+# results <- picsure::getResults(query)
+
+# query <- picsure::newQuery(session)
+# query <- picsure::addClause(query, "\\demographics\\AGE\\", "REQUIRE")
+# results <- picsure::getResults(query)
+
+# query <- picsure::newQuery(session)
+# query <- picsure::addClause(query, "\\demographics\\AGE\\", "ANYOF")
+# results <- picsure::getResults(query)
 }
