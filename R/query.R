@@ -276,15 +276,12 @@ runQuery <- function(query, resultType = NULL) {
 
 #' Executes a query with a given queryUUID
 #'
-#' @param query A query object
-#' @param resultType The result type to query for:
-#' "COUNT" queries only for the number of results
-#' "DATA_FRAME" queries for the entire result set
-#' @return The result of the query
+#' @param session The current session object
+#' @param queryUUID The unique id of the query to run
+#' @return The result of the query as a data frame
 #' @examples
 #'
-#'# count <- picsure::runQuery(query, "COUNT")
-#'# results <- picsure::runQuery(query, "DATA_FRAME")
+#'# result <- picsure::getResultByQueryUUID(session, "e10882ae-542a-4e38-ae28-399e13ac38c1")
 #'
 #' @export
 getResultByQueryUUID <- function(session, queryUUID) {
