@@ -98,9 +98,13 @@ bdc.search <- function(session, keyword, limit = 0, offset = 0, includeValues = 
 
 bdc.initializeDictionary <- function(session) {
   dictionary <- bdc.searchPicsure(session)
+  # Including these special cases, as they are valid variables that a user can use in queries
   dictionary <- dictionary %>% add_row(name = "\\_consents\\", categorical = TRUE)
   dictionary <- dictionary %>% add_row(name = "\\_harmonized_consent\\", categorical = TRUE)
   dictionary <- dictionary %>% add_row(name = "\\_topmed_consents\\", categorical = TRUE)
+
+  # BDC has a separate dictionary resource, which does not include genomic annotations
+  # in it's response like HPDS normally does in other environments
   message("Loading genomic annotations...")
   genomicAnnotations <- tryCatch(
     { initializeGenomicAnnotations(session) },
@@ -137,6 +141,7 @@ initializeGenomicAnnotations <- function(session) {
   return(data.frame(do.call(rbind.data.frame, annotations)))
 }
 
+# Maps the search results to a more user friendly format, which is valid to be turned into a data frame
 projectAndFilterResults = function(results, scopes, showAll) {
   scopes = if (is.null(scopes)) c() else str_replace_all(scopes[str_detect(scopes, "^\\\\")], "\\\\", "")
   in_scope = function(study) Reduce(function(acc, scope) (acc | str_detect(study, fixed(scope))), scopes, init=FALSE)

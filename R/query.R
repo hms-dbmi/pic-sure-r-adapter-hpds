@@ -180,11 +180,13 @@ deleteClause <- function(query, key) {
   return (query)
 }
 
+#' Gets a variable from the session dictionary, if it exists
 lookupVariables = function(query, keys) {
   return (query$session$dictionary[query$session$dictionary$name %in% keys, ])
 }
 
 
+#' Gets a genomic variable from the session dictionary, if it exists
 lookupGenomicVariables <- function(query, keys) {
   return (query$session$genomicAnnotations[query$session$genomicAnnotations$name %in% keys, ])
 }
@@ -203,6 +205,7 @@ showQuery <- function(query) {
   print(prettify(generateQueryJSON(query, ""), indent = 4))
 }
 
+#' Gets the category filters for a query
 getCategoryFilters = function(query) {
   keys = c(
     query$fields,
@@ -214,15 +217,19 @@ getCategoryFilters = function(query) {
   )
 
   categoryFilters = query$categoryFilters
+  # Topmed consents do not need to be included if there are no variant filters
   if(length(query$variantInfoFilters$categoryVariantInfoFilters) == 0 && length(query$variantInfoFilters$numericVariantInfoFilters) == 0) {
     categoryFilters["\\_topmed_consents\\"] = NULL
   }
+  # Harmonized consents do not need to be included if there are no harmonized variables in the query
   if (length(keys[str_detect(keys, "\\DCC Harmonized data set")]) == 0) {
     categoryFilters["\\_harmonized_consent\\"] = NULL
   }
   return (categoryFilters)
 }
 
+#' Generate JSON representation of the query to be sent to the PIC-SURE api. This handles various quirks
+#' between the required JSON schema and how jsonlite serializes R data types
 generateQueryJSON = function(query, expectedResultType) {
   requestQuery = list(
     fields = query$fields,
@@ -302,6 +309,8 @@ getResults = function(query) {
   return(read.csv(text=response, sep=',', check.names=FALSE))
 }
 
+#' Parses the query template and updates appropriate query fields. This may be incomplete,
+#' but currently handles known query templates
 parseQueryTemplate = function(query) {
   queryTemplateString = query$session$queryTemplate[[1]]
   if (!is.null(queryTemplateString) && queryTemplateString != "null") {

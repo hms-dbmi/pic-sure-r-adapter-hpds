@@ -31,6 +31,7 @@ searchPicsure <- function(session, keyword = "", resultType = "DATA_FRAME") {
   return (result)
 }
 
+#' Maps the results of a search query to a phenotypes data frame, and an info data frame
 getDataFrame <- function(results) {
   mappedResults <- results$results$phenotypes %>% map(mapPhenotypeResult)
   mappedResultsDF <- data.frame(do.call(rbind.data.frame, mappedResults))
@@ -42,6 +43,7 @@ getDataFrame <- function(results) {
   ))
 }
 
+#' Maps a row from the phenotype result to a row to be included in the dictionary dataframe
 mapPhenotypeResult = function(result) {
   if (result$categorical == TRUE) {
     result$categoryValues <- toString(result$categoryValues)
@@ -54,6 +56,7 @@ mapPhenotypeResult = function(result) {
   if (is.null(result[["description"]])) {
     result$description <- NA
   }
+  # Arbitrary lists cannot be included in a data frame
   for (name in names(result)) {
     if (is.list(result[[name]])) {
       result[[name]] <- NA
@@ -62,10 +65,10 @@ mapPhenotypeResult = function(result) {
   return (result)
 }
 
-
+#' Maps a row from the info result to a row to be included in the genomic annotations dataframe
 mapInfoResult = function(result) {
-  print(names(result))
-  if (!is.null(result$continuous)) {
+  # Sometimes the info result has this backwards, I'm not sure why it's inconsistent
+  if (is.null(result$categorical) && !is.null(result$continuous)) {
     result$categorical = !result$continuous
   }
   if (result$categorical == TRUE) {
@@ -74,10 +77,10 @@ mapInfoResult = function(result) {
     result$max <- NA
   } else {
     result$categoryValues <- NA
-    if (is.null(result[["max"]])) {
+    if (is.null(result$max)) {
       result$max <- NA
     }
-    if (is.null(result[["min"]])) {
+    if (is.null(result$min)) {
       result$min <- NA
     }
   }
@@ -85,6 +88,7 @@ mapInfoResult = function(result) {
   if (is.null(result[["description"]])) {
     result$description <- NA
   }
+  # Arbitrary lists cannot be included in a data frame
   for (name in names(result)) {
     if (is.list(result[[name]])) {
       result[[name]] <- NA
