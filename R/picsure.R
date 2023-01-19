@@ -22,7 +22,7 @@ library(tidyverse)
 #'
 #' @export
 initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary = NULL, defaultResource = NULL) {
-  # Safely parse and set url_picsure for this instance of the PicSureConnection
+  # Safely parse and set url_picsure
   url_df = urltools::url_parse(url)
   url_df$path <- stringr::str_trim(url_df$path)
   if (isFALSE(str_detect(url_df$path, "/$"))) {
@@ -31,7 +31,7 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
 
   result <- list(url_picsure=urltools::url_compose(url_df))
 
-  # Safely parse and set the url_psama for this instance of PicSureConnection
+  # Safely parse and set the url_psama
   temp_path = str_split(url_df$path, "/")
   url_len = length(temp_path)
   temp_path[[1]][[url_len]] = "psama"
@@ -110,13 +110,13 @@ getResources <- function(session) {
   return (session$resources)
 }
 
-getProfile <- function(connection) {
-  response = getJSON(connection, "user/me", TRUE)
+getProfile <- function(session) {
+  response = getJSON(session, "user/me", TRUE)
   return(response)
 }
 
-getQueryTemplate <- function(connection) {
-  response = getJSON(connection, "user/me/queryTemplate", TRUE)
+getQueryTemplate <- function(session) {
+  response = getJSON(session, "user/me/queryTemplate", TRUE)
   return(response)
 }
 
@@ -124,9 +124,17 @@ fetchResources <- function(session, resourceId = FALSE) {
   getJSON(session, "info/resources")
 }
 
-postJSON <- function(connection, path, body, responseDeserializer = deserializeJSON) {
-  full_url = paste(connection$url_picsure, path, sep="")
-  response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
+#' Make a POST request to the PIC-SURE service. Handles setting content type, and required headers. Throws an exception if there are
+#' any errors, or if the response code is not 200.
+#'
+#' @param session The current PIC-SURE session
+#' @param path A url path to POST to
+#' @param body A string of JSON data to post to the service
+#' @param responseDeserializer A function to deserialize the data returned. Default is deserializeJSON
+#' @return a string containing the response from the request, or the result of responseDeserializer, if provided
+postJSON <- function(session, path, body, responseDeserializer = deserializeJSON) {
+  full_url = paste(session$url_picsure, path, sep="")
+  response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',session$token)))
 
   if (response$status_code != 200) {
     if (response$status_code == 401) {
@@ -148,10 +156,15 @@ deserializeJSON = function(response) {
   return(jsonlite::fromJSON(response, simplifyVector=FALSE, simplifyDataFrame=FALSE, simplifyMatrix=FALSE))
 }
 
-
-getJSON = function(connection, path, psama = FALSE) {
-  urlstr = paste(ifelse(psama, connection$url_psama, connection$url_picsure), path, sep="")
-  response = GET(urlstr, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',connection$token)))
+#' Make a GET request to the PIC-SURE service. Handles setting content type, and required headers. Throws an exception if there are
+#' any errors, or if the response code is not 200.
+#'
+#' @param session The current PIC-SURE session
+#' @param path A url path to make a GET request to
+#' @return the result of the request, deserialized from JSON using jsonlite
+getJSON = function(session, path, psama = FALSE) {
+  urlstr = paste(ifelse(psama, session$url_psama, session$url_picsure), path, sep="")
+  response = GET(urlstr, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',session$token)))
   if (response$status_code != 200) {
     if (response$status_code == 401) {
       stop("ERROR: Bad security credentials.")
