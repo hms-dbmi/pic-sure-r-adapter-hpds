@@ -91,6 +91,10 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
           filterValue$min <- min
         }
         if (is.numeric(max)) {
+          if (max < variableToAdd$min || max > variableToAdd$max) {
+            message(stringr::str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
+            return (query)
+          }
           filterValue$max <- max
         }
         if(length(filterValue) == 0) {
@@ -202,7 +206,7 @@ lookupGenomicVariables <- function(query, keys) {
 #'
 #' @export
 showQuery <- function(query) {
-  print(prettify(generateQueryJSON(query, ""), indent = 4))
+  print(jsonlite::prettify(generateQueryJSON(query, ""), indent = 4))
 }
 
 #' Gets the category filters for a query
@@ -222,7 +226,7 @@ getCategoryFilters = function(query) {
     categoryFilters["\\_topmed_consents\\"] = NULL
   }
   # Harmonized consents do not need to be included if there are no harmonized variables in the query
-  if (length(keys[str_detect(keys, "\\DCC Harmonized data set")]) == 0) {
+  if (length(keys[stringr::str_detect(keys, "\\DCC Harmonized data set")]) == 0) {
     categoryFilters["\\_harmonized_consent\\"] = NULL
   }
   return (categoryFilters)

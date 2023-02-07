@@ -1,8 +1,6 @@
 #' @importFrom purrr map
 NULL
 
-library(purrr)
-
 #' Performs a search of variables in PIC-SURE for a given keyword
 #'
 #' @param session Current session
@@ -33,9 +31,9 @@ searchPicsure <- function(session, keyword = "", resultType = "DATA_FRAME") {
 
 #' Maps the results of a search query to a phenotypes data frame, and an info data frame
 getDataFrame <- function(results) {
-  mappedResults <- results$results$phenotypes %>% map(mapPhenotypeResult)
+  mappedResults <- results$results$phenotypes %>% purr::map(mapPhenotypeResult)
   mappedResultsDF <- data.frame(do.call(rbind.data.frame, mappedResults))
-  mappedInfoResults <- results$results$info %>% map(mapInfoResult)
+  mappedInfoResults <- results$results$info %>% purr::map(mapInfoResult)
   mappedInfoResultsDF <- data.frame(do.call(rbind.data.frame, mappedInfoResults))
   return (list(
     phenotypes = mappedResultsDF,

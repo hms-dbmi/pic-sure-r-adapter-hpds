@@ -25,23 +25,23 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
   # Safely parse and set url_picsure
   url_df = urltools::url_parse(url)
   url_df$path <- stringr::str_trim(url_df$path)
-  if (isFALSE(str_detect(url_df$path, "/$"))) {
+  if (isFALSE(stringr::str_detect(url_df$path, "/$"))) {
     url_df$path <- paste(url_df$path, "/", sep="")
   }
 
   result <- list(url_picsure=urltools::url_compose(url_df))
 
   # Safely parse and set the url_psama
-  temp_path = str_split(url_df$path, "/")
+  temp_path = stringr::str_split(url_df$path, "/")
   url_len = length(temp_path)
   temp_path[[1]][[url_len]] = "psama"
-  url_df$path = str_flatten(temp_path[[1]], collapse="/")
+  url_df$path = stringr::str_flatten(temp_path[[1]], collapse="/")
   if (isFALSE(psama_url)) {
     result <- c(result, url_psama=urltools::url_compose(url_df))
   }else{
     psama_url_df = urltools::url_parse(psama_url)
     psama_url_df$path <- stringr::str_trim(psama_url_df$path)
-    if (isFALSE(str_detect(psama_url_df$path, "/$"))) {
+    if (isFALSE(stringr::str_detect(psama_url_df$path, "/$"))) {
       psama_url_df$path <- paste(psama_url_df$path, "/", sep="")
     }
     result <- c(result, url_psama = urltools::url_compose(psama_url_df))
@@ -134,7 +134,7 @@ fetchResources <- function(session, resourceId = FALSE) {
 #' @return a string containing the response from the request, or the result of responseDeserializer, if provided
 postJSON <- function(session, path, body, responseDeserializer = deserializeJSON) {
   full_url = paste(session$url_picsure, path, sep="")
-  response = POST(full_url, body=body, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',session$token)))
+  response = httr::POST(full_url, body=body, httr::content_type_json(), httr::accept_json(), httr::add_headers(Authorization=paste('Bearer',session$token)))
 
   if (response$status_code != 200) {
     if (response$status_code == 401) {
@@ -143,7 +143,7 @@ postJSON <- function(session, path, body, responseDeserializer = deserializeJSON
       stop(paste("ERROR: Request failed: ", response$status_code, ""))
     }
   } else {
-    responseText <- content(response, type="text", encoding="UTF-8")
+    responseText <- httr::content(response, type="text", encoding="UTF-8")
     if (is.function(responseDeserializer)) {
       return (responseDeserializer(responseText))
     }
@@ -164,7 +164,7 @@ deserializeJSON = function(response) {
 #' @return the result of the request, deserialized from JSON using jsonlite
 getJSON = function(session, path, psama = FALSE) {
   urlstr = paste(ifelse(psama, session$url_psama, session$url_picsure), path, sep="")
-  response = GET(urlstr, content_type_json(), accept_json(), add_headers(Authorization=paste('Bearer',session$token)))
+  response = httr::GET(urlstr, httr::content_type_json(), httr::accept_json(), httr::add_headers(Authorization=paste('Bearer',session$token)))
   if (response$status_code != 200) {
     if (response$status_code == 401) {
       stop("ERROR: Bad security credentials.")
@@ -172,6 +172,6 @@ getJSON = function(session, path, psama = FALSE) {
       stop(paste("ERROR: Request failed: ", response$status_code, ""))
     }
   } else {
-    return(jsonlite::fromJSON(content(response, type="text", encoding = "UTF-8")))
+    return(jsonlite::fromJSON(httr::content(response, type="text", encoding = "UTF-8")))
   }
 }
