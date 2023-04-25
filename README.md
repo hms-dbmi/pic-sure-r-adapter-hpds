@@ -16,3 +16,9 @@ R6, httr, jsonlite, stringr, hash, purrr
 **Examples**
 
 See the [Access-to-Data-using-PIC-SURE-API](https://github.com/hms-dbmi/Access-to-Data-using-PIC-SURE-API) repository for example notebooks demonstrating how to use the R client libraries to run queries in PIC-SURE.
+
+**Functionality**
+
+See the [package pdf documentation](https://github.com/hms-dbmi/pic-sure-r-adapter-hpds/blob/readme/picsure_1.1.1.pdf) for more details regarding package functions and their uses.
+
+*Note: BioData Catalyst (BDC) users will find BDC specific functions prefaced by `bdc.`.*
