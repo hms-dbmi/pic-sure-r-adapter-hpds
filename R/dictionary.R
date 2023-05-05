@@ -31,9 +31,9 @@ searchPicsure <- function(session, keyword = "", resultType = "DATA_FRAME") {
 
 #' Maps the results of a search query to a phenotypes data frame, and an info data frame
 getDataFrame <- function(results) {
-  mappedResults <- results$results$phenotypes %>% purr::map(mapPhenotypeResult)
+  mappedResults <- results$results$phenotypes %>% purrr::map(mapPhenotypeResult)
   mappedResultsDF <- data.frame(do.call(rbind.data.frame, mappedResults))
-  mappedInfoResults <- results$results$info %>% purr::map(mapInfoResult)
+  mappedInfoResults <- results$results$info %>% purrr::map(mapInfoResult)
   mappedInfoResultsDF <- data.frame(do.call(rbind.data.frame, mappedInfoResults))
   return (list(
     phenotypes = mappedResultsDF,
