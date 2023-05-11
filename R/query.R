@@ -301,6 +301,69 @@ getResultByQueryUUID <- function(session, queryUUID) {
   return(read.csv(text=response, sep=',', check.names=FALSE))
 }
 
+#' Builds a query with the given query UUID
+#'
+#' @param session The current session object
+#' @param queryUUID The unique id of the query to run
+#' @return A initialized query object that can be modified
+#' @examples
+#'
+#' # query <- picsure::getQueryByUUID(session, "a2ba4b22-f85b-4388-a098-6c72cd55e9d3")
+#'
+#' @export
+getQueryByUUID <- function(session, queryUUID) {
+  response <- getJSON(session, paste("query/", queryUUID, "/metadata", sep=""))
+  query <- getQueryFromMetadata(session = session, queryJson = response$resultMetadata$queryJson)
+  return(query)
+}
+
+getQueryFromMetadata = function(session, queryJson) {
+  query <- newQuery(session = session)
+
+  if(length(queryJson$fields) > 0) {
+    query$fields <- append(query$fields, queryJson$fields[,1])
+  }
+
+  if(length(queryJson$query$requiredFields) > 0) {
+    query$requiredFields <- as.list(queryJson$query$requiredFields[[1]])
+  }
+
+  query$categoryFilters <- queryJson$query$categoryFilters
+  query$numericFilters <- queryJson$query$numericFilters
+  query$variantInfoFilters <- queryJson$query$variantInfoFilters
+
+  modified_variantInfoFilters <- list(
+    categoryVariantInfoFilters = list(
+      Gene_with_variant = as.list(queryJson$query$variantInfoFilters$categoryVariantInfoFilters$Gene_with_variant[[1]]),
+      Variant_consequence_calculated = as.list(queryJson$query$variantInfoFilters$categoryVariantInfoFilters$Variant_consequence_calculated[[1]]),
+      Variant_frequency_as_text = as.list(queryJson$query$variantInfoFilters$categoryVariantInfoFilters$Variant_frequency_as_text[[1]])
+    ),
+    numericVariantInfoFilters =  queryJson$query$numericVariantInfoFilters
+  )
+  query$variantInfoFilters <- modified_variantInfoFilters
+
+  cleaned_categoryVariantInfoFilters <- list()
+  for (key in names(modified_variantInfoFilters$categoryVariantInfoFilters)) {
+    value <- modified_variantInfoFilters$categoryVariantInfoFilters[[key]]
+
+    if (is.list(value)) {
+      non_empty_values <- lapply(value, function(x) if (length(x) > 0) x else NULL)
+      non_empty_values <- non_empty_values[!sapply(non_empty_values, is.null)]
+    } else {
+      non_empty_values <- value
+    }
+
+    # We only keep the values that are non-empty.
+    # We need to do this to ensure the json structure is produced correctly.
+    if (length(non_empty_values) > 0) {
+      cleaned_categoryVariantInfoFilters[[key]] <- non_empty_values
+    }
+  }
+  query$variantInfoFilters$categoryVariantInfoFilters <- cleaned_categoryVariantInfoFilters
+
+  return (query)
+}
+
 getCount = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'COUNT')
   httpResults = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
