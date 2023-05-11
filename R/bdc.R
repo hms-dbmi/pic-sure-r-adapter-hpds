@@ -192,6 +192,19 @@ bdc.newQuery <- function(session) {
   return (newQuery(session))
 }
 
+#' Re-creates a query object from a queryUUID
+#'
+#' @param session Current PIC-SURE session
+#' @param queryUUID The query UUID as copied from PIC-SURE
+#' @examples
+#'
+#'# query <- picsure::bdc.getQueryByUUID(session, query = "your query uuid")
+#'
+#' @export
+bdc.getQueryByUUID <- function(session, queryUUID) {
+  return (getQueryByUUID(session, queryUUID))
+}
+
 #' Add a clause to a query
 #'
 #' @param query A query object
