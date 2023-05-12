@@ -202,7 +202,45 @@ bdc.newQuery <- function(session) {
 #'
 #' @export
 bdc.getQueryByUUID <- function(session, queryUUID) {
-  return (getQueryByUUID(session, queryUUID))
+  response = getJSON(session, paste("query/", queryUUID, "/metadata", sep=""))
+  return (bdc.getQueryFromMetadata(session = session, queryJson = response$resultMetadata$queryJson))
+}
+
+bdc.getQueryFromMetadata <- function(session, queryJson) {
+  # Start with general query builder from metadata
+  query <- getQueryFromMetadata(session = session, queryJson = queryJson)
+  query$variantInfoFilters <- queryJson$query$variantInfoFilters
+
+  modified_variantInfoFilters <- list(
+    categoryVariantInfoFilters = list(
+      Gene_with_variant = as.list(queryJson$query$variantInfoFilters$categoryVariantInfoFilters$Gene_with_variant[[1]]),
+      Variant_consequence_calculated = as.list(queryJson$query$variantInfoFilters$categoryVariantInfoFilters$Variant_consequence_calculated[[1]]),
+      Variant_frequency_as_text = as.list(queryJson$query$variantInfoFilters$categoryVariantInfoFilters$Variant_frequency_as_text[[1]])
+    ),
+    numericVariantInfoFilters =  queryJson$query$numericVariantInfoFilters
+  )
+  query$variantInfoFilters <- modified_variantInfoFilters
+
+  cleaned_categoryVariantInfoFilters <- list()
+  for (key in names(modified_variantInfoFilters$categoryVariantInfoFilters)) {
+    value <- modified_variantInfoFilters$categoryVariantInfoFilters[[key]]
+
+    if (is.list(value)) {
+      non_empty_values <- lapply(value, function(x) if (length(x) > 0) x else NULL)
+      non_empty_values <- non_empty_values[!sapply(non_empty_values, is.null)]
+    } else {
+      non_empty_values <- value
+    }
+
+    # We only keep the values that are non-empty.
+    # We need to do this to ensure the json structure is produced correctly.
+    if (length(non_empty_values) > 0) {
+      cleaned_categoryVariantInfoFilters[[key]] <- non_empty_values
+    }
+  }
+  query$variantInfoFilters$categoryVariantInfoFilters <- cleaned_categoryVariantInfoFilters
+
+  return (query)
 }
 
 #' Add a clause to a query
