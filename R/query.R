@@ -304,7 +304,7 @@ getResultByQueryUUID <- function(session, queryUUID) {
 #' Builds a query with the given query UUID
 #'
 #' @param session The current session object
-#' @param queryUUID The unique id of the query to run
+#' @param queryUUID The query UUID as copied from PIC-SURE
 #' @return A initialized query object that can be modified
 #' @examples
 #'
@@ -312,38 +312,48 @@ getResultByQueryUUID <- function(session, queryUUID) {
 #'
 #' @export
 getQueryByUUID <- function(session, queryUUID) {
-  response <- getJSON(session, paste("query/", queryUUID, "/metadata", sep=""))
-  query <- getQueryFromMetadata(session = session, queryJson = response$resultMetadata$queryJson)
-  return(query)
+  response <- getJSON(session = session, paste("query/", queryUUID, "/metadata", sep=""), simplifyVector = FALSE)
+  return(getQueryFromMetadata(session = session, queryJson = response$resultMetadata$queryJson$query))
 }
 
 getQueryFromMetadata = function(session, queryJson) {
   query <- newQuery(session = session)
 
-  if(length(queryJson$query$fields) > 0) {
-    query$fields <- append(query$fields, queryJson$query$fields)
-  }
+  query$fields <- queryJson$fields
+  query$requiredFields <- queryJson$requiredFields
+  query$categoryFilters <- queryJson$categoryFilters
+  query$anyRecordOf <- as.list(queryJson$anyRecordOf)
+  query$numericFilters <- queryJson$numericFilters
+  query$variantInfoFilters <- as.list(queryJson$variantInfoFilters[[1]])
 
-  if(length(queryJson$query$requiredFields) > 0) {
-    query$requiredFields <- as.list(queryJson$query$requiredFields)
-  }
+  categoryVariantInfoFilters <- lapply(queryJson$variantInfoFilters[[1]]$categoryVariantInfoFilters, function(x) {
+    if (is.data.frame(x)) {
+      return(as.list(x[[1]]))
+    } else if (is.list(x)) {
+      return(x)
+    } else if (is.character(x)) {
+      return(list(x))
+    }
 
-  if(length(queryJson$query$anyRecordOf) > 0) {
-    query$anyRecordOf <- as.list(queryJson$query$anyRecordOf)
-  }
+  })
 
-  query$numericFilters <- queryJson$query$numericFilters
-  query$categoryFilters <- queryJson$query$categoryFilters
+  cleaned_categoryVariantInfoFilters <- list()
+  for (key in names(categoryVariantInfoFilters)) {
+    value <- categoryVariantInfoFilters[[key]]
 
-  for (key in names(queryJson$query$categoryFilters)) {
-    value <- queryJson$query$categoryFilters[[key]]
+    if (is.list(value)) {
+      non_empty_values <- lapply(value, function(x) if (length(x) > 0) x else NULL)
+      non_empty_values <- non_empty_values[!sapply(non_empty_values, is.null)]
+    }
 
-    # if the categoryFilter isn't a list convert it to one
-    if(!is.list(value)) {
-      query$categoryFilters[[key]] <- as.list(value)
+    # We only keep the values that are non-empty.
+    # We need to do this to ensure the json structure is produced correctly.
+    if (!is.null && (non_empty_values) && length(non_empty_values) > 0) {
+      cleaned_categoryVariantInfoFilters[[key]] <- non_empty_values
     }
   }
 
+  query$variantInfoFilters$categoryVariantInfoFilters <- cleaned_categoryVariantInfoFilters
   return (query)
 }
 
