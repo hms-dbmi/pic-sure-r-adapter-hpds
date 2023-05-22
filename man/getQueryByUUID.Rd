@@ -9,7 +9,7 @@ getQueryByUUID(session, queryUUID)
 \arguments{
 \item{session}{The current session object}
 
-\item{queryUUID}{The unique id of the query to run}
+\item{queryUUID}{The query UUID as copied from PIC-SURE}
 }
 \value{
 A initialized query object that can be modified

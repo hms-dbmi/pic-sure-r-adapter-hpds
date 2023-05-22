@@ -5,12 +5,14 @@
 \title{Make a GET request to the PIC-SURE service. Handles setting content type, and required headers. Throws an exception if there are
 any errors, or if the response code is not 200.}
 \usage{
-getJSON(session, path, psama = FALSE)
+getJSON(session, path, psama = FALSE, simplifyVector = TRUE)
 }
 \arguments{
 \item{session}{The current PIC-SURE session}
 
 \item{path}{A url path to make a GET request to}
+
+\item{simplifyVector}{If set to FALSE vectors will not be modified on parse}
 }
 \value{
 the result of the request, deserialized from JSON using jsonlite
