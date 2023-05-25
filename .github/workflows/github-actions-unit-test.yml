@@ -1,6 +1,6 @@
 name: R Run Tests
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
       image: rocker/r-ver:4.2.1
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Update system
       run: apt-get update -qq && apt-get -y install libxml2-utils
@@ -25,7 +25,7 @@ jobs:
         R -e 'options(testthat.output_file = "test-out.xml"); testthat::test_dir("tests/testthat", reporter = "junit")'
 
     - name: Upload test results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: always()
       with:
         name: test-results
