@@ -301,6 +301,62 @@ getResultByQueryUUID <- function(session, queryUUID) {
   return(read.csv(text=response, sep=',', check.names=FALSE))
 }
 
+#' Builds a query with the given query UUID
+#'
+#' @param session The current session object
+#' @param queryUUID The query UUID as copied from PIC-SURE
+#' @return A initialized query object that can be modified
+#' @examples
+#'
+#' # query <- picsure::getQueryByUUID(session, "a2ba4b22-f85b-4388-a098-6c72cd55e9d3")
+#'
+#' @export
+getQueryByUUID <- function(session, queryUUID) {
+  response <- getJSON(session = session, paste("query/", queryUUID, "/metadata", sep=""), simplifyVector = FALSE)
+  return(getQueryFromMetadata(session = session, queryJson = response$resultMetadata$queryJson$query))
+}
+
+getQueryFromMetadata = function(session, queryJson) {
+  query <- newQuery(session = session)
+
+  query$fields <- queryJson$fields
+  query$requiredFields <- queryJson$requiredFields
+  query$categoryFilters <- queryJson$categoryFilters
+  query$anyRecordOf <- as.list(queryJson$anyRecordOf)
+  query$numericFilters <- queryJson$numericFilters
+  query$variantInfoFilters <- as.list(queryJson$variantInfoFilters[[1]])
+
+  categoryVariantInfoFilters <- lapply(queryJson$variantInfoFilters[[1]]$categoryVariantInfoFilters, function(x) {
+    if (is.data.frame(x)) {
+      return(as.list(x[[1]]))
+    } else if (is.list(x)) {
+      return(x)
+    } else if (is.character(x)) {
+      return(list(x))
+    }
+
+  })
+
+  cleaned_categoryVariantInfoFilters <- list()
+  for (key in names(categoryVariantInfoFilters)) {
+    value <- categoryVariantInfoFilters[[key]]
+
+    if (is.list(value)) {
+      non_empty_values <- lapply(value, function(x) if (length(x) > 0) x else NULL)
+      non_empty_values <- non_empty_values[!sapply(non_empty_values, is.null)]
+    }
+
+    # We only keep the values that are non-empty.
+    # We need to do this to ensure the json structure is produced correctly.
+    if (!is.null && (non_empty_values) && length(non_empty_values) > 0) {
+      cleaned_categoryVariantInfoFilters[[key]] <- non_empty_values
+    }
+  }
+
+  query$variantInfoFilters$categoryVariantInfoFilters <- cleaned_categoryVariantInfoFilters
+  return (query)
+}
+
 getCount = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'COUNT')
   httpResults = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
