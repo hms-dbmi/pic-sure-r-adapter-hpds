@@ -1,0 +1,32 @@
+name: R Run Tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: rocker/r-ver:4.2.1
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Update system
+      run: apt-get update -qq && apt-get -y install libxml2-utils
+
+    - name: Install dependencies
+      run: |
+        R -e 'install.packages(c("devtools","testthat","purrr","jsonlite","stringr","httr","urltools","tidyverse"))'
+
+    - name: Run tests
+      run: |
+        R -e 'options(testthat.output_file = "test-out.xml"); testthat::test_dir("tests/testthat", reporter = "junit")'
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-results
+        path: tests/testthat/test-out.xml
