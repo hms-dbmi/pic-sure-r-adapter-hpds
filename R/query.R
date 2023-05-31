@@ -348,7 +348,7 @@ getQueryFromMetadata = function(session, queryJson) {
 
     # We only keep the values that are non-empty.
     # We need to do this to ensure the json structure is produced correctly.
-    if (!is.null && (non_empty_values) && length(non_empty_values) > 0) {
+    if (!is.null(non_empty_values) && length(non_empty_values) > 0) {
       cleaned_categoryVariantInfoFilters[[key]] <- non_empty_values
     }
   }
