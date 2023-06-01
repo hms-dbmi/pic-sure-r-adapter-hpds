@@ -27,6 +27,48 @@ mockSession <- list(
 )
 mockQuery <- newQuery(mockSession)
 
+mockQueryMetaData <- list(
+  status = "AVAILABLE",
+  resourceID = "02e23f52-f354-4e8b-992c-d37c8b9ba140",
+  resourceStatus = NULL,
+  picsureResultId = "e6d2e680-bec1-4ded-85b6-791a7d8e4441",
+  resourceResultId = "87e91691-7f1e-5606-97c0-a3e6acefea16",
+  resultMetadata = list(
+    queryResultMetadata = "[B@8132f1",
+    queryJson = list(
+      resourceCredentials = list(
+        BEARER_TOKEN = NULL
+      ),
+      query = list(
+        categoryFilters = list(
+          `\\_consents\\` = list("phs001001.c1", "phs001001.c2"),
+          `\\_topmed_consents\\` = list("phs001215.c0", "phs001217.c1")
+        ),
+        numericFilters = list(
+          `\\phs000209\\pht001121\\phv00087080\\bmifc\\` = list(
+            min = "20",
+            max = "60"
+          )
+        ),
+        requiredFields = list("\\phs000209\\pht001121\\phv00087119\\asthmaf\\"),
+        fields = list("\\_Topmed Study Accession with Subject ID\\", "\\_Parent Study Accession with Subject ID\\"),
+        variantInfoFilters = list(
+          list(
+            categoryVariantInfoFilters = list(
+              Gene_with_variant = list("IL1R1"),
+              Variant_consequence_calculated = list("splice_acceptor_variant", "splice_donor_variant", "stop_gained"),
+              Variant_frequency_as_text = list("Rare", "Common")
+            ),
+            numericVariantInfoFilters = list()
+          )
+        ),
+        expectedResultType = "DATAFRAME"
+      ),
+      resourceUUID = "02e23f52-f354-4e8b-992c-d37c8b9ba140"
+    )
+  )
+)
+
 test_that("parseQueryTemplate parses full query template", {
   query = parseQueryTemplate(mockQuery)
 
@@ -199,3 +241,177 @@ test_that("deleteClause() deletes filter clause", {
   expect_equal(length(mockQuery$numericFilters), 1)
   expect_null(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]])
 })
+
+test_that("getQueryFromMetadata correctly initializes a query", {
+  # Mock session and queryJson
+
+mockQueryJson <- list(
+  fields = list("\\_Topmed Study Accession with Subject ID\\", "\\_Parent Study Accession with Subject ID\\"),
+  requiredFields = list("\\phs000209\\pht001121\\phv00087119\\asthmaf\\"),
+  categoryFilters = list("\\_consents\\" = list("phs001001.c1", "phs001001.c2", "phs001345.c1", "phs002694.c1"),
+                         "\\_topmed_consents\\" = list("phs001215.c0", "phs001217.c1", "phs001217.c0", "phs001345.c1", "phs001215.c1")),
+  anyRecordOf = list(),
+  numericFilters = list("\\phs000209\\pht001121\\phv00087080\\bmifc\\" = list(min = "20", max = "60")),
+  variantInfoFilters = list(list(
+      categoryVariantInfoFilters = list(
+        Gene_with_variant = list("IL1R1"),
+        Variant_consequence_calculated = list("splice_acceptor_variant", "splice_donor_variant", "stop_gained"),
+        Variant_frequency_as_text = list("Rare", "Common")
+      ),
+      numericVariantInfoFilters = list()
+    ))
+  )
+
+  result <- getQueryFromMetadata(mockSession, mockQueryJson)
+
+  mockQueryJson$variantInfoFilters <- list(
+    categoryVariantInfoFilters = list(
+      Gene_with_variant = list("IL1R1"),
+      Variant_consequence_calculated = list("splice_acceptor_variant", "splice_donor_variant", "stop_gained"),
+      Variant_frequency_as_text = list("Rare", "Common")
+    ),
+    numericVariantInfoFilters = list()
+  )
+
+  expect_equal(result$fields, mockQueryJson$fields)
+  expect_equal(result$requiredFields, mockQueryJson$requiredFields)
+  expect_equal(result$categoryFilters, mockQueryJson$categoryFilters)
+  expect_equal(result$anyRecordOf, mockQueryJson$anyRecordOf)
+  expect_equal(result$numericFilters, mockQueryJson$numericFilters)
+  expect_equal(result$variantInfoFilters, mockQueryJson$variantInfoFilters)
+})
+
+test_that("getQueryFromMetadata() formats parsed object", {
+  result <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  print(names(result))
+
+  expectedNames <- c("session", "fields", "requiredFields", "categoryFilters",
+    "anyRecordOf", "numericFilters", "variantInfoFilters", "resourceId")
+
+  actualNames <- names(result)
+
+  expect_true(setequal(sort(actualNames), sort(expectedNames)))
+
+  # The result should be a list
+  expect_true(is.list(result))
+
+  # Check that the values in each list component match the values in the input
+  expect_equal(result$fields, mockQueryMetaData$resultMetadata$queryJson$query$fields)
+  expect_equal(result$requiredFields, mockQueryMetaData$resultMetadata$queryJson$query$requiredFields)
+  expect_equal(result$categoryFilters, mockQueryMetaData$resultMetadata$queryJson$query$categoryFilters)
+  expect_equal(result$anyRecordOf, as.list(mockQueryMetaData$resultMetadata$queryJson$query$anyRecordOf))
+  expect_equal(result$numericFilters, mockQueryMetaData$resultMetadata$queryJson$query$numericFilters)
+  expect_equal(result$variantInfoFilters$categoryVariantInfoFilters,
+               mockQueryMetaData$resultMetadata$queryJson$query$variantInfoFilters[[1]]$categoryVariantInfoFilters)
+  expect_equal(result$variantInfoFilters$numericVariantInfoFilters,
+               mockQueryMetaData$resultMetadata$queryJson$query$variantInfoFilters[[1]]$numericVariantInfoFilters)
+})
+
+test_that("getQueryFromMetadata() returns expected object properties", {
+  result <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+
+  expectedNames <- c("session", "fields", "requiredFields", "categoryFilters",
+                     "anyRecordOf", "numericFilters", "variantInfoFilters", "resourceId")
+  actualNames <- names(result)
+
+  # Confirm all expected names exist in the object. We sort because order isn't guarenteed
+  expect_true(setequal(sort(actualNames), sort(expectedNames)))
+})
+
+test_that("getQueryFromMetadata() handles NULL categoryVariantInfoFilters", {
+    modifiedMockQuery <- mockQueryMetaData$resultMetadata$queryJson$query
+    modifiedMockQuery$variantInfoFilters[[1]]$categoryVariantInfoFilters$Gene_with_variant <- list(NULL)
+
+    result <- getQueryFromMetadata(mockSession, modifiedMockQuery)
+
+    expect_null(result$variantInfoFilters$categoryVariantInfoFilters$Gene_with_variant)
+})
+
+test_that("addClause() adds valid continuous variable filter to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 1.1, max = 20)
+  expect_equal(length(query$numericFilters), 2)
+})
+
+test_that("addClause() adds valid continuous variable filter min only to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 3)
+  expect_equal(length(query$numericFilters), 2)
+})
+
+test_that("addClause() adds valid categorical variable filter to query object produced by getQueryFromMetadata()", {
+  mockQueryMetaData$resultMetadata$queryJson$query$categoryFilters <- list()
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER", categories = list("Yes", "No"))
+  expect_equal(length(query$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 2)
+})
+
+test_that("addClause() adds valid select clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "SELECT")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$fields)
+})
+
+test_that("addClause() adds valid require clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "REQUIRE")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$requiredFields)
+})
+
+test_that("addClause() adds valid anyof clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "ANYOF")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$anyRecordOf)
+})
+
+test_that("addClause() adds multiple valid select clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "SELECT")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$fields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% query$fields)
+})
+test_that("deleteClause() deletes select clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "SELECT")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$fields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% query$fields)
+  query = deleteClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_false("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$fields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% query$fields)
+})
+
+test_that("deleteClause() deletes require clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "REQUIRE")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$requiredFields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% query$requiredFields)
+  query = deleteClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_false("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$requiredFields)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% query$requiredFields)
+})
+
+test_that("deleteClause() deletes anyof clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "ANYOF")
+  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$anyRecordOf)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% query$anyRecordOf)
+  query = deleteClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_false("\\phs000001\\unit_test\\test_categorical_variable\\" %in% query$anyRecordOf)
+  expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% query$anyRecordOf)
+})
+
+
+test_that("deleteClause() deletes filter clause to query object produced by getQueryFromMetadata()", {
+  query <- getQueryFromMetadata(mockSession, mockQueryMetaData$resultMetadata$queryJson$query)
+  query = addClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER", categories = list("Yes", "No"))
+  query = addClause(query, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 3)
+  expect_equal(length(query$numericFilters), 2)
+  expect_equal(length(query$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 2)
+  query = deleteClause(query, "\\phs000001\\unit_test\\test_categorical_variable\\")
+  expect_equal(length(query$numericFilters), 2)
+  expect_null(query$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]])
+})
+
+
+
+
