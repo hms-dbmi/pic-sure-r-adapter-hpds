@@ -161,8 +161,9 @@ deserializeJSON = function(response) {
 #'
 #' @param session The current PIC-SURE session
 #' @param path A url path to make a GET request to
+#' @param simplifyVector If set to FALSE vectors will not be modified on parse
 #' @return the result of the request, deserialized from JSON using jsonlite
-getJSON = function(session, path, psama = FALSE) {
+getJSON = function(session, path, psama = FALSE, simplifyVector = TRUE) {
   urlstr = paste(ifelse(psama, session$url_psama, session$url_picsure), path, sep="")
   response = httr::GET(urlstr, httr::content_type_json(), httr::accept_json(), httr::add_headers(Authorization=paste('Bearer',session$token)))
   if (response$status_code != 200) {
@@ -172,6 +173,6 @@ getJSON = function(session, path, psama = FALSE) {
       stop(paste("ERROR: Request failed: ", response$status_code, ""))
     }
   } else {
-    return(jsonlite::fromJSON(httr::content(response, type="text", encoding = "UTF-8")))
+    return(jsonlite::fromJSON(httr::content(response, type="text", encoding = "UTF-8"), simplifyVector = simplifyVector))
   }
 }
