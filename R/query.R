@@ -297,7 +297,7 @@ runQuery <- function(query, resultType = NULL) {
 #' @export
 getResultByQueryUUID <- function(session, queryUUID) {
   queryJSON = "{}"
-  response = postJSON(session, paste("query/", queryUUID, "/result", sep=""), queryJSON, responseDeserializer = NULL)
+  response = postJSON(session, paste("query/", queryUUID, "/result", sep=""), queryJSON, responseDeserializer = NULL, acceptContentType = httr::accept("application/octet-stream"))
   return(read.csv(text=response, sep=',', check.names=FALSE))
 }
 
@@ -365,7 +365,7 @@ getCount = function(query) {
 
 getResults = function(query) {
   queryJSON = generateQueryJSON(query, expectedResultType = 'DATAFRAME')
-  response = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL)
+  response = postJSON(query$session, "query/sync/", queryJSON, responseDeserializer = NULL, acceptContentType = httr::accept("application/octet-stream"))
   return(read.csv(text=response, sep=',', check.names=FALSE))
 }
 
