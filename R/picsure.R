@@ -132,9 +132,9 @@ fetchResources <- function(session, resourceId = FALSE) {
 #' @param body A string of JSON data to post to the service
 #' @param responseDeserializer A function to deserialize the data returned. Default is deserializeJSON
 #' @return a string containing the response from the request, or the result of responseDeserializer, if provided
-postJSON <- function(session, path, body, responseDeserializer = deserializeJSON) {
+postJSON <- function(session, path, body, responseDeserializer = deserializeJSON, acceptContentType = httr::accept_json()) {
   full_url = paste(session$url_picsure, path, sep="")
-  response = httr::POST(full_url, body=body, httr::content_type_json(), httr::accept_json(), httr::add_headers(Authorization=paste('Bearer',session$token)))
+  response = httr::POST(full_url, body=body, httr::content_type_json(), acceptContentType, httr::add_headers(Authorization=paste('Bearer',session$token)))
 
   if (response$status_code != 200) {
     if (response$status_code == 401) {
