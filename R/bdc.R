@@ -143,6 +143,12 @@ initializeGenomicAnnotations <- function(session) {
 
 # Maps the search results to a more user friendly format, which is valid to be turned into a data frame
 projectAndFilterResults = function(results, scopes, showAll) {
+  # Replace NULL values with an empty string for string fields
+  sanitize <- function(value) {
+    if (is.null(value)) return("")
+    return(value)
+  }
+
   scopes = if (is.null(scopes)) c() else stringr::str_replace_all(scopes[str_detect(scopes, "^\\\\")], "\\\\", "")
   in_scope = function(study) Reduce(function(acc, scope) (acc | stringr::str_detect(study, fixed(scope))), scopes, init=FALSE)
 
@@ -158,21 +164,21 @@ projectAndFilterResults = function(results, scopes, showAll) {
 
     paths <- c(paths, resultMetadata$columnmeta_HPDS_PATH)
     results[[index]] <- list(
-      name = resultMetadata$columnmeta_HPDS_PATH,
-      var_id = resultMetadata$derived_var_id,
-      var_name = resultMetadata$derived_var_name,
-      var_description = resultMetadata$derived_var_description,
-      data_type = resultMetadata$columnmeta_data_type,
-      group_id = resultMetadata$derived_group_id,
-      group_name = resultMetadata$derived_group_name,
-      group_description = resultMetadata$derived_group_description,
-      study_id = resultMetadata$derived_study_id,
-      study_description = resultMetadata$derived_study_description,
-      is_stigmatized = resultMetadata$is_stigmatized,
+      name = sanitize(resultMetadata$columnmeta_HPDS_PATH),
+      var_id = sanitize(resultMetadata$derived_var_id),
+      var_name = sanitize(resultMetadata$derived_var_name),
+      var_description = sanitize(resultMetadata$derived_var_description),
+      data_type = sanitize(resultMetadata$columnmeta_data_type),
+      group_id = sanitize(resultMetadata$derived_group_id),
+      group_name = sanitize(resultMetadata$derived_group_name),
+      group_description = sanitize(resultMetadata$derived_group_description),
+      study_id = sanitize(resultMetadata$derived_study_id),
+      study_description = sanitize(resultMetadata$derived_study_description),
+      is_stigmatized = sanitize(resultMetadata$is_stigmatized),
       min = if (categorical) NA else as.numeric(resultMetadata$columnmeta_min),
       max = if (categorical) NA else as.numeric(resultMetadata$columnmeta_max),
       categorical = categorical,
-      values = toString(results[[index]]$result$values)
+      values = sanitize(toString(results[[index]]$result$values))
     )
     include_list <- c(include_list, index)
   }
