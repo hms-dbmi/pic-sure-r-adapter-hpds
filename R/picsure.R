@@ -152,7 +152,7 @@ postJSON <- function(session, path, body, responseDeserializer = deserializeJSON
 }
 
 deserializeJSON = function(response) {
-  response <- gsub("\\xef\\xbb\\xbf", "", response, useBytes = T) # strip BOM characters that are in the json data
+  #response <- gsub("\\xef\\xbb\\xbf", "", response, useBytes = T) # strip BOM characters that are in the json data
   return(jsonlite::fromJSON(response, simplifyVector=FALSE, simplifyDataFrame=FALSE, simplifyMatrix=FALSE))
 }
 
