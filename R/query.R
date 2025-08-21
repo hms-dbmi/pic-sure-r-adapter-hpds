@@ -71,8 +71,6 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
       return (query)
     }
 
-    variableToAdd <- variablesToAdd[1,]
-
     if(typeof(categories) == "list") {
         query$categoryFilters[[keys[[1]]]] <- categories
         return (query)
