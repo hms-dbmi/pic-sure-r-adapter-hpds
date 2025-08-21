@@ -80,6 +80,11 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
   result$profile = getProfile(result)
   result$queryTemplate = getQueryTemplate(result)
 
+  if (is.function(initializeDictionary)) {
+    searchResult <- initializeDictionary(result)
+    result$genomicAnnotations = searchResult$info
+  }
+
   message("Initialization complete.")
   return (result)
 }
