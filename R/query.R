@@ -65,106 +65,58 @@ addClause <- function(query, keys, type = "FILTER", min = NULL, max = NULL, cate
     keys <- as.list(keys)
   }
 
-  variablesToAdd <- lookupVariables(query, keys)
-
   if(toupper(type) == "FILTER") {
     if (length(keys) != 1) {
       message("Filters must be added one at a time")
       return (query)
     }
-    if (nrow(variablesToAdd) == 0) {
-      variablesToAdd <- lookupGenomicVariables(query, keys)
-      if (nrow(variablesToAdd) == 0) {
-        message("Variables not found:")
-        message(keys)
-        return (query)
-      }
-      # else, add genomic filter
-      variableToAdd <- variablesToAdd[1,]
-      if (variableToAdd$continuous) {
-        filterValue <- list()
-        if (is.numeric(min)) {
-          if (min < variableToAdd$min || min > variableToAdd$max) {
-            message(stringr::str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
-            return (query)
-          }
-          filterValue$min <- min
-        }
-        if (is.numeric(max)) {
-          if (max < variableToAdd$min || max > variableToAdd$max) {
-            message(stringr::str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
-            return (query)
-          }
-          filterValue$max <- max
-        }
-        if(length(filterValue) == 0) {
-          message("Continuous variable filters must contain a numeric min or max")
-          return (query)
-        }
-        query$variantInfoFilters$numericVariantInfoFilters[[keys[[1]]]] <- filterValue
-      } else {
-        if(typeof(categories) != "list") {
-          message("Categorical variable filters must contain list of values to filter on")
-          return (query)
-        }
-        query$variantInfoFilters$categoryVariantInfoFilters[[keys[[1]]]] <- categories
-      }
-      return (query)
-    }
-
 
     variableToAdd <- variablesToAdd[1,]
-    if (variableToAdd$categorical) {
-      if(typeof(categories) != "list") {
-        message("Categorical variable filters must contain list of values to filter on")
+
+    if(typeof(categories) == "list") {
+        query$categoryFilters[[keys[[1]]]] <- categories
         return (query)
-      }
-      query$categoryFilters[[keys[[1]]]] <- categories
     } else {
       filterValue <- list()
       if (is.numeric(min)) {
-        if (min < variableToAdd$min || min > variableToAdd$max) {
-          message(stringr::str_interp("Min value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
-          return (query)
-        }
         filterValue$min <- min
       }
       if (is.numeric(max)) {
-        if (max < variableToAdd$min || max > variableToAdd$max) {
-          message(stringr::str_interp("Max value for ${variableToAdd$name} must be between ${variableToAdd$min} and ${variableToAdd$max}"))
-          return (query)
-        }
         filterValue$max <- max
       }
-      if(length(filterValue) == 0) {
-        message("Continuous variable filters must contain a numeric min or max")
-        return (query)
-      }
       query$numericFilters[[keys[[1]]]] <- filterValue
+      return (query)
+    }
+  } else if (toupper(type) == "GENOMIC_FILTER") {
+    if(typeof(categories) == "list") {
+        query$variantInfoFilters$categoryVariantInfoFilters[[keys[[1]]]] <- categories
+    } else {
+        filterValue <- list()
+        if (is.numeric(min)) {
+          filterValue$min <- min
+        }
+        if (is.numeric(max)) {
+          filterValue$max <- max
+        }
+        if(length(filterValue) == 0) {
+          message("Genomic filters must contain a numeric min or max, or a list of categories")
+          return (query)
+        }
+        query$variantInfoFilters$numericVariantInfoFilters[[keys[[1]]]] <- filterValue
     }
     return (query)
   }
 
-
-  if (is.null(variablesToAdd) || nrow(variablesToAdd) == 0 ) {
-    message("Variables not found:")
-    message(keys)
-    return (query)
-  }
-  if (nrow(variablesToAdd) != length(keys)) {
-    message("Not all variables were valid. Only the following will be added:")
-    message(variablesToAdd[,1])
-  }
   if(toupper(type) == "SELECT") {
-    query$fields <- append(query$fields, variablesToAdd[,1])
+    query$fields <- append(query$fields, keys)
     return (query)
   }
   if(toupper(type) == "REQUIRE") {
-    query$requiredFields <- append(query$requiredFields, variablesToAdd[,1])
+    query$requiredFields <- append(query$requiredFields, keys)
     return (query)
   }
   if(toupper(type) == "ANYOF") {
-    query$anyRecordOf <- append(query$anyRecordOf, variablesToAdd[,1])
+    query$anyRecordOf <- append(query$anyRecordOf, keys)
     return (query)
   }
 }
@@ -182,17 +134,6 @@ deleteClause <- function(query, key) {
   query$variantInfoFilters$numericVariantInfoFilters[[key]] <- NULL
   query$anyRecordOf <- query$anyRecordOf[!query$anyRecordOf == key]
   return (query)
-}
-
-#' Gets a variable from the session dictionary, if it exists
-lookupVariables = function(query, keys) {
-  return (query$session$dictionary[query$session$dictionary$name %in% keys, ])
-}
-
-
-#' Gets a genomic variable from the session dictionary, if it exists
-lookupGenomicVariables <- function(query, keys) {
-  return (query$session$genomicAnnotations[query$session$genomicAnnotations$name %in% keys, ])
 }
 
 #' Prints the JSON representation of a query object
