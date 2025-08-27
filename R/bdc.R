@@ -126,7 +126,7 @@ bdc.getStudies <- function(session) {
 }
 
 removeBackslashes = function(result) {
-    return (gsub("\\\\", "", result))
+    return (gsub("\\\\", "", result))[[1]]
 }
 
 initializeGenomicAnnotations <- function(session) {
