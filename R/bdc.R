@@ -121,7 +121,7 @@ bdc.initializeDictionary <- function(session) {
 bdc.getStudies <- function(session) {
     scopes <- session$profile$queryScopes
     scopes <- scopes[startsWith(scopes, "\\")]
-    parsedScopes <- scopes %>% purrr::map(removeBackslashes)
+    parsedScopes <- scopes %>% purrr::flatmap(removeBackslashes)
     return (parsedScopes)
 }
 
