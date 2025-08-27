@@ -113,6 +113,22 @@ bdc.initializeDictionary <- function(session) {
   ))
 }
 
+
+#' Returns the studies for this session
+#'
+#' @param session Current PIC-SURE session
+#' @export
+bdc.getStudies <- function(session) {
+    scopes <- session$profile$queryScopes
+    scopes <- scopes[startsWith(scopes, "\\")]
+    parsedScopes <- scopes %>% purrr::map(removeBackslashes)
+    return (scopes)
+}
+
+removeBackslashes = function(result) {
+    return (str_replace(result, "\\", ""))
+}
+
 initializeGenomicAnnotations <- function(session) {
   result <- postJSON(session, paste("search/", session$currentResource, sep = ""), "{\"query\":\"\"}")
   result <- result$results$info
