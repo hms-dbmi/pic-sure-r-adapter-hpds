@@ -1,5 +1,4 @@
 #' @import jsonlite stringr httr urltools tibble
-#' @importFrom purrr list_flatten
 NULL
 
 library(jsonlite)
@@ -122,8 +121,7 @@ bdc.initializeDictionary <- function(session) {
 bdc.getStudies <- function(session) {
     scopes <- session$profile$queryScopes
     scopes <- scopes[startsWith(scopes, "\\")]
-    parsedScopes <- scopes %>% purrr::map(removeBackslashes)
-    parsedScopes <- parsedScopes %>% purrr::list_flatten()
+    parsedScopes <- scopes %>% purrr::map(removeBackslashes) %>% purrr::list_c()
     return (parsedScopes)
 }
 
