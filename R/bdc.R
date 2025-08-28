@@ -1,4 +1,5 @@
 #' @import jsonlite stringr httr urltools tibble
+#' @importFrom purrr list_flatten
 NULL
 
 library(jsonlite)

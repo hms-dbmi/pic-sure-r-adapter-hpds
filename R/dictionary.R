@@ -1,5 +1,4 @@
 #' @importFrom purrr map
-#' @importFrom purrr list_flatten
 NULL
 
 #' Performs a search of variables in PIC-SURE for a given keyword
