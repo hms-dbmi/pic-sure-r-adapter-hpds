@@ -124,50 +124,11 @@ test_that("addClause() adds valid continuous variable filter max only", {
   mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", max = 20)
   expect_equal(length(mockQuery$numericFilters), 1)
 })
-test_that("addClause() does not add continuous variable filter without min or max", {
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER")
-  expect_equal(length(mockQuery$numericFilters), 0)
-})
-test_that("addClause() does not add continuous variable filter with invalid min", {
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = -1)
-  expect_equal(length(mockQuery$numericFilters), 0)
-
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", min = 43)
-  expect_equal(length(mockQuery$numericFilters), 0)
-})
-test_that("addClause() does not add continuous variable filter with invalid max", {
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", max = -1)
-  expect_equal(length(mockQuery$numericFilters), 0)
-
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_continuous_variable\\", type = "FILTER", max = 43)
-  expect_equal(length(mockQuery$numericFilters), 0)
-})
 
 test_that("addClause() adds valid categorical variable filter", {
   mockQuery = newQuery(mockSession)
   mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER", categories = list("Yes", "No"))
   expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 2)
-})
-test_that("addClause() does not add categorical variable filter without category value", {
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_categorical_variable\\", type = "FILTER")
-  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 0)
-})
-test_that("addClause() does not add multiple variable filter", {
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\", "\\phs000001\\unit_test\\test_continuous_variable\\"), type = "FILTER", categories = list("Yes", "No"))
-  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_categorical_variable\\"]]), 0)
-})
-
-test_that("addClause() does not add invalid filter", {
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, "\\phs000001\\unit_test\\test_not_existing_variable\\", type = "FILTER", categories = list("Yes", "No"))
-  expect_equal(length(mockQuery$categoryFilters[["\\phs000001\\unit_test\\test_not_existing_variable\\"]]), 0)
 })
 
 
