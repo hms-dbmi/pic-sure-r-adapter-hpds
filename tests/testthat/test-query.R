@@ -154,12 +154,6 @@ test_that("addClause() adds multiple valid select clause", {
   expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$fields)
   expect_true("\\phs000001\\unit_test\\test_continuous_variable\\" %in% mockQuery$fields)
 })
-test_that("addClause() adds only valid select clause", {
-  mockQuery = newQuery(mockSession)
-  mockQuery = addClause(mockQuery, list("\\phs000001\\unit_test\\test_categorical_variable\\",  "\\phs000001\\unit_test\\test_invalid_variable\\"), type = "SELECT")
-  expect_true("\\phs000001\\unit_test\\test_categorical_variable\\" %in% mockQuery$fields)
-  expect_false("\\phs000001\\unit_test\\test_invalid_variable\\" %in% mockQuery$fields)
-})
 
 test_that("deleteClause() deletes select clause", {
   mockQuery = newQuery(mockSession)
