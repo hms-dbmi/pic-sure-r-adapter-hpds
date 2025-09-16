@@ -79,15 +79,11 @@ initializeSession <- function(url, token, psama_url=FALSE, initializeDictionary 
   message("Loading user profile...")
   result$profile = getProfile(result)
   result$queryTemplate = getQueryTemplate(result)
-  message("Loading PIC-SURE dictionary (this may take several minutes)...")
 
   if (is.function(initializeDictionary)) {
     searchResult <- initializeDictionary(result)
-  } else {
-    searchResult <- searchPicsure(result)
+    result$genomicAnnotations = searchResult$info
   }
-  result$dictionary <- searchResult$phenotypes
-  result$genomicAnnotations = searchResult$info
 
   message("Initialization complete.")
   return (result)
