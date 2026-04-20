@@ -1,0 +1,37 @@
+url: https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [github]
+  components:
+    articles:
+      text: Articles
+      menu:
+        - text: Getting started
+          href: articles/getting-started.html
+        - text: Search and facets
+          href: articles/search-and-facets.html
+        - text: Building queries
+          href: articles/building-queries.html
+        - text: Running and exporting
+          href: articles/running-and-exporting.html
+        - text: Migrating from v1
+          href: articles/migrating-from-v1.html
+
+reference:
+  - title: Connection
+    contents: [connect]
+  - title: Search
+    contents: [search, facets, addFacet, removeFacet]
+  - title: Query construction
+    contents: [createClause, buildClauseGroup]
+  - title: Query execution
+    contents: [runQuery]
+  - title: Export
+    contents: [exportPFB, exportCSV, exportTSV]
+  - title: Errors
+    contents: [picsure_error]
