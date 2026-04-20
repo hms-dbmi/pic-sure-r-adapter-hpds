@@ -17,3 +17,48 @@
 facets <- function(session) {
   with_picsure_error(session$facets())
 }
+
+#' Add an entry to a FacetSet.
+#'
+#' Mutates the underlying Python FacetSet and returns the same handle for
+#' chaining. If `value` is a vector of length > 1, adds one entry per value
+#' (all under the same `key`).
+#'
+#' @param facet_set A FacetSet from [`facets()`][picsure::facets].
+#' @param key Facet key, e.g. `"study_ids"`.
+#' @param value Facet value (scalar or vector).
+#' @return The same FacetSet, invisibly, for chaining.
+#' @export
+addFacet <- function(facet_set, key, value) {
+  if (missing(key) || is.null(key) || is.na(key) || !nzchar(key)) {
+    stop("`key` is required.")
+  }
+  if (missing(value) || is.null(value)) {
+    stop("`value` is required.")
+  }
+  for (v in value) {
+    with_picsure_error(facet_set$add(key, v))
+  }
+  invisible(facet_set)
+}
+
+#' Remove an entry from a FacetSet.
+#'
+#' Mutates the underlying Python FacetSet and returns the same handle for
+#' chaining.
+#'
+#' @param facet_set A FacetSet from [`facets()`][picsure::facets].
+#' @param key Facet key.
+#' @param value Facet value (scalar only).
+#' @return The same FacetSet, invisibly, for chaining.
+#' @export
+removeFacet <- function(facet_set, key, value) {
+  if (missing(key) || is.null(key) || is.na(key) || !nzchar(key)) {
+    stop("`key` is required.")
+  }
+  if (missing(value) || is.null(value)) {
+    stop("`value` is required.")
+  }
+  with_picsure_error(facet_set$remove(key, value))
+  invisible(facet_set)
+}
