@@ -1,32 +1,13 @@
-# PIC-SURE HPDS R Client
+# picsure (R) — v3 rewrite in progress
 
-R client library to run queries against a PIC-SURE High Performance Data Store (HPDS) resource.
+This branch (`query_v3`) contains an in-progress rewrite of the PIC-SURE R
+adapter. The new implementation is a thin wrapper over the Python
+[`picsure`](https://github.com/hms-dbmi/pic-sure-python-adapter-hpds) package,
+wired through [`reticulate`](https://rstudio.github.io/reticulate/).
 
---- 
+For the design spec, see
+[`docs/superpowers/specs/2026-04-20-r-adapter-rewrite-design.md`](docs/superpowers/specs/2026-04-20-r-adapter-rewrite-design.md).
 
-**Features**
-
-- Connect to a PIC-SURE resource through R using your personal access token
-- Create and modify queries in R to generate cohorts at the variable level
-- Run queries in R to pull aggregate counts and patient / participant level data
-- Load queries generated in the PIC-SURE UI into an R environment
-
----
-
-**Dependencies**
-
-R6, httr, jsonlite, stringr, hash, purrr
-
----
-
-**Examples**
-
-See the [Access-to-Data-using-PIC-SURE-API](https://github.com/hms-dbmi/Access-to-Data-using-PIC-SURE-API) repository for example notebooks demonstrating how to use the R client libraries to run queries in PIC-SURE.
-
----
-
-**Functionality**
-
-See the [package pdf documentation](https://github.com/hms-dbmi/pic-sure-r-adapter-hpds/blob/readme/picsure_1.1.1.pdf) for more details regarding package functions and their uses.
-
-*Note: BioData Catalyst (BDC) users will find BDC specific functions prefaced by `bdc.`.*
+A full README with installation and usage instructions will land with the
+final implementation plan before this branch merges to `main`. Until then,
+the v1 R adapter on `main` remains the supported version.
