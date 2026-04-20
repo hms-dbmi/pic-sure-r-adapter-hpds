@@ -2,6 +2,7 @@
 
 export(addFacet)
 export(connect)
+export(createClause)
 export(facets)
 export(picsure_error)
 export(removeFacet)
