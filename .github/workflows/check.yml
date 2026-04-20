@@ -1,0 +1,61 @@
+name: R CMD check
+
+on:
+  pull_request:
+    branches: [main, query_v3]
+  push:
+    branches: [main, query_v3]
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu-latest,  r: '4.1' }
+          - { os: ubuntu-latest,  r: '4.3' }
+          - { os: ubuntu-latest,  r: '4.4' }
+          - { os: macos-latest,   r: '4.4' }
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::rcmdcheck
+            any::covr
+          needs: check, coverage
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          args: 'c("--no-manual", "--as-cran")'
+
+      - name: Run unit tests with coverage
+        run: |
+          Rscript -e "covr::package_coverage(type='tests', quiet=FALSE, line_exclusions=list('R/zzz.R'))" \
+            | tee coverage.txt
+
+      - name: Enforce 80% coverage floor
+        run: |
+          Rscript -e '
+            cov <- covr::package_coverage(type="tests", line_exclusions=list("R/zzz.R"));
+            pct <- covr::percent_coverage(cov);
+            cat("Coverage:", pct, "\n");
+            if (pct < 80) quit(status = 1)
+          '
