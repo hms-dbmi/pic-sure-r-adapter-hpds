@@ -5,6 +5,8 @@
 #
 # Each fake method records the call for assertion.
 
+`%||%` <- function(a, b) if (is.null(a)) b else a
+
 new_fake_session <- function(platform = "Demo", token = "tok") {
   calls <- new.env(parent = emptyenv())
   calls$search <- list()
@@ -23,8 +25,24 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
         )
       },
       runQuery = function(...) {
-        calls$runQuery <- c(calls$runQuery, list(list(...)))
-        0L
+        args <- list(...)
+        calls$runQuery <- c(calls$runQuery, list(args))
+        type <- tolower(args$type %||% "count")
+        switch(
+          type,
+          count = 42L,
+          participant = data.frame(
+            patient_id = c(1L, 2L, 3L),
+            value      = c("a", "b", "c"),
+            stringsAsFactors = FALSE
+          ),
+          timestamp = data.frame(
+            patient_id = c(1L, 2L),
+            timestamp  = c("2026-01-01", "2026-01-02"),
+            stringsAsFactors = FALSE
+          ),
+          stop("fake runQuery: unknown type '", type, "'")
+        )
       },
       facets = function() new_fake_facet_set(),
       .calls = calls
