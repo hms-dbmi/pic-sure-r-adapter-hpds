@@ -50,3 +50,15 @@ test_that("search() re-raises Python exceptions as picsureError", {
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "not found in the dictionary", fixed = TRUE)
 })
+
+test_that("search() forwards a FacetSet as the facets kwarg", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  fs <- picsure::facets(bdc)
+  picsure::addFacet(fs, "study_ids", "phs000007")
+
+  picsure::search(bdc, "sex", facets = fs)
+
+  call <- bdc$.calls$search[[1]]
+  expect_identical(call$facets, fs)
+})
