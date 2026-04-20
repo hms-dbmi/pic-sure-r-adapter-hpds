@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.github$
+^\.pytest_cache$
+^docs$
+^CODE_OF_CONDUCT\.md$
+^LICENSE\.md$
