@@ -40,3 +40,6 @@ rsconnect/
 .idea/*
 
 tests/testthat/results
+
+# Claude implementation plans — kept locally, not committed
+docs/superpowers/plans/
