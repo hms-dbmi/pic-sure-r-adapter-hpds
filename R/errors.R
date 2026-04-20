@@ -19,3 +19,23 @@ picsure_error <- function(message, py_cause = NULL) {
     list(message = message, py_cause = py_cause, call = sys.call(-1L))
   )
 }
+
+#' Wrap a Python call so Python exceptions surface as picsureErrors.
+#'
+#' Any condition of class `python.builtin.Exception` thrown inside `expr` is
+#' caught and re-raised as a `picsureError`. The message comes from the Python
+#' exception (which the Python package already crafted for researchers), and
+#' the original exception is attached as `$py_cause`. Non-Python R errors pass
+#' through unchanged.
+#'
+#' @param expr An expression, typically a reticulate method call.
+#' @return The value of `expr` if no error occurred.
+#' @keywords internal
+with_picsure_error <- function(expr) {
+  tryCatch(
+    expr,
+    python.builtin.Exception = function(e) {
+      stop(picsure_error(conditionMessage(e), py_cause = e))
+    }
+  )
+}
