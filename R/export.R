@@ -33,3 +33,47 @@ exportPFB <- function(session, query, path, ...) {
   with_picsure_error(do.call(session$exportPFB, kwargs))
   invisible(path)
 }
+
+#' Export query results to a CSV file.
+#'
+#' @inheritParams exportPFB
+#' @return The path, invisibly.
+#' @examples
+#' \dontrun{
+#' picsure::exportCSV(bdc, full_query, "~/cohort.csv")
+#' }
+#' @export
+exportCSV <- function(session, query, path, ...) {
+  if (missing(query) || is.null(query)) {
+    stop("`query` is required.")
+  }
+  if (missing(path) || is.null(path) || is.na(path) || !nzchar(path)) {
+    stop("`path` is required.")
+  }
+
+  kwargs <- drop_nulls(list(query = query, path = path, ...))
+  with_picsure_error(do.call(session$exportCSV, kwargs))
+  invisible(path)
+}
+
+#' Export query results to a TSV file.
+#'
+#' @inheritParams exportPFB
+#' @return The path, invisibly.
+#' @examples
+#' \dontrun{
+#' picsure::exportTSV(bdc, full_query, "~/cohort.tsv")
+#' }
+#' @export
+exportTSV <- function(session, query, path, ...) {
+  if (missing(query) || is.null(query)) {
+    stop("`query` is required.")
+  }
+  if (missing(path) || is.null(path) || is.na(path) || !nzchar(path)) {
+    stop("`path` is required.")
+  }
+
+  kwargs <- drop_nulls(list(query = query, path = path, ...))
+  with_picsure_error(do.call(session$exportTSV, kwargs))
+  invisible(path)
+}
