@@ -11,6 +11,9 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
   calls <- new.env(parent = emptyenv())
   calls$search <- list()
   calls$runQuery <- list()
+  calls$exportPFB <- list()
+  calls$exportCSV <- list()
+  calls$exportTSV <- list()
   structure(
     list(
       platform = platform,
@@ -43,6 +46,21 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
           ),
           stop("fake runQuery: unknown type '", type, "'")
         )
+      },
+      exportPFB = function(query, path, ...) {
+        calls$exportPFB <- c(calls$exportPFB, list(list(query = query, path = path, extra = list(...))))
+        writeLines(character(0), path)
+        invisible(path)
+      },
+      exportCSV = function(query, path, ...) {
+        calls$exportCSV <- c(calls$exportCSV, list(list(query = query, path = path, extra = list(...))))
+        writeLines(character(0), path)
+        invisible(path)
+      },
+      exportTSV = function(query, path, ...) {
+        calls$exportTSV <- c(calls$exportTSV, list(list(query = query, path = path, extra = list(...))))
+        writeLines(character(0), path)
+        invisible(path)
       },
       facets = function() new_fake_facet_set(),
       .calls = calls
