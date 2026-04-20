@@ -21,10 +21,10 @@
 #' }
 #' @export
 connect <- function(platform, token, ...) {
-  if (missing(platform) || is.null(platform) || !nzchar(platform)) {
+  if (missing(platform) || is.null(platform) || is.na(platform) || !nzchar(platform)) {
     stop("`platform` is required. Call picsure::platforms() to list valid values.")
   }
-  if (missing(token) || is.null(token) || !nzchar(token)) {
+  if (missing(token) || is.null(token) || is.na(token) || !nzchar(token)) {
     stop("`token` is required. Copy it from the 'User Profile' tab of PIC-SURE.")
   }
 

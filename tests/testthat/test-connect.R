@@ -22,6 +22,14 @@ test_that("connect() errors when token is missing", {
   expect_error(picsure::connect(platform = "Demo"), "token")
 })
 
+test_that("connect() rejects NA platform and NA token", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  expect_error(picsure::connect(platform = NA, token = "abc"), "platform")
+  expect_error(picsure::connect(platform = NA_character_, token = "abc"), "platform")
+  expect_error(picsure::connect(platform = "Demo", token = NA), "token")
+  expect_error(picsure::connect(platform = "Demo", token = NA_character_), "token")
+})
+
 test_that("connect() re-raises Python exceptions as picsureError", {
   failing_py <- fake_picsure_py()
   failing_py$connect <- function(platform, token, ...) {
