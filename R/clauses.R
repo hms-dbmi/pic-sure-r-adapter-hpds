@@ -42,3 +42,34 @@ createClause <- function(path, type, min = NULL, max = NULL, categories = NULL, 
 
   with_picsure_error(do.call(picsure_py$createClause, kwargs))
 }
+
+#' Combine clauses (and nested groups) under an AND or OR operator.
+#'
+#' Takes a list of clause / group handles and returns a single opaque
+#' ClauseGroup that can itself be nested inside another
+#' `buildClauseGroup()` call, or passed to
+#' [`runQuery()`][picsure::runQuery].
+#'
+#' @param clauses A non-empty list of clause or clause-group handles.
+#' @param root The root operator, a case-insensitive string; one of
+#'   `"AND"` or `"OR"`. Defaults to `"AND"`.
+#' @return An opaque ClauseGroup handle.
+#' @examples
+#' \dontrun{
+#' sex    <- picsure::createClause("\\phs1\\pht1\\phv1\\sex\\", type = "FILTER", categories = list("male"))
+#' copd   <- picsure::createClause("\\phs1\\pht2\\phv2\\copd\\", type = "FILTER", categories = list("Yes"))
+#' asthma <- picsure::createClause("\\phs1\\pht2\\phv3\\asth\\", type = "FILTER", categories = list("Yes"))
+#' lung <- picsure::buildClauseGroup(list(copd, asthma), root = "OR")
+#' full <- picsure::buildClauseGroup(list(sex, lung), root = "AND")
+#' }
+#' @export
+buildClauseGroup <- function(clauses, root = "AND") {
+  if (missing(clauses) || !is.list(clauses) || length(clauses) == 0L) {
+    stop("`clauses` must be a non-empty list of clause or clause-group handles.")
+  }
+
+  with_picsure_error(picsure_py$buildClauseGroup(
+    clauses = clauses,
+    root    = to_py_enum(root, picsure_py$GroupOperator, "GroupOperator")
+  ))
+}
