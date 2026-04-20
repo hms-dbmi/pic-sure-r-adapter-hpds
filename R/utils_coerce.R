@@ -76,3 +76,32 @@ as_py_dict <- function(x) {
   }
   x
 }
+
+#' Resolve a case-insensitive string against a Python enum proxy.
+#'
+#' The R API accepts strings like "FILTER", "and", "bdc authorized" and maps
+#' them to the Python enum member at call time. `enum_obj` is whatever
+#' `picsure_py$ClauseType` (etc.) returns — in real use, a reticulate object
+#' whose members are accessible via `$` and `names()`. In tests, a named list
+#' stands in for it.
+#'
+#' @param value NULL or a length-1 character.
+#' @param enum_obj The Python enum proxy (or a named list in tests).
+#' @param enum_name The enum name, used only in error messages.
+#' @return NULL if value is NULL; otherwise the corresponding enum member.
+#' @keywords internal
+to_py_enum <- function(value, enum_obj, enum_name) {
+  if (is.null(value)) return(NULL)
+  if (!is.character(value) || length(value) != 1L) {
+    stop(enum_name, " value must be a single string, got: ", format(value))
+  }
+  valid <- names(enum_obj)
+  match_idx <- which(tolower(valid) == tolower(value))
+  if (length(match_idx) == 0L) {
+    stop(sprintf(
+      "%s value '%s' is not one of: %s",
+      enum_name, value, paste(valid, collapse = ", ")
+    ))
+  }
+  enum_obj[[valid[match_idx]]]
+}

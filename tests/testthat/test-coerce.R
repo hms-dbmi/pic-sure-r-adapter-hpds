@@ -42,3 +42,24 @@ test_that("as_py_dict requires a named list", {
   expect_error(as_py_dict(list(1, 2)), "named")
   expect_null(as_py_dict(NULL))
 })
+
+test_that("to_py_enum resolves a case-insensitive string against the enum's members", {
+  fake_enum <- list(FILTER = "python_FILTER", SELECT = "python_SELECT")
+  expect_equal(to_py_enum("FILTER", fake_enum, "ClauseType"), "python_FILTER")
+  expect_equal(to_py_enum("filter", fake_enum, "ClauseType"), "python_FILTER")
+  expect_equal(to_py_enum("Select", fake_enum, "ClauseType"), "python_SELECT")
+})
+
+test_that("to_py_enum errors on unknown string with a helpful message listing valid values", {
+  fake_enum <- list(FILTER = "x", SELECT = "y")
+  err <- tryCatch(to_py_enum("REQUIRE", fake_enum, "ClauseType"),
+                  error = function(e) e)
+  expect_s3_class(err, "error")
+  expect_match(err$message, "ClauseType", fixed = TRUE)
+  expect_match(err$message, "FILTER", fixed = TRUE)
+  expect_match(err$message, "SELECT", fixed = TRUE)
+})
+
+test_that("to_py_enum passes NULL through unchanged", {
+  expect_null(to_py_enum(NULL, list(FILTER = "x"), "ClauseType"))
+})
