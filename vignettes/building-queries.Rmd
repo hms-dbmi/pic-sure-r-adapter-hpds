@@ -1,0 +1,93 @@
+---
+title: "Building queries"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Building queries}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
+```
+
+Queries are trees of clauses combined under AND/OR operators. Build leaves
+with `createClause()`, combine them with `buildClauseGroup()`, nest groups
+to express arbitrary Boolean logic.
+
+## Clause types
+
+```{r}
+library(picsure)
+
+# Categorical FILTER
+sex_filter <- picsure::createClause(
+  "\\phs000001\\pht000001\\phv00000001\\sex\\",
+  type       = "FILTER",
+  categories = list("male")
+)
+
+# Continuous FILTER
+age_filter <- picsure::createClause(
+  "\\phs000001\\pht000001\\phv00000005\\age\\",
+  type = "FILTER", min = 40
+)
+
+# SELECT
+bmi_select <- picsure::createClause(
+  "\\phs000001\\pht000001\\phv00000020\\bmi\\",
+  type = "SELECT"
+)
+
+# REQUIRE
+smoking_require <- picsure::createClause(
+  "\\phs000001\\pht000001\\phv00000030\\smoking\\",
+  type = "REQUIRE"
+)
+
+# ANYRECORD
+visits_anyrecord <- picsure::createClause(
+  "\\phs000001\\pht000002\\phv00000100\\visit_count\\",
+  type = "ANYRECORD"
+)
+```
+
+## Combine with AND
+
+```{r}
+query <- picsure::buildClauseGroup(
+  list(sex_filter, age_filter, bmi_select),
+  root = "AND"
+)
+```
+
+## Nested groups for AND-of-ORs
+
+A cohort of males aged 40+ who have either COPD or asthma:
+
+```{r}
+copd_filter <- picsure::createClause(
+  "\\phs000001\\pht000002\\phv00000050\\copd\\",
+  type = "FILTER", categories = list("Yes")
+)
+asthma_filter <- picsure::createClause(
+  "\\phs000001\\pht000002\\phv00000051\\asthma\\",
+  type = "FILTER", categories = list("Yes")
+)
+
+copd_or_asthma <- picsure::buildClauseGroup(
+  list(copd_filter, asthma_filter),
+  root = "OR"
+)
+
+full_query <- picsure::buildClauseGroup(
+  list(sex_filter, age_filter, copd_or_asthma),
+  root = "AND"
+)
+```
+
+## Case-insensitive enums
+
+Both `type` (clause type) and `root` (group operator) accept
+case-insensitive strings: `"filter"`, `"Filter"`, `"FILTER"` are all
+equivalent.

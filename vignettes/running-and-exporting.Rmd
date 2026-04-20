@@ -1,0 +1,59 @@
+---
+title: "Running and exporting"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Running and exporting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
+```
+
+Given a query built with `createClause()` + `buildClauseGroup()`, you can
+ask the server for:
+
+- a participant count,
+- a participant-level data frame,
+- a timestamped longitudinal data frame,
+- a PFB, CSV, or TSV file on disk.
+
+## Run for a count
+
+```{r}
+count <- picsure::runQuery(bdc, full_query, type = "count")
+count
+```
+
+## Pull participant rows
+
+```{r}
+participants <- picsure::runQuery(bdc, full_query, type = "participant")
+nrow(participants)
+head(participants)
+```
+
+## Timestamped data
+
+```{r}
+timeseries <- picsure::runQuery(bdc, full_query, type = "timestamp")
+```
+
+## Export to disk
+
+```{r}
+picsure::exportCSV(bdc, full_query, "~/cohort.csv")
+picsure::exportTSV(bdc, full_query, "~/cohort.tsv")
+picsure::exportPFB(bdc, full_query, "~/cohort.pfb")
+```
+
+PFB export requires the Python `picsure[pfb]` optional dependency. If the
+Python env was provisioned without it, `exportPFB()` raises a
+`picsureError` pointing you at the install hint.
+
+All three export functions return the path invisibly, so you can chain:
+
+```{r}
+pfb_path <- picsure::exportPFB(bdc, full_query, tempfile(fileext = ".pfb"))
+```

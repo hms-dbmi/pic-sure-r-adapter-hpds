@@ -1,0 +1,64 @@
+---
+title: "Getting started with picsure"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with picsure}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
+```
+
+This vignette walks through installing `picsure`, connecting to a PIC-SURE
+network, running a simple search, and executing a one-clause query.
+
+## Install
+
+```{r}
+remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@query_v3")
+library(picsure)
+```
+
+The first call in any R session triggers reticulate to provision an
+isolated Python environment. This takes a few seconds on first use; later
+sessions reuse the cached environment.
+
+## Connect
+
+```{r}
+bdc <- picsure::connect(
+  platform = "BDC Authorized",
+  token    = Sys.getenv("PICSURE_TOKEN")
+)
+```
+
+Your token comes from the "User Profile" tab on the PIC-SURE web UI.
+Valid platform names include `"Demo"`, `"BDC Open"`, and `"BDC Authorized"`.
+
+## Search the dictionary
+
+```{r}
+picsure::search(bdc, "sex")
+```
+
+`search()` returns a data frame of matching variables. See
+`vignette("search-and-facets")` for filtering by study or other facets.
+
+## Build and run a query
+
+```{r}
+sex_filter <- picsure::createClause(
+  "\\phs000001\\pht000001\\phv00000001\\sex\\",
+  type       = "FILTER",
+  categories = list("male")
+)
+query <- picsure::buildClauseGroup(list(sex_filter), root = "AND")
+
+count <- picsure::runQuery(bdc, query, type = "count")
+count
+```
+
+See `vignette("building-queries")` for nested AND/OR trees and the other
+clause types.
