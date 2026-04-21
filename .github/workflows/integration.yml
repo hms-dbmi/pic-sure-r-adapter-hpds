@@ -8,6 +8,9 @@ on:
 jobs:
   integration:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       PICSURE_INTEGRATION: "1"
