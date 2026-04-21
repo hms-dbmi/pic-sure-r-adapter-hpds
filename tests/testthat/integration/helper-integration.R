@@ -9,7 +9,18 @@ skip_unless_integration <- function() {
 }
 
 live_platform <- function() {
-  Sys.getenv("PICSURE_TEST_PLATFORM", unset = "Demo")
+  name <- Sys.getenv("PICSURE_TEST_PLATFORM", unset = "Demo")
+  # Enum member names (ALL_CAPS_WITH_UNDERSCORES) disambiguate between
+  # platforms that share a human-readable label (e.g. BDC_AUTHORIZED vs.
+  # BDC_PREDEV_AUTHORIZED — both labeled "BDC Authorized"). Resolve the
+  # name to the Python Platform enum member so connect() sees a unique
+  # handle rather than an ambiguous string.
+  if (grepl("^[A-Z][A-Z0-9_]*$", name)) {
+    picsure_py_ns <- get("picsure_py", envir = asNamespace("picsure"))
+    member <- tryCatch(picsure_py_ns$Platform[[name]], error = function(e) NULL)
+    if (!is.null(member)) return(member)
+  }
+  name
 }
 
 live_token <- function() {
