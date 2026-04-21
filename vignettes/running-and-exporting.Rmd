@@ -14,16 +14,41 @@ knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
 Given a query built with `createClause()` + `buildClauseGroup()`, you can
 ask the server for:
 
-- a participant count,
+- a participant count (possibly obfuscated for small cohorts),
 - a participant-level data frame,
 - a timestamped longitudinal data frame,
-- a PFB, CSV, or TSV file on disk.
+- a PFB file written directly to disk.
+
+CSV and TSV output work differently: they serialize a DataFrame you
+already have, so the flow is "runQuery first, then write".
 
 ## Run for a count
 
 ```{r}
 count <- picsure::runQuery(bdc, full_query, type = "count")
-count
+```
+
+`count` is a `CountResult` object with three fields:
+
+- `count$value` — the exact count, or `NULL` for obfuscated small cohorts.
+- `count$margin` — the server-side margin for the count (when reported).
+- `count$cap` — the upper bound used when a count is obfuscated.
+
+```{r}
+if (!is.null(count$value)) {
+  cat(count$value, "participants\n")
+} else {
+  cat("fewer than", count$cap, "participants\n")
+}
+```
+
+## Cross counts
+
+Pass `type = "cross_count"` to receive a dict-like object keyed by concept
+path, each value a `CountResult`.
+
+```{r}
+cc <- picsure::runQuery(bdc, full_query, type = "cross_count")
 ```
 
 ## Pull participant rows
@@ -42,15 +67,24 @@ timeseries <- picsure::runQuery(bdc, full_query, type = "timestamp")
 
 ## Export to disk
 
+`exportPFB()` runs the query and writes the PFB file in a single call:
+
 ```{r}
-picsure::exportCSV(bdc, full_query, "~/cohort.csv")
-picsure::exportTSV(bdc, full_query, "~/cohort.tsv")
 picsure::exportPFB(bdc, full_query, "~/cohort.pfb")
 ```
 
 PFB export requires the Python `picsure[pfb]` optional dependency. If the
 Python env was provisioned without it, `exportPFB()` raises a
 `picsureError` pointing you at the install hint.
+
+`exportCSV()` and `exportTSV()` serialize an R `data.frame` — the typical
+flow is to run the query first and then write the result:
+
+```{r}
+df <- picsure::runQuery(bdc, full_query, type = "participant")
+picsure::exportCSV(bdc, df, "~/cohort.csv")
+picsure::exportTSV(bdc, df, "~/cohort.tsv")
+```
 
 All three export functions return the path invisibly, so you can chain:
 

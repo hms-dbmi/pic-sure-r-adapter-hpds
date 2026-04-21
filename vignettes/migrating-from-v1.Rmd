@@ -25,13 +25,15 @@ equivalent and walks through three common notebook patterns end-to-end.
 | `bdc.searchPicsure(session, "sex")` | `search(session, "sex")` |
 | `bdc.getStudies(session)` | (removed — not yet re-exposed) |
 | `newQuery(session)` | no direct replacement — use `createClause()` + `buildClauseGroup()` |
-| `addClause(q, path, "FILTER", min = 18)` | `createClause(path, "FILTER", min = 18)` |
-| `addClause(q, path, "SELECT")` | `createClause(path, "SELECT")` |
+| `addClause(q, path, "FILTER", min = 18)` | `createClause(keys = path, type = "FILTER", min = 18)` |
+| `addClause(q, path, "SELECT")` | `createClause(keys = path, type = "SELECT")` |
 | `deleteClause(q, path)` | (removed — rebuild the tree) |
 | `showQuery(q)` | (removed — queries are opaque Python handles) |
-| `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")` |
+| `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")` — returns a `CountResult` (use `$value` / `$cap`) |
 | `runQuery(q, "DATA_FRAME")` | `runQuery(session, query, type = "participant")` |
 | `getResultByQueryUUID(session, uuid)` | (removed — query UUID APIs not yet re-exposed) |
+| `exportPFB(...)` (new) | `exportPFB(session, query, path)` |
+| `exportCSV(...)` (new) | `df <- runQuery(...); exportCSV(session, df, path)` |
 | `getQueryByUUID(session, uuid)` | (removed) |
 
 ## Worked example 1: simple count

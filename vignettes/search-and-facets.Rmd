@@ -49,9 +49,15 @@ picsure::search(bdc, "sex", facets = fs)
 
 The server restricts the search to variables inside the facets.
 
-## Paginate
+## Lighter payloads
+
+Pass `include_values = FALSE` to omit variable values from the response —
+useful when you only need variable names and descriptions:
 
 ```{r}
-picsure::search(bdc, "age", limit = 50, offset = 0)
-picsure::search(bdc, "age", limit = 50, offset = 50)
+picsure::search(bdc, "age", include_values = FALSE)
 ```
+
+The search term is always matched server-side; you receive every matching
+row. There is no `limit` or `offset` — narrow with a more specific term
+or a facet filter if a search returns too many results.
