@@ -2,29 +2,29 @@
 % Please edit documentation in R/export.R
 \name{exportTSV}
 \alias{exportTSV}
-\title{Export query results to a TSV file.}
+\title{Write a participant data frame to a TSV file.}
 \usage{
-exportTSV(session, query, path, ...)
+exportTSV(session, data, path)
 }
 \arguments{
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
 
-\item{query}{A clause group from
-[`buildClauseGroup()`][picsure::buildClauseGroup].}
+\item{data}{A `data.frame` (typically from
+[`runQuery()`][picsure::runQuery] with `type = "participant"` or
+`"timestamp"`).}
 
 \item{path}{Destination file path.}
-
-\item{...}{Additional keyword arguments forwarded to the Python
-`Session.exportPFB()` call.}
 }
 \value{
 The path, invisibly.
 }
 \description{
-Export query results to a TSV file.
+See [`exportCSV()`][picsure::exportCSV]; semantics are identical, output is
+tab-separated.
 }
 \examples{
 \dontrun{
-picsure::exportTSV(bdc, full_query, "~/cohort.tsv")
+df <- picsure::runQuery(bdc, full_query, type = "participant")
+picsure::exportTSV(bdc, df, "~/cohort.tsv")
 }
 }

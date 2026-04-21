@@ -1,15 +1,15 @@
 #' Search the PIC-SURE data dictionary.
 #'
 #' Runs a keyword search against the session's dictionary resource and returns
-#' the matching variables as a data frame.
+#' the matching variables as a data frame. An empty `term` returns every
+#' variable the session has access to.
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
-#' @param keyword A non-empty search string.
+#' @param term Search string; empty string returns all variables.
 #' @param facets NULL (default) or a `FacetSet` from [`facets()`][picsure::facets].
-#'   When supplied, the server narrows the search to variables inside the
-#'   facets; Plan 2's Task 4 wires this argument in.
-#' @param limit Optional integer. Maximum number of rows to return.
-#' @param offset Optional integer. Row offset for pagination.
+#'   When supplied, the server narrows results to variables inside the facets.
+#' @param include_values If TRUE (default), variable values are included in
+#'   the response. Set FALSE to omit them for a lighter payload.
 #' @param ... Additional keyword arguments forwarded to the Python
 #'   `Session.search()` call.
 #' @return A `data.frame` of matching dictionary entries.
@@ -17,18 +17,18 @@
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
 #' picsure::search(bdc, "sex")
+#' picsure::search(bdc, "")  # all variables
 #' }
 #' @export
-search <- function(session, keyword, facets = NULL, limit = NULL, offset = NULL, ...) {
-  if (missing(keyword) || is.null(keyword) || is.na(keyword) || !nzchar(keyword)) {
-    stop("`keyword` is required.")
+search <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
+  if (is.null(term) || length(term) != 1L || is.na(term) || !is.character(term)) {
+    stop("`term` must be a single string (empty string is OK to fetch all).")
   }
 
   kwargs <- drop_nulls(list(
-    keyword = keyword,
-    facets  = facets,
-    limit   = as_py_int(limit),
-    offset  = as_py_int(offset),
+    term           = term,
+    facets         = facets,
+    include_values = include_values,
     ...
   ))
 

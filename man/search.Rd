@@ -4,20 +4,18 @@
 \alias{search}
 \title{Search the PIC-SURE data dictionary.}
 \usage{
-search(session, keyword, facets = NULL, limit = NULL, offset = NULL, ...)
+search(session, term = "", facets = NULL, include_values = TRUE, ...)
 }
 \arguments{
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
 
-\item{keyword}{A non-empty search string.}
+\item{term}{Search string; empty string returns all variables.}
 
 \item{facets}{NULL (default) or a `FacetSet` from [`facets()`][picsure::facets].
-When supplied, the server narrows the search to variables inside the
-facets; Plan 2's Task 4 wires this argument in.}
+When supplied, the server narrows results to variables inside the facets.}
 
-\item{limit}{Optional integer. Maximum number of rows to return.}
-
-\item{offset}{Optional integer. Row offset for pagination.}
+\item{include_values}{If TRUE (default), variable values are included in
+the response. Set FALSE to omit them for a lighter payload.}
 
 \item{...}{Additional keyword arguments forwarded to the Python
 `Session.search()` call.}
@@ -27,11 +25,13 @@ A `data.frame` of matching dictionary entries.
 }
 \description{
 Runs a keyword search against the session's dictionary resource and returns
-the matching variables as a data frame.
+the matching variables as a data frame. An empty `term` returns every
+variable the session has access to.
 }
 \examples{
 \dontrun{
 bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
 picsure::search(bdc, "sex")
+picsure::search(bdc, "")  # all variables
 }
 }

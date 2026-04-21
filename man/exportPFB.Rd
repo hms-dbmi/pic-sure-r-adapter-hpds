@@ -4,7 +4,7 @@
 \alias{exportPFB}
 \title{Export query results to a PFB file.}
 \usage{
-exportPFB(session, query, path, ...)
+exportPFB(session, query, path)
 }
 \arguments{
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
@@ -13,17 +13,14 @@ exportPFB(session, query, path, ...)
 [`buildClauseGroup()`][picsure::buildClauseGroup].}
 
 \item{path}{Destination file path.}
-
-\item{...}{Additional keyword arguments forwarded to the Python
-`Session.exportPFB()` call.}
 }
 \value{
 The path, invisibly.
 }
 \description{
-Runs the query, materializes the result as a PFB (Portable Format for
-Bioinformatics) file at `path`, and returns the path invisibly. Requires
-the Python `picsure[pfb]` optional dependency on the Python side.
+Runs the query and writes the result as a PFB (Portable Format for
+Bioinformatics) file at `path`. Requires the Python `picsure[pfb]` optional
+dependency on the Python side.
 }
 \examples{
 \dontrun{

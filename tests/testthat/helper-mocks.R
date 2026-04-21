@@ -47,20 +47,20 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
           stop("fake runQuery: unknown type '", type, "'")
         )
       },
-      exportPFB = function(query, path, ...) {
-        calls$exportPFB <- c(calls$exportPFB, list(list(query = query, path = path, extra = list(...))))
+      exportPFB = function(query, path) {
+        calls$exportPFB <- c(calls$exportPFB, list(list(query = query, path = path)))
         writeLines(character(0), path)
-        invisible(path)
+        invisible(NULL)
       },
-      exportCSV = function(query, path, ...) {
-        calls$exportCSV <- c(calls$exportCSV, list(list(query = query, path = path, extra = list(...))))
+      exportCSV = function(data, path) {
+        calls$exportCSV <- c(calls$exportCSV, list(list(data = data, path = path)))
         writeLines(character(0), path)
-        invisible(path)
+        invisible(NULL)
       },
-      exportTSV = function(query, path, ...) {
-        calls$exportTSV <- c(calls$exportTSV, list(list(query = query, path = path, extra = list(...))))
+      exportTSV = function(data, path) {
+        calls$exportTSV <- c(calls$exportTSV, list(list(data = data, path = path)))
         writeLines(character(0), path)
-        invisible(path)
+        invisible(NULL)
       },
       facets = function() new_fake_facet_set(),
       .calls = calls
@@ -79,8 +79,8 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
       calls$connect <- c(calls$connect, list(list(platform = platform, token = token, ...)))
       new_fake_session(platform = platform, token = token)
     },
-    createClause = function(path, type, ...) {
-      list(kind = "clause", path = path, type = type, extra = list(...))
+    createClause = function(keys, type, ...) {
+      list(kind = "clause", keys = keys, type = type, extra = list(...))
     },
     buildClauseGroup = function(clauses, root) {
       list(kind = "group", clauses = clauses, root = root)

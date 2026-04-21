@@ -4,19 +4,20 @@
 \alias{createClause}
 \title{Create a single query clause.}
 \usage{
-createClause(path, type, min = NULL, max = NULL, categories = NULL, ...)
+createClause(keys, type, min = NULL, max = NULL, categories = NULL, ...)
 }
 \arguments{
-\item{path}{The HPDS concept path the clause applies to,
-e.g. `"\\phs000001\\pht000001\\phv00000001\\sex\\"`.}
+\item{keys}{One or more HPDS concept paths the clause applies to. A
+character scalar or character vector, e.g.
+`"\\phs000001\\pht000001\\phv00000001\\sex\\"` or
+`c("\\path\\a\\", "\\path\\b\\")`.}
 
 \item{type}{Clause type as a case-insensitive string; one of
 `"FILTER"`, `"SELECT"`, `"REQUIRE"`, `"ANYRECORD"`.}
 
-\item{min, max}{Optional numeric bounds for continuous FILTER clauses.
-Coerced to Python `int` when integral.}
+\item{min, max}{Optional numeric bounds for continuous FILTER clauses.}
 
-\item{categories}{Optional list of accepted category values for
+\item{categories}{Optional vector or list of accepted category values for
 categorical FILTER clauses.}
 
 \item{...}{Additional keyword arguments forwarded to the Python
@@ -34,7 +35,7 @@ Builds an opaque Clause handle suitable for nesting inside a
 \dontrun{
 sex <- picsure::createClause(
   "\\\\phs1\\\\pht1\\\\phv1\\\\sex\\\\",
-  type = "FILTER", categories = list("male")
+  type = "FILTER", categories = "male"
 )
 }
 }

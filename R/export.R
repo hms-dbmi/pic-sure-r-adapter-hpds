@@ -1,22 +1,20 @@
 #' Export query results to a PFB file.
 #'
-#' Runs the query, materializes the result as a PFB (Portable Format for
-#' Bioinformatics) file at `path`, and returns the path invisibly. Requires
-#' the Python `picsure[pfb]` optional dependency on the Python side.
+#' Runs the query and writes the result as a PFB (Portable Format for
+#' Bioinformatics) file at `path`. Requires the Python `picsure[pfb]` optional
+#' dependency on the Python side.
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query A clause group from
 #'   [`buildClauseGroup()`][picsure::buildClauseGroup].
 #' @param path Destination file path.
-#' @param ... Additional keyword arguments forwarded to the Python
-#'   `Session.exportPFB()` call.
 #' @return The path, invisibly.
 #' @examples
 #' \dontrun{
 #' picsure::exportPFB(bdc, full_query, "~/cohort.pfb")
 #' }
 #' @export
-exportPFB <- function(session, query, path, ...) {
+exportPFB <- function(session, query, path) {
   if (missing(query) || is.null(query)) {
     stop("`query` is required.")
   }
@@ -24,56 +22,62 @@ exportPFB <- function(session, query, path, ...) {
     stop("`path` is required.")
   }
 
-  kwargs <- drop_nulls(list(
-    query = query,
-    path  = path,
-    ...
-  ))
-
-  with_picsure_error(do.call(session$exportPFB, kwargs))
+  with_picsure_error(session$exportPFB(query, path))
   invisible(path)
 }
 
-#' Export query results to a CSV file.
+#' Write a participant data frame to a CSV file.
 #'
-#' @inheritParams exportPFB
+#' Unlike [`exportPFB()`][picsure::exportPFB], `exportCSV` and `exportTSV`
+#' write an already-materialized data frame — they do not re-run a query.
+#' The typical flow is `runQuery(..., type = "participant")` followed by
+#' `exportCSV(session, df, path)`.
+#'
+#' @param session A session object produced by [`connect()`][picsure::connect].
+#' @param data A `data.frame` (typically from
+#'   [`runQuery()`][picsure::runQuery] with `type = "participant"` or
+#'   `"timestamp"`).
+#' @param path Destination file path.
 #' @return The path, invisibly.
 #' @examples
 #' \dontrun{
-#' picsure::exportCSV(bdc, full_query, "~/cohort.csv")
+#' df <- picsure::runQuery(bdc, full_query, type = "participant")
+#' picsure::exportCSV(bdc, df, "~/cohort.csv")
 #' }
 #' @export
-exportCSV <- function(session, query, path, ...) {
-  if (missing(query) || is.null(query)) {
-    stop("`query` is required.")
+exportCSV <- function(session, data, path) {
+  if (missing(data) || is.null(data) || !is.data.frame(data)) {
+    stop("`data` must be a data.frame (e.g. from runQuery(..., type = \"participant\")).")
   }
   if (missing(path) || is.null(path) || is.na(path) || !nzchar(path)) {
     stop("`path` is required.")
   }
 
-  kwargs <- drop_nulls(list(query = query, path = path, ...))
-  with_picsure_error(do.call(session$exportCSV, kwargs))
+  with_picsure_error(session$exportCSV(data, path))
   invisible(path)
 }
 
-#' Export query results to a TSV file.
+#' Write a participant data frame to a TSV file.
 #'
-#' @inheritParams exportPFB
+#' See [`exportCSV()`][picsure::exportCSV]; semantics are identical, output is
+#' tab-separated.
+#'
+#' @inheritParams exportCSV
 #' @return The path, invisibly.
 #' @examples
 #' \dontrun{
-#' picsure::exportTSV(bdc, full_query, "~/cohort.tsv")
+#' df <- picsure::runQuery(bdc, full_query, type = "participant")
+#' picsure::exportTSV(bdc, df, "~/cohort.tsv")
 #' }
 #' @export
-exportTSV <- function(session, query, path, ...) {
-  if (missing(query) || is.null(query)) {
-    stop("`query` is required.")
+exportTSV <- function(session, data, path) {
+  if (missing(data) || is.null(data) || !is.data.frame(data)) {
+    stop("`data` must be a data.frame (e.g. from runQuery(..., type = \"participant\")).")
   }
   if (missing(path) || is.null(path) || is.na(path) || !nzchar(path)) {
     stop("`path` is required.")
   }
 
-  kwargs <- drop_nulls(list(query = query, path = path, ...))
-  with_picsure_error(do.call(session$exportTSV, kwargs))
+  with_picsure_error(session$exportTSV(data, path))
   invisible(path)
 }

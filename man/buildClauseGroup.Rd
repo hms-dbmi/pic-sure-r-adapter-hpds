@@ -23,9 +23,9 @@ ClauseGroup that can itself be nested inside another
 }
 \examples{
 \dontrun{
-sex    <- picsure::createClause("\\\\phs1\\\\pht1\\\\phv1\\\\sex\\\\", type = "FILTER", categories = list("male"))
-copd   <- picsure::createClause("\\\\phs1\\\\pht2\\\\phv2\\\\copd\\\\", type = "FILTER", categories = list("Yes"))
-asthma <- picsure::createClause("\\\\phs1\\\\pht2\\\\phv3\\\\asth\\\\", type = "FILTER", categories = list("Yes"))
+sex    <- picsure::createClause("\\\\phs1\\\\pht1\\\\phv1\\\\sex\\\\", type = "FILTER", categories = "male")
+copd   <- picsure::createClause("\\\\phs1\\\\pht2\\\\phv2\\\\copd\\\\", type = "FILTER", categories = "Yes")
+asthma <- picsure::createClause("\\\\phs1\\\\pht2\\\\phv3\\\\asth\\\\", type = "FILTER", categories = "Yes")
 lung <- picsure::buildClauseGroup(list(copd, asthma), root = "OR")
 full <- picsure::buildClauseGroup(list(sex, lung), root = "AND")
 }

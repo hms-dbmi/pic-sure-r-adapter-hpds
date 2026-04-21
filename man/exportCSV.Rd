@@ -2,29 +2,31 @@
 % Please edit documentation in R/export.R
 \name{exportCSV}
 \alias{exportCSV}
-\title{Export query results to a CSV file.}
+\title{Write a participant data frame to a CSV file.}
 \usage{
-exportCSV(session, query, path, ...)
+exportCSV(session, data, path)
 }
 \arguments{
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
 
-\item{query}{A clause group from
-[`buildClauseGroup()`][picsure::buildClauseGroup].}
+\item{data}{A `data.frame` (typically from
+[`runQuery()`][picsure::runQuery] with `type = "participant"` or
+`"timestamp"`).}
 
 \item{path}{Destination file path.}
-
-\item{...}{Additional keyword arguments forwarded to the Python
-`Session.exportPFB()` call.}
 }
 \value{
 The path, invisibly.
 }
 \description{
-Export query results to a CSV file.
+Unlike [`exportPFB()`][picsure::exportPFB], `exportCSV` and `exportTSV`
+write an already-materialized data frame — they do not re-run a query.
+The typical flow is `runQuery(..., type = "participant")` followed by
+`exportCSV(session, df, path)`.
 }
 \examples{
 \dontrun{
-picsure::exportCSV(bdc, full_query, "~/cohort.csv")
+df <- picsure::runQuery(bdc, full_query, type = "participant")
+picsure::exportCSV(bdc, df, "~/cohort.csv")
 }
 }

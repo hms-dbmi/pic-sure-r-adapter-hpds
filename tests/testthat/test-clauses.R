@@ -6,7 +6,7 @@ test_that("createClause() delegates to picsure_py$createClause() with type resol
                                   categories = list("male"))
 
   expect_equal(clause$kind, "clause")
-  expect_equal(clause$path, "\\phs1\\pht1\\phv1\\sex\\")
+  expect_equal(clause$keys, "\\phs1\\pht1\\phv1\\sex\\")
   expect_equal(clause$type, "FILTER")  # fake's ClauseType$FILTER value
   expect_equal(clause$extra$categories, list("male"))
 })
@@ -56,9 +56,9 @@ test_that("createClause() drops NULL optional args so Python defaults fire", {
   expect_false("categories" %in% names(clause$extra))
 })
 
-test_that("createClause() errors on missing path", {
+test_that("createClause() errors on missing keys", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  expect_error(picsure::createClause(type = "FILTER"), "path")
+  expect_error(picsure::createClause(type = "FILTER"), "keys")
 })
 
 test_that("createClause() errors on missing type", {

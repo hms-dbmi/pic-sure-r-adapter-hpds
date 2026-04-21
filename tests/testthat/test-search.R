@@ -7,32 +7,40 @@ test_that("search() delegates to session$search() and returns a data.frame", {
 
   expect_s3_class(result, "data.frame")
   expect_length(bdc$.calls$search, 1L)
-  expect_equal(bdc$.calls$search[[1]][[1]], "sex")
+  expect_equal(bdc$.calls$search[[1]]$term, "sex")
 })
 
-test_that("search() forwards optional limit and offset as Python ints", {
+test_that("search() forwards include_values to Python", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
   bdc <- picsure::connect(platform = "Demo", token = "tok")
 
-  picsure::search(bdc, "age", limit = 10, offset = 5)
+  picsure::search(bdc, "age", include_values = FALSE)
 
   call <- bdc$.calls$search[[1]]
-  expect_equal(call$keyword, "age")
-  expect_identical(call$limit, 10L)
-  expect_identical(call$offset, 5L)
+  expect_equal(call$term, "age")
+  expect_false(call$include_values)
 })
 
-test_that("search() omits NULL/NA optional kwargs so Python defaults fire", {
+test_that("search() defaults term to empty string (all variables)", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
   bdc <- picsure::connect(platform = "Demo", token = "tok")
 
-  picsure::search(bdc, "age")  # no limit, no offset
+  picsure::search(bdc)
 
   call <- bdc$.calls$search[[1]]
-  expect_false("limit" %in% names(call))
-  expect_false("offset" %in% names(call))
+  expect_equal(call$term, "")
+})
+
+test_that("search() rejects non-string term (NULL, NA, numeric, multi-length)", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  expect_error(picsure::search(bdc, NULL), "term")
+  expect_error(picsure::search(bdc, NA_character_), "term")
+  expect_error(picsure::search(bdc, 42), "term")
+  expect_error(picsure::search(bdc, c("a", "b")), "term")
 })
 
 test_that("search() re-raises Python exceptions as picsureError", {
@@ -55,7 +63,7 @@ test_that("search() forwards a FacetSet as the facets kwarg", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
   fs <- picsure::facets(bdc)
-  picsure::addFacet(fs, "study_ids", "phs000007")
+  picsure::addFacet(fs, "data_source", "topmed")
 
   picsure::search(bdc, "sex", facets = fs)
 
