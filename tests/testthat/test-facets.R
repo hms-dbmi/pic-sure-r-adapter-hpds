@@ -80,3 +80,22 @@ test_that("addFacet() re-raises Python exceptions as picsureError", {
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "invalid facet key", fixed = TRUE)
 })
+
+test_that("removeFacet() re-raises Python exceptions as picsureError", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  fs <- picsure::facets(bdc)
+  fs$remove <- function(key, value) {
+    stop(structure(
+      list(message = "no such facet entry"),
+      class = c("python.builtin.Exception", "error", "condition")
+    ))
+  }
+
+  err <- tryCatch(
+    picsure::removeFacet(fs, "study_ids", "phs000007"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "no such facet entry", fixed = TRUE)
+})

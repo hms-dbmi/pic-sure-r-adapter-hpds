@@ -75,7 +75,7 @@ picsure::exportPFB(bdc, full_query, "~/cohort.pfb")
 
 PFB export requires the Python `picsure[pfb]` optional dependency. If the
 Python env was provisioned without it, `exportPFB()` raises a
-`picsureError` pointing you at the install hint.
+`picsure_error` pointing you at the install hint.
 
 `exportCSV()` and `exportTSV()` serialize an R `data.frame` — the typical
 flow is to run the query first and then write the result:

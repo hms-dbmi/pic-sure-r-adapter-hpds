@@ -21,3 +21,10 @@ Mutates the underlying Python FacetSet and returns the same handle for
 chaining. If `value` is a vector of length > 1, adds one entry per value
 (all under the same `key`).
 }
+\examples{
+\dontrun{
+fs <- picsure::facets(bdc)
+fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+fs <- picsure::addFacet(fs, "study_ids", c("phs000200", "phs000286"))
+}
+}

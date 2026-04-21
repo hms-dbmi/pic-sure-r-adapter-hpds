@@ -28,6 +28,12 @@ facets <- function(session) {
 #' @param key Facet key, e.g. `"study_ids"`.
 #' @param value Facet value (scalar or vector).
 #' @return The same FacetSet, invisibly, for chaining.
+#' @examples
+#' \dontrun{
+#' fs <- picsure::facets(bdc)
+#' fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+#' fs <- picsure::addFacet(fs, "study_ids", c("phs000200", "phs000286"))
+#' }
 #' @export
 addFacet <- function(facet_set, key, value) {
   if (missing(key) || is.null(key) || is.na(key) || !nzchar(key)) {
@@ -51,6 +57,12 @@ addFacet <- function(facet_set, key, value) {
 #' @param key Facet key.
 #' @param value Facet value (scalar only).
 #' @return The same FacetSet, invisibly, for chaining.
+#' @examples
+#' \dontrun{
+#' fs <- picsure::facets(bdc)
+#' fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+#' fs <- picsure::removeFacet(fs, "study_ids", "phs000007")
+#' }
 #' @export
 removeFacet <- function(facet_set, key, value) {
   if (missing(key) || is.null(key) || is.na(key) || !nzchar(key)) {
