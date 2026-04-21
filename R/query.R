@@ -17,11 +17,17 @@
 #'   `"participant"`, or `"timestamp"`.
 #' @param ... Additional keyword arguments forwarded to the Python
 #'   `Session.runQuery()` call.
-#' @return Integer scalar for `"count"`; data.frame otherwise.
+#' @return For `type = "count"`, a Python `CountResult` object with
+#'   `$value` (exact count, or `NULL` for obfuscated small cohorts),
+#'   `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
+#'   mapping concept paths to CountResults. For `"participant"` and
+#'   `"timestamp"`, a `data.frame`.
 #' @examples
 #' \dontrun{
 #' count <- picsure::runQuery(bdc, full_query, type = "count")
-#' rows  <- picsure::runQuery(bdc, full_query, type = "participant")
+#' if (!is.null(count$value)) cat(count$value, "participants\n")
+#'
+#' rows <- picsure::runQuery(bdc, full_query, type = "participant")
 #' }
 #' @export
 runQuery <- function(session, query, type = "count", ...) {

@@ -33,7 +33,7 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
         type <- tolower(args$type %||% "count")
         switch(
           type,
-          count = 42L,
+          count = list(value = 42L, margin = 0L, cap = NULL),
           participant = data.frame(
             patient_id = c(1L, 2L, 3L),
             value      = c("a", "b", "c"),

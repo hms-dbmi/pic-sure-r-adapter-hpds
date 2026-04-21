@@ -19,7 +19,11 @@ runQuery(session, query, type = "count", ...)
 `Session.runQuery()` call.}
 }
 \value{
-Integer scalar for `"count"`; data.frame otherwise.
+For `type = "count"`, a Python `CountResult` object with
+  `$value` (exact count, or `NULL` for obfuscated small cohorts),
+  `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
+  mapping concept paths to CountResults. For `"participant"` and
+  `"timestamp"`, a `data.frame`.
 }
 \description{
 Runs the query tree produced by [`buildClauseGroup()`][picsure::buildClauseGroup]
@@ -36,6 +40,8 @@ dictated by `type`:
 \examples{
 \dontrun{
 count <- picsure::runQuery(bdc, full_query, type = "count")
-rows  <- picsure::runQuery(bdc, full_query, type = "participant")
+if (!is.null(count$value)) cat(count$value, "participants\n")
+
+rows <- picsure::runQuery(bdc, full_query, type = "participant")
 }
 }

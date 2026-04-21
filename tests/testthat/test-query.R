@@ -1,12 +1,12 @@
-test_that("runQuery() with type='count' returns an integer scalar", {
+test_that("runQuery() with type='count' returns a CountResult-shaped object", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
   q <- list(kind = "group", clauses = list(), root = "AND")
 
   result <- picsure::runQuery(bdc, q, type = "count")
 
-  expect_type(result, "integer")
-  expect_equal(result, 42L)
+  expect_true(!is.null(result$value))
+  expect_equal(result$value, 42L)
 })
 
 test_that("runQuery() with type='participant' returns a data.frame", {
@@ -30,9 +30,9 @@ test_that("runQuery() accepts case-insensitive type", {
   r2 <- picsure::runQuery(bdc, q, type = "Count")
   r3 <- picsure::runQuery(bdc, q, type = "count")
 
-  expect_equal(r1, 42L)
-  expect_equal(r2, 42L)
-  expect_equal(r3, 42L)
+  expect_equal(r1$value, 42L)
+  expect_equal(r2$value, 42L)
+  expect_equal(r3$value, 42L)
 })
 
 test_that("runQuery() defaults type to 'count'", {
@@ -42,7 +42,7 @@ test_that("runQuery() defaults type to 'count'", {
 
   result <- picsure::runQuery(bdc, q)
 
-  expect_equal(result, 42L)
+  expect_equal(result$value, 42L)
 })
 
 test_that("runQuery() forwards query and type to session$runQuery", {
@@ -81,4 +81,27 @@ test_that("runQuery() re-raises Python exceptions as picsureError", {
   )
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "no SELECT clauses", fixed = TRUE)
+})
+
+test_that("runQuery() with type='timestamp' returns a data.frame", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  q <- list(kind = "group", clauses = list(), root = "AND")
+
+  result <- picsure::runQuery(bdc, q, type = "timestamp")
+
+  expect_s3_class(result, "data.frame")
+  expect_true("timestamp" %in% names(result))
+})
+
+test_that("runQuery() forwards an unknown type to Python for the error", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  q <- list(kind = "group", clauses = list(), root = "AND")
+
+  err <- tryCatch(
+    picsure::runQuery(bdc, q, type = "nonsense"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "error")
 })
