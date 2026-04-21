@@ -21,8 +21,18 @@
 #' }
 #' @export
 connect <- function(platform, token, ...) {
-  if (missing(platform) || is.null(platform) || is.na(platform) || !nzchar(platform)) {
-    stop("`platform` is required. Call picsure::platforms() to list valid values.")
+  bad_platform_msg <- "`platform` is required. Call picsure::platforms() to list valid values."
+  if (missing(platform) || is.null(platform)) {
+    stop(bad_platform_msg)
+  }
+  if (is.character(platform)) {
+    if (length(platform) != 1L || is.na(platform) || !nzchar(platform)) {
+      stop(bad_platform_msg)
+    }
+  } else if (!inherits(platform, "python.builtin.object")) {
+    # Reject logicals like NA, numerics, lists, etc.; accept only strings or
+    # Python objects (e.g. a reticulate-wrapped Platform enum member).
+    stop(bad_platform_msg)
   }
   if (missing(token) || is.null(token) || is.na(token) || !nzchar(token)) {
     stop("`token` is required. Copy it from the 'User Profile' tab of PIC-SURE.")
