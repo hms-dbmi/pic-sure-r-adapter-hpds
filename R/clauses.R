@@ -30,7 +30,7 @@ createClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, 
     stop("`keys` must be a non-empty character string or vector.")
   }
   if (missing(type) || is.null(type)) {
-    stop("`type` is required.")
+    stop("`type` is required. One of \"FILTER\", \"SELECT\", \"REQUIRE\", \"ANYRECORD\" (case-insensitive).")
   }
 
   kwargs <- drop_nulls(list(

@@ -31,10 +31,10 @@ facets <- function(session) {
 #' @export
 addFacet <- function(facet_set, key, value) {
   if (missing(key) || is.null(key) || is.na(key) || !nzchar(key)) {
-    stop("`key` is required.")
+    stop("`key` is required. Pick a facet category, e.g. \"study_ids\" or \"data_source\".")
   }
   if (missing(value) || is.null(value)) {
-    stop("`value` is required.")
+    stop("`value` is required. Pass the facet value (or vector of values) to add.")
   }
   for (v in value) {
     with_picsure_error(facet_set$add(key, v))
@@ -54,10 +54,10 @@ addFacet <- function(facet_set, key, value) {
 #' @export
 removeFacet <- function(facet_set, key, value) {
   if (missing(key) || is.null(key) || is.na(key) || !nzchar(key)) {
-    stop("`key` is required.")
+    stop("`key` is required. Pick a facet category, e.g. \"study_ids\" or \"data_source\".")
   }
   if (missing(value) || is.null(value)) {
-    stop("`value` is required.")
+    stop("`value` is required. Pass the facet value to remove.")
   }
   with_picsure_error(facet_set$remove(key, value))
   invisible(facet_set)
