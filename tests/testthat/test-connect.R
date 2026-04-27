@@ -47,3 +47,32 @@ test_that("connect() re-raises Python exceptions as picsureError", {
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "token expired", fixed = TRUE)
 })
+
+test_that("connect() rejects unknown extra kwargs with a helpful message", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  err <- tryCatch(
+    picsure::connect(platform = "Demo", token = "tok", resourceUuid = "x"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  msg <- conditionMessage(err)
+  expect_match(msg, "resourceUuid", fixed = TRUE)
+  expect_match(msg, "resource_uuid", fixed = TRUE)
+  expect_match(msg, "include_consents", fixed = TRUE)
+  expect_match(msg, "requires_auth", fixed = TRUE)
+})
+
+test_that("connect() forwards each whitelisted extra kwarg", {
+  for (key in c("resource_uuid", "include_consents", "requires_auth")) {
+    fake <- fake_picsure_py()
+    testthat::local_mocked_bindings(picsure_py = fake)
+    args <- list(platform = "Demo", token = "tok")
+    args[[key]] <- "value-for-test"
+    do.call(picsure::connect, args)
+    expect_equal(
+      fake$.calls$connect[[1]][[key]],
+      "value-for-test",
+      info = sprintf("kwarg %s should be forwarded", key)
+    )
+  }
+})

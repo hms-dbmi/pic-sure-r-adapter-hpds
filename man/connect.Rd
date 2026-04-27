@@ -13,8 +13,19 @@ connect(platform, token, ...)
 \item{token}{Your personal PIC-SURE access token, obtained from the
 "User Profile" tab of your PIC-SURE instance.}
 
-\item{...}{Additional keyword arguments forwarded to the Python
-`picsure.connect()` call.}
+\item{...}{Optional keyword arguments forwarded to the Python
+`picsure.connect()` call. Unknown keys raise a `picsureError` with the
+list of valid keys. Supported keys:
+\describe{
+  \item{`resource_uuid`}{UUID of a specific PIC-SURE resource to connect
+    to; overrides the platform default.}
+  \item{`include_consents`}{Logical. When `TRUE`, the session retrieves
+    the user's consent metadata from the auth service. Defaults to the
+    Python adapter's choice (currently `TRUE`).}
+  \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
+    unauthenticated mode (only useful for open resources). Defaults to
+    the Python adapter's choice (currently `TRUE`).}
+}}
 }
 \value{
 An opaque session object. Pass it as the first argument to

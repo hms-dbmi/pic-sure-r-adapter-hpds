@@ -11,8 +11,19 @@
 #'   `"BDC Authorized"`.
 #' @param token Your personal PIC-SURE access token, obtained from the
 #'   "User Profile" tab of your PIC-SURE instance.
-#' @param ... Additional keyword arguments forwarded to the Python
-#'   `picsure.connect()` call.
+#' @param ... Optional keyword arguments forwarded to the Python
+#'   `picsure.connect()` call. Unknown keys raise a `picsureError` with the
+#'   list of valid keys. Supported keys:
+#'   \describe{
+#'     \item{`resource_uuid`}{UUID of a specific PIC-SURE resource to connect
+#'       to; overrides the platform default.}
+#'     \item{`include_consents`}{Logical. When `TRUE`, the session retrieves
+#'       the user's consent metadata from the auth service. Defaults to the
+#'       Python adapter's choice (currently `TRUE`).}
+#'     \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
+#'       unauthenticated mode (only useful for open resources). Defaults to
+#'       the Python adapter's choice (currently `TRUE`).}
+#'   }
 #' @return An opaque session object. Pass it as the first argument to
 #'   `picsure::search()`, `picsure::runQuery()`, and friends.
 #' @examples
@@ -38,11 +49,25 @@ connect <- function(platform, token, ...) {
     stop("`token` is required. Copy it from the 'User Profile' tab of PIC-SURE.")
   }
 
-  kwargs <- drop_nulls(list(
-    platform = platform,
-    token    = token,
-    ...
+  extras <- list(...)
+  unknown <- setdiff(names(extras), CONNECT_EXTRA_KWARGS)
+  if (length(unknown) > 0) {
+    stop(picsureError(sprintf(
+      "Unknown argument(s) to connect(): %s. Valid extras: %s.",
+      paste(sprintf("`%s`", unknown), collapse = ", "),
+      paste(sprintf("`%s`", CONNECT_EXTRA_KWARGS), collapse = ", ")
+    )))
+  }
+
+  kwargs <- drop_nulls(c(
+    list(platform = platform, token = token),
+    extras
   ))
 
   with_picsure_error(do.call(picsure_py$connect, kwargs))
 }
+
+# Whitelist of optional kwargs forwarded through `...` to picsure_py$connect.
+# Names mirror the Python adapter's snake_case kwargs 1:1 — no R-side
+# translation. To bump: add the new kwarg here and to connect()'s @param block.
+CONNECT_EXTRA_KWARGS <- c("resource_uuid", "include_consents", "requires_auth")
