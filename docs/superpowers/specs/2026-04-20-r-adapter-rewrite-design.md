@@ -260,7 +260,7 @@ Every wrapper in the package references `picsure_py`. Tests swap this binding vi
 ```r
 # R/errors.R
 
-picsure_error <- function(message, py_cause = NULL) {
+picsureError <- function(message, py_cause = NULL) {
   structure(
     class = c("picsureError", "error", "condition"),
     list(message = message, py_cause = py_cause)
@@ -268,14 +268,17 @@ picsure_error <- function(message, py_cause = NULL) {
 }
 
 with_picsure_error <- function(expr) {
-  withCallingHandlers(
+  tryCatch(
     expr,
-    error = function(e) {
-      if (inherits(e, "python.builtin.Exception")) {
-        # Python PicSureError: use the message Python already crafted for researchers
-        stop(picsure_error(reticulate::py_last_error()$message, py_cause = e))
-      }
-      # Other R errors propagate unchanged
+    python.builtin.Exception = function(e) {
+      # Python PicSureError: use the message Python already crafted for researchers.
+      # We read it from the captured R condition (reticulate populates conditionMessage
+      # with str(exception)), NOT from reticulate::py_last_error()$message which
+      # returns a full Python traceback unsuitable as user-facing output. Verified
+      # against a live PicSureAuthError on 2026-04-27; see I1 in
+      # 2026-04-21-query-v3-review.md and the integration probe at
+      # tests/testthat/integration/test-error-extraction.R.
+      stop(picsureError(conditionMessage(e), py_cause = e))
     }
   )
 }
