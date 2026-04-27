@@ -20,7 +20,7 @@ Suggests:
     testthat (>= 3.0.0),
     mockery,
     covr,
-    devtools,
+    pkgload,
     knitr,
     rmarkdown,
     pkgdown

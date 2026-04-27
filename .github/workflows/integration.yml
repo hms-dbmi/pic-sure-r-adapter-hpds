@@ -31,7 +31,7 @@ jobs:
           needs: check
 
       - name: Run integration tests
-        run: Rscript -e "devtools::test()"
+        run: Rscript -e "testthat::test_local()"
 
       - name: Open an issue on failure
         if: failure() && github.event_name == 'schedule'
