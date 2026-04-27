@@ -1,5 +1,5 @@
-test_that("picsure_error() creates a condition of the right classes", {
-  e <- picsure_error("something bad happened")
+test_that("picsureError() creates a condition of the right classes", {
+  e <- picsureError("something bad happened")
   expect_s3_class(e, "picsureError")
   expect_s3_class(e, "error")
   expect_s3_class(e, "condition")
@@ -7,16 +7,27 @@ test_that("picsure_error() creates a condition of the right classes", {
   expect_null(e$py_cause)
 })
 
-test_that("picsure_error() attaches py_cause when given one", {
+test_that("picsureError() attaches py_cause when given one", {
   cause <- simpleError("python side")
-  e <- picsure_error("r side message", py_cause = cause)
+  e <- picsureError("r side message", py_cause = cause)
   expect_identical(e$py_cause, cause)
 })
 
-test_that("picsure_error() stops cleanly when raised with stop()", {
-  err <- tryCatch(stop(picsure_error("boom")), error = function(e) e)
+test_that("picsureError() stops cleanly when raised with stop()", {
+  err <- tryCatch(stop(picsureError("boom")), error = function(e) e)
   expect_s3_class(err, "picsureError")
   expect_equal(conditionMessage(err), "boom")
+})
+
+test_that("constructor name matches the class so tryCatch handlers work", {
+  # Regression: this is the bug the rename fixes. A user writing a handler
+  # named after the constructor must catch the resulting condition.
+  caught <- FALSE
+  tryCatch(
+    stop(picsureError("via tryCatch")),
+    picsureError = function(e) caught <<- TRUE
+  )
+  expect_true(caught)
 })
 
 test_that("with_picsure_error passes through successful results unchanged", {

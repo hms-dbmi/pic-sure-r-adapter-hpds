@@ -13,7 +13,7 @@
 #'   `reticulate::py_last_error()`.
 #' @return A condition of class `c("picsureError", "error", "condition")`.
 #' @export
-picsure_error <- function(message, py_cause = NULL) {
+picsureError <- function(message, py_cause = NULL) {
   structure(
     class = c("picsureError", "error", "condition"),
     list(message = message, py_cause = py_cause, call = sys.call(-1L))
@@ -35,7 +35,7 @@ with_picsure_error <- function(expr) {
   tryCatch(
     expr,
     python.builtin.Exception = function(e) {
-      stop(picsure_error(conditionMessage(e), py_cause = e))
+      stop(picsureError(conditionMessage(e), py_cause = e))
     }
   )
 }

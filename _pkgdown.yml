@@ -34,4 +34,4 @@ reference:
   - title: Export
     contents: [exportPFB, exportCSV, exportTSV]
   - title: Errors
-    contents: [picsure_error]
+    contents: [picsureError]
