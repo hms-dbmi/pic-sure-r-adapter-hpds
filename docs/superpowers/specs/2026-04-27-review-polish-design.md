@@ -19,7 +19,7 @@ Resolve five Important review findings (I1, I5, I6, I7, I9) and two cheap post-m
 | I6 | R4 (Important) | Missing wrapper tests | Add 2 tests |
 | I9 | R2 (Important) | `picsure==0.1.0` pin will break silently | Add explanatory comment |
 | P2 | R6 (Follow-up) | Coverage computed twice in `check.yml` | Consolidate to one `covr::package_coverage()` call |
-| P5 | R6 (Follow-up) | `devtools` in Suggests pulls ~30 deps | Drop; switch CI to `testthat::test_dir()` |
+| P5 | R6 (Follow-up) | `devtools` in Suggests pulls ~30 deps | Drop; switch CI to `testthat::test_local()` |
 
 ## Section 1 — Constructor rename (I7)
 
