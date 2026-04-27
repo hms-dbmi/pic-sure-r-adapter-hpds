@@ -13,7 +13,15 @@
 # this object; tests swap it via testthat::local_mocked_bindings().
 picsure_py <- NULL
 
-# Pinned Python dependency. Bump this together with each R release.
+# Pinned Python dependency.
+#
+# The pin is intentional and exact (==, not >=). The Python `picsure` package
+# is pre-1.0 and reserves the right to break behavior across patch releases.
+# Bumping this version requires:
+#   1. Re-running the full integration suite under VPN against a backend
+#      that ships the matching server protocol.
+#   2. Updating any wrapper signatures whose Python kwargs changed.
+# Once `picsure` reaches 1.0, relax to a compatible range (e.g. "picsure>=1.0,<2").
 .PICSURE_PY_SPEC <- "picsure==0.1.0"
 
 .onLoad <- function(libname, pkgname) {
