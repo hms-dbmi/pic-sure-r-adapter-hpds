@@ -124,3 +124,18 @@ test_that("exportCSV() re-raises Python exceptions as picsureError", {
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "permission denied", fixed = TRUE)
 })
+
+test_that("exportCSV() errors on missing path", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  df <- data.frame(id = 1:2)
+  expect_error(picsure::exportCSV(bdc, df), "path")
+})
+
+test_that("exportTSV() errors when data is not a data.frame", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  tmp <- tempfile(fileext = ".tsv")
+  expect_error(picsure::exportTSV(bdc, list(a = 1), tmp), "data.frame")
+  expect_error(picsure::exportTSV(bdc, NULL, tmp), "data.frame")
+})
