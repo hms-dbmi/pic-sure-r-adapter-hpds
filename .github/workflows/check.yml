@@ -46,16 +46,12 @@ jobs:
           upload-snapshots: true
           args: 'c("--no-manual", "--as-cran")'
 
-      - name: Run unit tests with coverage
-        run: |
-          Rscript -e "covr::package_coverage(type='tests', quiet=FALSE, line_exclusions=list('R/zzz.R'))" \
-            | tee coverage.txt
-
-      - name: Enforce 80% coverage floor
+      - name: Run coverage and enforce 80% floor
         run: |
           Rscript -e '
-            cov <- covr::package_coverage(type="tests", line_exclusions=list("R/zzz.R"));
-            pct <- covr::percent_coverage(cov);
-            cat("Coverage:", pct, "\n");
-            if (pct < 80) quit(status = 1)
+            cov <- covr::package_coverage(type = "tests", line_exclusions = list("R/zzz.R"))
+            writeLines(capture.output(print(cov), type = "message"), "coverage.txt")
+            pct <- covr::percent_coverage(cov)
+            cat(sprintf("Coverage: %.1f%%\n", pct))
+            if (pct < 80) stop(sprintf("Coverage %.1f%% below 80%% floor", pct))
           '
