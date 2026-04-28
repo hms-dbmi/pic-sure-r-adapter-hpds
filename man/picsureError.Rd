@@ -21,3 +21,13 @@ A condition of class `c("picsureError", "error", "condition")`.
 \description{
 Construct a picsureError condition.
 }
+\examples{
+\dontrun{
+tryCatch(
+  picsure::connect(platform = "BDC Authorized", token = "bad-token"),
+  picsureError = function(e) {
+    message("PIC-SURE error: ", conditionMessage(e))
+  }
+)
+}
+}

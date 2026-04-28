@@ -12,6 +12,15 @@
 #'   the condition as `$py_cause` for advanced debugging via
 #'   `reticulate::py_last_error()`.
 #' @return A condition of class `c("picsureError", "error", "condition")`.
+#' @examples
+#' \dontrun{
+#' tryCatch(
+#'   picsure::connect(platform = "BDC Authorized", token = "bad-token"),
+#'   picsureError = function(e) {
+#'     message("PIC-SURE error: ", conditionMessage(e))
+#'   }
+#' )
+#' }
 #' @export
 picsureError <- function(message, py_cause = NULL) {
   structure(
