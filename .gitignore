@@ -41,7 +41,7 @@ rsconnect/
 
 tests/testthat/results
 
-# Claude implementation plans — kept locally, not committed
-docs/superpowers/plans/
+# Claude superpowers docs — kept locally, not committed
+docs/superpowers/
 /doc/
 /Meta/
