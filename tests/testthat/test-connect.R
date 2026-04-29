@@ -98,7 +98,7 @@ test_that("connect() rejects a non-Platform member with a clear error", {
     picsure::connect(platform = picsure::ClauseType$FILTER, token = "tok"),
     error = function(e) e
   )
-  expect_s3_class(err, "error")
+  expect_s3_class(err, "picsureError")
   expect_match(err$message, "Platform", fixed = TRUE)
 })
 
