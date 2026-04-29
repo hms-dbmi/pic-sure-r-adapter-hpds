@@ -141,7 +141,9 @@ test_that("runQuery() still accepts case-insensitive strings (backwards compat)"
   picsure::runQuery(session, query = list(kind = "group"), type = "PARTICIPANT")
 
   recorded <- session$.calls$runQuery[[1]]
-  # Existing behavior: string is forwarded to Python, which lowercases.
-  # The fake's runQuery downcases internally, so we see "participant".
-  expect_equal(tolower(recorded$type), "participant")
+  # to_py_enum's case-insensitive lookup resolves "PARTICIPANT" against
+  # the fake's PARTICIPANT key and returns the fake's stored lowercase
+  # value "participant". Pin the exact case so a future refactor that
+  # forwards the raw input would fail this assertion.
+  expect_equal(recorded$type, "participant")
 })
