@@ -52,6 +52,19 @@ visits_anyrecord <- picsure::createClause(
 )
 ```
 
+You can also pass an enum member instead of a string for editor autocomplete:
+
+```{r enum-member-form, eval=FALSE}
+# equivalent to type = "FILTER":
+sex_filter <- picsure::createClause(
+  "\\phs000001\\pht000001\\phv00000001\\sex\\",
+  type       = picsure::ClauseType$FILTER,
+  categories = list("male")
+)
+```
+
+The same applies to `buildClauseGroup(root = picsure::GroupOperator$AND)` and `runQuery(type = picsure::QueryType$COUNT)`. Strings remain valid for backwards compatibility; the enum members are new in this release.
+
 ## Combine with AND
 
 ```{r}
