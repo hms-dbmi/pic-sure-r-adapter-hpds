@@ -76,3 +76,38 @@ test_that("connect() forwards each whitelisted extra kwarg", {
     )
   }
 })
+
+test_that("connect() accepts a Platform member and forwards the matching Python enum", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  picsure::connect(platform = picsure::Platform$BDC_OPEN, token = "tok")
+
+  recorded <- fake$.calls$connect[[1]]
+  # The fake's Platform[[name]] returns the label string ("BDC Open")
+  # for compatibility with the existing test fake. The real Python
+  # adapter would return the actual Platform enum member here.
+  expect_equal(recorded$platform, "BDC Open")
+})
+
+test_that("connect() rejects a non-Platform member with a clear error", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  err <- tryCatch(
+    picsure::connect(platform = picsure::ClauseType$FILTER, token = "tok"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "error")
+  expect_match(err$message, "Platform", fixed = TRUE)
+})
+
+test_that("connect() still accepts a string platform (backwards compat)", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  picsure::connect(platform = "BDC Open", token = "tok")
+
+  recorded <- fake$.calls$connect[[1]]
+  expect_equal(recorded$platform, "BDC Open")
+})

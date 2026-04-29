@@ -7,8 +7,9 @@
 connect(platform, token, ...)
 }
 \arguments{
-\item{platform}{A platform name, e.g. `"Demo"`, `"BDC Open"`, or
-`"BDC Authorized"`.}
+\item{platform}{A `Platform` member (e.g.
+[`Platform$BDC_OPEN`][picsure::Platform]) or a platform-label string
+(e.g. `"BDC Open"`, `"BDC Authorized"`).}
 
 \item{token}{Your personal PIC-SURE access token, obtained from the
 "User Profile" tab of your PIC-SURE instance.}
