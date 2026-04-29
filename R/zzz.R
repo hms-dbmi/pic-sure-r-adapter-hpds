@@ -22,6 +22,13 @@ picsure_py <- NULL
 #      that ships the matching server protocol.
 #   2. Updating any wrapper signatures whose Python kwargs changed.
 # Once `picsure` reaches 1.0, relax to a compatible range (e.g. "picsure>=1.0,<2").
+#
+# Note: 0.1.0-on-`main` of `pic-sure-python-adapter-hpds` includes
+# QueryType (merged 2026-04-29 without a version bump). A published
+# 0.1.0 on PyPI predates QueryType. Until Python publishes a new
+# release, this pin only resolves correctly against a local install of
+# `pic-sure-python-adapter-hpds@main`. CI / fresh PyPI installs of
+# 0.1.0 will fail the QueryType drift test (tests/testthat/test-enums-parity.R).
 .PICSURE_PY_SPEC <- "picsure==0.1.0"
 
 .onLoad <- function(libname, pkgname) {
