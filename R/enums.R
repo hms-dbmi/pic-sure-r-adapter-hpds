@@ -141,6 +141,10 @@ QueryType <- list(
 #' }
 #' @export
 Platform <- local({
+  # value list mirrors Python's `.value` (a PlatformConfig dataclass);
+  # flat fields mirror Python's @property accessors. Both shapes are
+  # exposed so R users can read either way and Python docs translate
+  # 1:1.
   mk <- function(name, url, resource_uuid, label, include_consents, requires_auth) {
     .enum_member(
       name             = name,

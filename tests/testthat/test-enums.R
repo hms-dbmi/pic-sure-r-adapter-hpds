@@ -161,10 +161,21 @@ test_that("Platform$BDC_OPEN has expected fields", {
 
 test_that("Platform$BDC_AUTHORIZED has expected fields", {
   m <- picsure::Platform$BDC_AUTHORIZED
+  expect_equal(m$name, "BDC_AUTHORIZED")
   expect_equal(m$url, "https://picsure.biodatacatalyst.nhlbi.nih.gov")
   expect_equal(m$resource_uuid, "02e23f52-f354-4e8b-992c-d37c8b9ba140")
   expect_equal(m$label, "BDC Authorized")
   expect_true(m$include_consents)
+  expect_true(m$requires_auth)
+})
+
+test_that("Platform$NHANES_AUTHORIZED has expected fields", {
+  m <- picsure::Platform$NHANES_AUTHORIZED
+  expect_equal(m$name, "NHANES_AUTHORIZED")
+  expect_equal(m$url, "https://nhanes.hms.harvard.edu/")
+  expect_equal(m$resource_uuid, "ded89b08-faa9-435c-b7c4-55b81922ee5f")
+  expect_equal(m$label, "Nhanes Authorized")
+  expect_false(m$include_consents)
   expect_true(m$requires_auth)
 })
 
@@ -192,4 +203,8 @@ test_that("print.picsure_platform shows attached fields", {
   expect_match(paste(out, collapse = "\n"), "label:", fixed = TRUE)
   expect_match(paste(out, collapse = "\n"), "include_consents:", fixed = TRUE)
   expect_match(paste(out, collapse = "\n"), "requires_auth:", fixed = TRUE)
+  joined <- paste(out, collapse = "\n")
+  expect_match(joined, "https://picsure.biodatacatalyst.nhlbi.nih.gov", fixed = TRUE)
+  expect_match(joined, "ac004461-1b47-4832-80e2-22a4aecabe39", fixed = TRUE)
+  expect_match(joined, "BDC Open", fixed = TRUE)
 })
