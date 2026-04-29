@@ -137,3 +137,59 @@ test_that("one member per simple enum formats as <EnumName.MEMBER>", {
   expect_equal(format(picsure::GroupOperator$AND),    "<GroupOperator.AND>")
   expect_equal(format(picsure::QueryType$COUNT),      "<QueryType.COUNT>")
 })
+
+# Platform
+
+test_that("Platform has 8 members", {
+  expect_setequal(names(picsure::Platform), c(
+    "BDC_AUTHORIZED", "BDC_OPEN",
+    "BDC_DEV_AUTHORIZED", "BDC_DEV_OPEN",
+    "BDC_PREDEV_AUTHORIZED", "BDC_PREDEV_OPEN",
+    "NHANES_AUTHORIZED", "NHANES_OPEN"
+  ))
+})
+
+test_that("Platform$BDC_OPEN has expected fields", {
+  m <- picsure::Platform$BDC_OPEN
+  expect_equal(m$name, "BDC_OPEN")
+  expect_equal(m$url, "https://picsure.biodatacatalyst.nhlbi.nih.gov")
+  expect_equal(m$resource_uuid, "ac004461-1b47-4832-80e2-22a4aecabe39")
+  expect_equal(m$label, "BDC Open")
+  expect_false(m$include_consents)
+  expect_false(m$requires_auth)
+})
+
+test_that("Platform$BDC_AUTHORIZED has expected fields", {
+  m <- picsure::Platform$BDC_AUTHORIZED
+  expect_equal(m$url, "https://picsure.biodatacatalyst.nhlbi.nih.gov")
+  expect_equal(m$resource_uuid, "02e23f52-f354-4e8b-992c-d37c8b9ba140")
+  expect_equal(m$label, "BDC Authorized")
+  expect_true(m$include_consents)
+  expect_true(m$requires_auth)
+})
+
+test_that("Platform members expose value as a flat-fields list", {
+  m <- picsure::Platform$BDC_OPEN
+  expect_equal(m$value$url, m$url)
+  expect_equal(m$value$resource_uuid, m$resource_uuid)
+  expect_equal(m$value$label, m$label)
+  expect_equal(m$value$include_consents, m$include_consents)
+  expect_equal(m$value$requires_auth, m$requires_auth)
+})
+
+test_that("Platform members are picsure_platform", {
+  for (m in picsure::Platform) {
+    expect_s3_class(m, "picsure_platform")
+    expect_s3_class(m, "picsure_enum_member")
+  }
+})
+
+test_that("print.picsure_platform shows attached fields", {
+  out <- capture.output(print(picsure::Platform$BDC_OPEN))
+  expect_match(out[1], "<Platform.BDC_OPEN>", fixed = TRUE)
+  expect_match(paste(out, collapse = "\n"), "url:", fixed = TRUE)
+  expect_match(paste(out, collapse = "\n"), "resource_uuid:", fixed = TRUE)
+  expect_match(paste(out, collapse = "\n"), "label:", fixed = TRUE)
+  expect_match(paste(out, collapse = "\n"), "include_consents:", fixed = TRUE)
+  expect_match(paste(out, collapse = "\n"), "requires_auth:", fixed = TRUE)
+})

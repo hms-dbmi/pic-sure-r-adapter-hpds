@@ -116,3 +116,69 @@ QueryType <- list(
   TIMESTAMP   = .enum_member("TIMESTAMP",   "timestamp",   enum_name = "QueryType", subclass = "picsure_query_type"),
   CROSS_COUNT = .enum_member("CROSS_COUNT", "cross_count", enum_name = "QueryType", subclass = "picsure_query_type")
 )
+
+#' Known PIC-SURE deployment platforms.
+#'
+#' Pass a member to [`connect()`][picsure::connect]'s `platform`
+#' argument. Mirrors Python's `picsure.Platform`. Each member exposes
+#' the connection URL, default resource UUID, label, and policy flags.
+#'
+#' @format A list of `picsure_enum_member` (subclass `picsure_platform`)
+#' objects:
+#' \describe{
+#'   \item{`BDC_AUTHORIZED`}{BDC production, authenticated.}
+#'   \item{`BDC_OPEN`}{BDC production, open.}
+#'   \item{`BDC_DEV_AUTHORIZED`}{BDC dev, authenticated.}
+#'   \item{`BDC_DEV_OPEN`}{BDC dev, open.}
+#'   \item{`BDC_PREDEV_AUTHORIZED`}{BDC predev, authenticated.}
+#'   \item{`BDC_PREDEV_OPEN`}{BDC predev, open.}
+#'   \item{`NHANES_AUTHORIZED`}{NHANES, authenticated.}
+#'   \item{`NHANES_OPEN`}{NHANES, open.}
+#' }
+#' @examples
+#' \dontrun{
+#' picsure::connect(platform = picsure::Platform$BDC_OPEN, token = "")
+#' }
+#' @export
+Platform <- local({
+  mk <- function(name, url, resource_uuid, label, include_consents, requires_auth) {
+    .enum_member(
+      name             = name,
+      value            = list(
+        url              = url,
+        resource_uuid    = resource_uuid,
+        label            = label,
+        include_consents = include_consents,
+        requires_auth    = requires_auth
+      ),
+      url              = url,
+      resource_uuid    = resource_uuid,
+      label            = label,
+      include_consents = include_consents,
+      requires_auth    = requires_auth,
+      enum_name        = "Platform",
+      subclass         = "picsure_platform"
+    )
+  }
+  list(
+    BDC_AUTHORIZED        = mk("BDC_AUTHORIZED",        "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE),
+    BDC_OPEN              = mk("BDC_OPEN",              "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE),
+    BDC_DEV_AUTHORIZED    = mk("BDC_DEV_AUTHORIZED",    "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE),
+    BDC_DEV_OPEN          = mk("BDC_DEV_OPEN",          "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE),
+    BDC_PREDEV_AUTHORIZED = mk("BDC_PREDEV_AUTHORIZED", "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE),
+    BDC_PREDEV_OPEN       = mk("BDC_PREDEV_OPEN",       "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE),
+    NHANES_AUTHORIZED     = mk("NHANES_AUTHORIZED",     "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Authorized", FALSE, TRUE),
+    NHANES_OPEN           = mk("NHANES_OPEN",           "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Open",       FALSE, FALSE)
+  )
+})
+
+#' @export
+print.picsure_platform <- function(x, ...) {
+  cat(format(x), "\n", sep = "")
+  cat("  url:              ", x$url,              "\n", sep = "")
+  cat("  resource_uuid:    ", x$resource_uuid,    "\n", sep = "")
+  cat("  label:            ", x$label,            "\n", sep = "")
+  cat("  include_consents: ", x$include_consents, "\n", sep = "")
+  cat("  requires_auth:    ", x$requires_auth,    "\n", sep = "")
+  invisible(x)
+}
