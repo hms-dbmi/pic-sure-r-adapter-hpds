@@ -37,9 +37,9 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
   if (is.null(value)) return(NULL)
   if (inherits(value, "picsure_enum_member")) {
     if (!inherits(value, expected_subclass)) {
-      stop(sprintf(
+      stop(picsureError(sprintf(
         "Expected a %s member, got %s.", enum_name, format(value)
-      ))
+      )))
     }
     return(value[[field]])
   }

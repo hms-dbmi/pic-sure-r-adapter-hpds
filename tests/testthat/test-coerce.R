@@ -65,7 +65,7 @@ test_that("as_enum_string rejects a member of the wrong subclass", {
     picsure:::as_enum_string(m, "picsure_clause_type", "ClauseType"),
     error = function(e) e
   )
-  expect_s3_class(err, "error")
+  expect_s3_class(err, "picsureError")
   expect_match(err$message, "ClauseType", fixed = TRUE)
   expect_match(err$message, "GroupOperator", fixed = TRUE)
 })
@@ -105,7 +105,7 @@ test_that("to_py_enum rejects a member of the wrong subclass before doing proxy 
     to_py_enum(m, fake_enum, "ClauseType", "picsure_clause_type"),
     error = function(e) e
   )
-  expect_s3_class(err, "error")
+  expect_s3_class(err, "picsureError")
   expect_match(err$message, "ClauseType", fixed = TRUE)
   expect_match(err$message, "GroupOperator", fixed = TRUE)
 })

@@ -129,7 +129,7 @@ test_that("runQuery() rejects a wrong-subclass member", {
                       type = picsure::ClauseType$FILTER),
     error = function(e) e
   )
-  expect_s3_class(err, "error")
+  expect_s3_class(err, "picsureError")
   expect_match(err$message, "QueryType", fixed = TRUE)
 })
 

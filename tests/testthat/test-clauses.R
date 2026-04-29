@@ -192,7 +192,7 @@ test_that("createClause() rejects a wrong-subclass member", {
     picsure::createClause("\\x\\", type = picsure::GroupOperator$AND),
     error = function(e) e
   )
-  expect_s3_class(err, "error")
+  expect_s3_class(err, "picsureError")
   expect_match(err$message, "ClauseType", fixed = TRUE)
 })
 
@@ -219,6 +219,6 @@ test_that("buildClauseGroup() rejects a wrong-subclass member", {
     ),
     error = function(e) e
   )
-  expect_s3_class(err, "error")
+  expect_s3_class(err, "picsureError")
   expect_match(err$message, "GroupOperator", fixed = TRUE)
 })
