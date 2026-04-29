@@ -76,8 +76,12 @@ ClauseType <- list(
 #' }
 #' @examples
 #' \dontrun{
-#' c1 <- picsure::createClause("\\phs1\\sex\\",   type = picsure::ClauseType$FILTER, categories = "male")
-#' c2 <- picsure::createClause("\\phs1\\copd\\",  type = picsure::ClauseType$FILTER, categories = "Yes")
+#' c1 <- picsure::createClause("\\phs1\\sex\\",
+#'                              type = picsure::ClauseType$FILTER,
+#'                              categories = "male")
+#' c2 <- picsure::createClause("\\phs1\\copd\\",
+#'                              type = picsure::ClauseType$FILTER,
+#'                              categories = "Yes")
 #' picsure::buildClauseGroup(
 #'   list(c1, c2),
 #'   root = picsure::GroupOperator$AND
