@@ -10,6 +10,8 @@
 #' \dontrun{
 #' picsure::platforms()
 #' }
+#' @seealso [`Platform`][picsure::Platform], the R-side enum of known
+#'   platforms with attached connection details.
 #' @export
 platforms <- function() {
   with_picsure_error({

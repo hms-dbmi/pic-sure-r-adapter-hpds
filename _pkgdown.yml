@@ -35,3 +35,13 @@ reference:
     contents: [exportPFB, exportCSV, exportTSV]
   - title: Errors
     contents: [picsureError]
+  - title: Enums
+    desc: >
+      Public enum constants mirroring the Python adapter's enums. Pass
+      a member to the wrapper functions instead of a string for
+      autocomplete and parity with the Python API.
+    contents:
+      - ClauseType
+      - GroupOperator
+      - QueryType
+      - Platform

@@ -20,3 +20,7 @@ full URL to a custom PIC-SURE deployment — as the `platform` argument to
 picsure::platforms()
 }
 }
+\seealso{
+[`Platform`][picsure::Platform], the R-side enum of known
+  platforms with attached connection details.
+}
