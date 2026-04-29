@@ -13,8 +13,10 @@
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query A clause group from
 #'   [`buildClauseGroup()`][picsure::buildClauseGroup].
-#' @param type A case-insensitive string: `"count"` (default),
-#'   `"participant"`, or `"timestamp"`.
+#' @param type A `QueryType` member (e.g.
+#'   [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
+#'   string: `"count"` (default), `"participant"`, `"timestamp"`, or
+#'   `"cross_count"`.
 #' @param ... Additional keyword arguments forwarded to the Python
 #'   `Session.runQuery()` call.
 #' @return For `type = "count"`, a Python `CountResult` object with
@@ -37,7 +39,7 @@ runQuery <- function(session, query, type = "count", ...) {
 
   kwargs <- drop_nulls(list(
     query = query,
-    type  = type,
+    type  = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type"),
     ...
   ))
 

@@ -12,8 +12,10 @@ runQuery(session, query, type = "count", ...)
 \item{query}{A clause group from
 [`buildClauseGroup()`][picsure::buildClauseGroup].}
 
-\item{type}{A case-insensitive string: `"count"` (default),
-`"participant"`, or `"timestamp"`.}
+\item{type}{A `QueryType` member (e.g.
+[`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
+string: `"count"` (default), `"participant"`, `"timestamp"`, or
+`"cross_count"`.}
 
 \item{...}{Additional keyword arguments forwarded to the Python
 `Session.runQuery()` call.}

@@ -105,3 +105,43 @@ test_that("runQuery() forwards an unknown type to Python for the error", {
   )
   expect_s3_class(err, "error")
 })
+
+test_that("runQuery() accepts a QueryType member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  session <- new_fake_session()
+
+  result <- picsure::runQuery(session, query = list(kind = "group"),
+                              type = picsure::QueryType$COUNT)
+
+  recorded <- session$.calls$runQuery[[1]]
+  expect_equal(recorded$type, "count")  # fake's QueryType$COUNT value
+  expect_equal(result$value, 42L)
+})
+
+test_that("runQuery() rejects a wrong-subclass member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  session <- new_fake_session()
+
+  err <- tryCatch(
+    picsure::runQuery(session, query = list(kind = "group"),
+                      type = picsure::ClauseType$FILTER),
+    error = function(e) e
+  )
+  expect_s3_class(err, "error")
+  expect_match(err$message, "QueryType", fixed = TRUE)
+})
+
+test_that("runQuery() still accepts case-insensitive strings (backwards compat)", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  session <- new_fake_session()
+
+  picsure::runQuery(session, query = list(kind = "group"), type = "PARTICIPANT")
+
+  recorded <- session$.calls$runQuery[[1]]
+  # Existing behavior: string is forwarded to Python, which lowercases.
+  # The fake's runQuery downcases internally, so we see "participant".
+  expect_equal(tolower(recorded$type), "participant")
+})

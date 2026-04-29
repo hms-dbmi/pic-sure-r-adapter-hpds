@@ -92,6 +92,10 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
       REQUIRE = "REQUIRE", ANYRECORD = "ANYRECORD"
     ),
     GroupOperator = list(AND = "AND", OR = "OR"),
+    QueryType = list(
+      COUNT = "count", PARTICIPANT = "participant",
+      TIMESTAMP = "timestamp", CROSS_COUNT = "cross_count"
+    ),
     Platform = setNames(platform_names, toupper(gsub(" ", "_", platform_names))),
 
     # Call recorder
