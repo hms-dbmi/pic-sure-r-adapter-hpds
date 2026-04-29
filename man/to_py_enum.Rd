@@ -2,25 +2,28 @@
 % Please edit documentation in R/utils_coerce.R
 \name{to_py_enum}
 \alias{to_py_enum}
-\title{Resolve a case-insensitive string against a Python enum proxy.}
+\title{Resolve a case-insensitive string OR a typed enum member against a
+Python enum proxy.}
 \usage{
-to_py_enum(value, enum_obj, enum_name)
+to_py_enum(value, enum_obj, enum_name, expected_subclass)
 }
 \arguments{
-\item{value}{NULL or a length-1 character.}
+\item{value}{NULL, a single string, or a `picsure_enum_member`.}
 
 \item{enum_obj}{The Python enum proxy (or a named list in tests).}
 
 \item{enum_name}{The enum name, used only in error messages.}
+
+\item{expected_subclass}{The required `picsure_*` subclass for member
+inputs. Members of other subclasses are rejected before any proxy
+lookup happens.}
 }
 \value{
 NULL if value is NULL; otherwise the corresponding enum member.
 }
 \description{
-The R API accepts strings like "FILTER", "and", "bdc authorized" and maps
-them to the Python enum member at call time. `enum_obj` is whatever
-`picsure_py$ClauseType` (etc.) returns — in real use, a reticulate object
-whose members are accessible via `$` and `names()`. In tests, a named list
-stands in for it.
+The R API accepts strings like "FILTER", "and", or members like
+[`picsure::ClauseType$FILTER`][picsure::ClauseType] and maps them to
+the Python enum member at call time.
 }
 \keyword{internal}
