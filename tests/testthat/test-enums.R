@@ -76,11 +76,14 @@ test_that("as.character.picsure_enum_member returns the name", {
 test_that("ClauseType has 4 members with expected names and values", {
   expect_setequal(names(picsure::ClauseType),
                   c("FILTER", "ANYRECORD", "SELECT", "REQUIRE"))
-  expect_equal(picsure::ClauseType$FILTER$name, "FILTER")
-  expect_equal(picsure::ClauseType$FILTER$value, "filter")
+  expect_equal(picsure::ClauseType$FILTER$name,    "FILTER")
+  expect_equal(picsure::ClauseType$FILTER$value,   "filter")
+  expect_equal(picsure::ClauseType$ANYRECORD$name, "ANYRECORD")
   expect_equal(picsure::ClauseType$ANYRECORD$value, "anyrecord")
-  expect_equal(picsure::ClauseType$SELECT$value, "select")
-  expect_equal(picsure::ClauseType$REQUIRE$value, "require")
+  expect_equal(picsure::ClauseType$SELECT$name,    "SELECT")
+  expect_equal(picsure::ClauseType$SELECT$value,   "select")
+  expect_equal(picsure::ClauseType$REQUIRE$name,   "REQUIRE")
+  expect_equal(picsure::ClauseType$REQUIRE$value,  "require")
 })
 
 test_that("ClauseType members are picsure_clause_type", {
@@ -112,10 +115,14 @@ test_that("GroupOperator members are picsure_group_operator", {
 test_that("QueryType has 4 members with expected names and lowercase values", {
   expect_setequal(names(picsure::QueryType),
                   c("COUNT", "PARTICIPANT", "TIMESTAMP", "CROSS_COUNT"))
-  expect_equal(picsure::QueryType$COUNT$value,       "count")
-  expect_equal(picsure::QueryType$PARTICIPANT$value, "participant")
-  expect_equal(picsure::QueryType$TIMESTAMP$value,   "timestamp")
-  expect_equal(picsure::QueryType$CROSS_COUNT$value, "cross_count")
+  expect_equal(picsure::QueryType$COUNT$name,         "COUNT")
+  expect_equal(picsure::QueryType$COUNT$value,        "count")
+  expect_equal(picsure::QueryType$PARTICIPANT$name,   "PARTICIPANT")
+  expect_equal(picsure::QueryType$PARTICIPANT$value,  "participant")
+  expect_equal(picsure::QueryType$TIMESTAMP$name,     "TIMESTAMP")
+  expect_equal(picsure::QueryType$TIMESTAMP$value,    "timestamp")
+  expect_equal(picsure::QueryType$CROSS_COUNT$name,   "CROSS_COUNT")
+  expect_equal(picsure::QueryType$CROSS_COUNT$value,  "cross_count")
 })
 
 test_that("QueryType members are picsure_query_type", {
@@ -125,7 +132,7 @@ test_that("QueryType members are picsure_query_type", {
   }
 })
 
-test_that("simple-enum members format as <EnumName.MEMBER>", {
+test_that("one member per simple enum formats as <EnumName.MEMBER>", {
   expect_equal(format(picsure::ClauseType$FILTER),    "<ClauseType.FILTER>")
   expect_equal(format(picsure::GroupOperator$AND),    "<GroupOperator.AND>")
   expect_equal(format(picsure::QueryType$COUNT),      "<QueryType.COUNT>")
