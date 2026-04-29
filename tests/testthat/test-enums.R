@@ -31,6 +31,7 @@ test_that(".enum_member accepts extra fields via ...", {
     url = "https://example",
     label = "BDC Open"
   )
+  expect_equal(m$value, list(url = "https://example", label = "BDC Open"))
   expect_equal(m$url, "https://example")
   expect_equal(m$label, "BDC Open")
 })
