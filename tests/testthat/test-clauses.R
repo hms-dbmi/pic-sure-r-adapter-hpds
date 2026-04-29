@@ -172,3 +172,53 @@ test_that("buildClauseGroup() re-raises Python exceptions as picsureError", {
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "max depth", fixed = TRUE)
 })
+
+test_that("createClause() accepts a ClauseType member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  clause <- picsure::createClause("\\path\\", type = picsure::ClauseType$FILTER,
+                                  categories = list("male"))
+
+  expect_equal(clause$kind, "clause")
+  expect_equal(clause$type, "FILTER")  # fake's ClauseType$FILTER value
+})
+
+test_that("createClause() rejects a wrong-subclass member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  err <- tryCatch(
+    picsure::createClause("\\x\\", type = picsure::GroupOperator$AND),
+    error = function(e) e
+  )
+  expect_s3_class(err, "error")
+  expect_match(err$message, "ClauseType", fixed = TRUE)
+})
+
+test_that("buildClauseGroup() accepts a GroupOperator member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  group <- picsure::buildClauseGroup(
+    list(list(kind = "clause")),
+    root = picsure::GroupOperator$OR
+  )
+  expect_equal(group$kind, "group")
+  expect_equal(group$root, "OR")  # fake's GroupOperator$OR value
+})
+
+test_that("buildClauseGroup() rejects a wrong-subclass member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  err <- tryCatch(
+    picsure::buildClauseGroup(
+      list(list(kind = "clause")),
+      root = picsure::ClauseType$FILTER
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "error")
+  expect_match(err$message, "GroupOperator", fixed = TRUE)
+})

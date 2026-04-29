@@ -8,8 +8,9 @@
 #'   character scalar or character vector, e.g.
 #'   `"\\phs000001\\pht000001\\phv00000001\\sex\\"` or
 #'   `c("\\path\\a\\", "\\path\\b\\")`.
-#' @param type Clause type as a case-insensitive string; one of
-#'   `"FILTER"`, `"SELECT"`, `"REQUIRE"`, `"ANYRECORD"`.
+#' @param type Clause type. A case-insensitive string (one of `"FILTER"`,
+#'   `"SELECT"`, `"REQUIRE"`, `"ANYRECORD"`) or a `ClauseType` member
+#'   (e.g. [`ClauseType$FILTER`][picsure::ClauseType]).
 #' @param min,max Optional numeric bounds for continuous FILTER clauses.
 #' @param categories Optional vector or list of accepted category values for
 #'   categorical FILTER clauses.
@@ -35,7 +36,7 @@ createClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, 
 
   kwargs <- drop_nulls(list(
     keys       = keys,
-    type       = to_py_enum(type, picsure_py$ClauseType, "ClauseType"),
+    type       = to_py_enum(type, picsure_py$ClauseType, "ClauseType", "picsure_clause_type"),
     min        = min,
     max        = max,
     categories = categories,
@@ -53,8 +54,9 @@ createClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, 
 #' [`runQuery()`][picsure::runQuery].
 #'
 #' @param clauses A non-empty list of clause or clause-group handles.
-#' @param root The root operator, a case-insensitive string; one of
-#'   `"AND"` or `"OR"`. Defaults to `"AND"`.
+#' @param root The root operator. A case-insensitive string (`"AND"` or
+#'   `"OR"`) or a `GroupOperator` member (e.g.
+#'   [`GroupOperator$AND`][picsure::GroupOperator]). Defaults to `"AND"`.
 #' @return An opaque ClauseGroup handle.
 #' @examples
 #' \dontrun{
@@ -72,6 +74,6 @@ buildClauseGroup <- function(clauses, root = "AND") {
 
   with_picsure_error(picsure_py$buildClauseGroup(
     clauses = clauses,
-    root    = to_py_enum(root, picsure_py$GroupOperator, "GroupOperator")
+    root    = to_py_enum(root, picsure_py$GroupOperator, "GroupOperator", "picsure_group_operator")
   ))
 }

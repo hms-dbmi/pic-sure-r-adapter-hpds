@@ -12,8 +12,9 @@ character scalar or character vector, e.g.
 `"\\phs000001\\pht000001\\phv00000001\\sex\\"` or
 `c("\\path\\a\\", "\\path\\b\\")`.}
 
-\item{type}{Clause type as a case-insensitive string; one of
-`"FILTER"`, `"SELECT"`, `"REQUIRE"`, `"ANYRECORD"`.}
+\item{type}{Clause type. A case-insensitive string (one of `"FILTER"`,
+`"SELECT"`, `"REQUIRE"`, `"ANYRECORD"`) or a `ClauseType` member
+(e.g. [`ClauseType$FILTER`][picsure::ClauseType]).}
 
 \item{min, max}{Optional numeric bounds for continuous FILTER clauses.}
 

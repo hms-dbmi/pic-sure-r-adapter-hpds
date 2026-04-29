@@ -9,8 +9,9 @@ buildClauseGroup(clauses, root = "AND")
 \arguments{
 \item{clauses}{A non-empty list of clause or clause-group handles.}
 
-\item{root}{The root operator, a case-insensitive string; one of
-`"AND"` or `"OR"`. Defaults to `"AND"`.}
+\item{root}{The root operator. A case-insensitive string (`"AND"` or
+`"OR"`) or a `GroupOperator` member (e.g.
+[`GroupOperator$AND`][picsure::GroupOperator]). Defaults to `"AND"`.}
 }
 \value{
 An opaque ClauseGroup handle.
