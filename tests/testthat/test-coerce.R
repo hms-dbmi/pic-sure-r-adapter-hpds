@@ -107,4 +107,5 @@ test_that("to_py_enum rejects a member of the wrong subclass before doing proxy 
   )
   expect_s3_class(err, "error")
   expect_match(err$message, "ClauseType", fixed = TRUE)
+  expect_match(err$message, "GroupOperator", fixed = TRUE)
 })

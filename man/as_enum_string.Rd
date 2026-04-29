@@ -4,7 +4,7 @@
 \alias{as_enum_string}
 \title{Resolve a string OR a typed enum member to its string identifier.}
 \usage{
-as_enum_string(value, expected_subclass, what, field = "name")
+as_enum_string(value, expected_subclass, enum_name, field = "name")
 }
 \arguments{
 \item{value}{NULL, a single string, or a `picsure_enum_member`.}
@@ -12,7 +12,7 @@ as_enum_string(value, expected_subclass, what, field = "name")
 \item{expected_subclass}{The required `picsure_*` subclass
 (e.g. `"picsure_clause_type"`).}
 
-\item{what}{Human-readable enum name for error messages
+\item{enum_name}{Human-readable enum name for error messages
 (e.g. `"ClauseType"`).}
 
 \item{field}{For members, which field to extract: `"name"` (default)

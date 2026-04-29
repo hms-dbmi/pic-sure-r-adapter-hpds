@@ -27,25 +27,25 @@ drop_nulls <- function(x) {
 #' @param value NULL, a single string, or a `picsure_enum_member`.
 #' @param expected_subclass The required `picsure_*` subclass
 #'   (e.g. `"picsure_clause_type"`).
-#' @param what Human-readable enum name for error messages
+#' @param enum_name Human-readable enum name for error messages
 #'   (e.g. `"ClauseType"`).
 #' @param field For members, which field to extract: `"name"` (default)
 #'   or `"value"`.
 #' @return NULL if `value` is NULL; otherwise a character scalar.
 #' @keywords internal
-as_enum_string <- function(value, expected_subclass, what, field = "name") {
+as_enum_string <- function(value, expected_subclass, enum_name, field = "name") {
   if (is.null(value)) return(NULL)
   if (inherits(value, "picsure_enum_member")) {
     if (!inherits(value, expected_subclass)) {
       stop(sprintf(
-        "Expected a %s member, got %s.", what, format(value)
+        "Expected a %s member, got %s.", enum_name, format(value)
       ))
     }
     return(value[[field]])
   }
   if (!is.character(value) || length(value) != 1L) {
     stop(sprintf(
-      "%s value must be a single string or %s member.", what, what
+      "%s value must be a single string or %s member.", enum_name, enum_name
     ))
   }
   value
@@ -67,7 +67,8 @@ as_enum_string <- function(value, expected_subclass, what, field = "name") {
 #' @return NULL if value is NULL; otherwise the corresponding enum member.
 #' @keywords internal
 to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
-  s <- as_enum_string(value, expected_subclass, enum_name, field = "name")
+  s <- as_enum_string(value, expected_subclass, enum_name = enum_name, field = "name")
+  # as_enum_string returns NULL for NULL value; skip the proxy lookup.
   if (is.null(s)) return(NULL)
   valid <- names(enum_obj)
   match_idx <- which(tolower(valid) == tolower(s))
