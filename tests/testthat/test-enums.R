@@ -70,3 +70,63 @@ test_that("as.character.picsure_enum_member returns the name", {
   )
   expect_equal(as.character(m), "REQUIRE")
 })
+
+# ClauseType
+
+test_that("ClauseType has 4 members with expected names and values", {
+  expect_setequal(names(picsure::ClauseType),
+                  c("FILTER", "ANYRECORD", "SELECT", "REQUIRE"))
+  expect_equal(picsure::ClauseType$FILTER$name, "FILTER")
+  expect_equal(picsure::ClauseType$FILTER$value, "filter")
+  expect_equal(picsure::ClauseType$ANYRECORD$value, "anyrecord")
+  expect_equal(picsure::ClauseType$SELECT$value, "select")
+  expect_equal(picsure::ClauseType$REQUIRE$value, "require")
+})
+
+test_that("ClauseType members are picsure_clause_type", {
+  for (m in picsure::ClauseType) {
+    expect_s3_class(m, "picsure_clause_type")
+    expect_s3_class(m, "picsure_enum_member")
+  }
+})
+
+# GroupOperator
+
+test_that("GroupOperator has 2 members with name == value", {
+  expect_setequal(names(picsure::GroupOperator), c("AND", "OR"))
+  expect_equal(picsure::GroupOperator$AND$name,  "AND")
+  expect_equal(picsure::GroupOperator$AND$value, "AND")
+  expect_equal(picsure::GroupOperator$OR$name,   "OR")
+  expect_equal(picsure::GroupOperator$OR$value,  "OR")
+})
+
+test_that("GroupOperator members are picsure_group_operator", {
+  for (m in picsure::GroupOperator) {
+    expect_s3_class(m, "picsure_group_operator")
+    expect_s3_class(m, "picsure_enum_member")
+  }
+})
+
+# QueryType
+
+test_that("QueryType has 4 members with expected names and lowercase values", {
+  expect_setequal(names(picsure::QueryType),
+                  c("COUNT", "PARTICIPANT", "TIMESTAMP", "CROSS_COUNT"))
+  expect_equal(picsure::QueryType$COUNT$value,       "count")
+  expect_equal(picsure::QueryType$PARTICIPANT$value, "participant")
+  expect_equal(picsure::QueryType$TIMESTAMP$value,   "timestamp")
+  expect_equal(picsure::QueryType$CROSS_COUNT$value, "cross_count")
+})
+
+test_that("QueryType members are picsure_query_type", {
+  for (m in picsure::QueryType) {
+    expect_s3_class(m, "picsure_query_type")
+    expect_s3_class(m, "picsure_enum_member")
+  }
+})
+
+test_that("simple-enum members format as <EnumName.MEMBER>", {
+  expect_equal(format(picsure::ClauseType$FILTER),    "<ClauseType.FILTER>")
+  expect_equal(format(picsure::GroupOperator$AND),    "<GroupOperator.AND>")
+  expect_equal(format(picsure::QueryType$COUNT),      "<QueryType.COUNT>")
+})
