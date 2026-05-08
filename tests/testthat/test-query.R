@@ -1,7 +1,7 @@
 test_that("runQuery() with type='count' returns a CountResult-shaped object", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  q <- list(kind = "group", clauses = list(), root = "AND")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q, type = "count")
 
@@ -12,7 +12,7 @@ test_that("runQuery() with type='count' returns a CountResult-shaped object", {
 test_that("runQuery() with type='participant' returns a data.frame", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  q <- list(kind = "group", clauses = list(), root = "AND")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q, type = "participant")
 
@@ -24,7 +24,7 @@ test_that("runQuery() with type='participant' returns a data.frame", {
 test_that("runQuery() accepts case-insensitive type", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  q <- list(kind = "group", clauses = list(), root = "AND")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
 
   r1 <- picsure::runQuery(bdc, q, type = "COUNT")
   r2 <- picsure::runQuery(bdc, q, type = "Count")
@@ -38,7 +38,7 @@ test_that("runQuery() accepts case-insensitive type", {
 test_that("runQuery() defaults type to 'count'", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  q <- list(kind = "group", clauses = list(), root = "AND")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q)
 
@@ -49,7 +49,7 @@ test_that("runQuery() forwards query and type to session$runQuery", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  q <- list(kind = "group", clauses = list(), root = "AND")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
 
   picsure::runQuery(bdc, q, type = "participant")
 
@@ -76,7 +76,7 @@ test_that("runQuery() re-raises Python exceptions as picsureError", {
   }
 
   err <- tryCatch(
-    picsure::runQuery(bdc, list(kind = "group", clauses = list(), root = "AND")),
+    picsure::runQuery(bdc, list(kind = "group", clauses = list(), operator = "AND")),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
@@ -86,7 +86,7 @@ test_that("runQuery() re-raises Python exceptions as picsureError", {
 test_that("runQuery() with type='timestamp' returns a data.frame", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  q <- list(kind = "group", clauses = list(), root = "AND")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q, type = "timestamp")
 
@@ -97,7 +97,7 @@ test_that("runQuery() with type='timestamp' returns a data.frame", {
 test_that("runQuery() forwards an unknown type to Python for the error", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  q <- list(kind = "group", clauses = list(), root = "AND")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
 
   err <- tryCatch(
     picsure::runQuery(bdc, q, type = "nonsense"),

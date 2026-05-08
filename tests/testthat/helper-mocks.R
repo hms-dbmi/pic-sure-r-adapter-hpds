@@ -82,8 +82,8 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
     createClause = function(keys, type, ...) {
       list(kind = "clause", keys = keys, type = type, extra = list(...))
     },
-    buildClauseGroup = function(clauses, root) {
-      list(kind = "group", clauses = clauses, root = root)
+    buildClauseGroup = function(clauses, operator) {
+      list(kind = "group", clauses = clauses, operator = operator)
     },
 
     # Enums exposed as named lists so to_py_enum() and tests can look them up

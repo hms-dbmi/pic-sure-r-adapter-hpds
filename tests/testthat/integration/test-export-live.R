@@ -8,7 +8,7 @@ test_that("exportCSV() writes a non-empty file from a participant DataFrame", {
   }
 
   clause <- picsure::createClause(path, type = "SELECT")
-  query  <- picsure::buildClauseGroup(list(clause), root = "AND")
+  query  <- picsure::buildClauseGroup(list(clause), operator = "AND")
   df     <- picsure::runQuery(session, query, type = "participant")
   out    <- tempfile(fileext = ".csv")
 
@@ -27,7 +27,7 @@ test_that("exportTSV() writes a non-empty file from a participant DataFrame", {
   }
 
   clause <- picsure::createClause(path, type = "SELECT")
-  query  <- picsure::buildClauseGroup(list(clause), root = "AND")
+  query  <- picsure::buildClauseGroup(list(clause), operator = "AND")
   df     <- picsure::runQuery(session, query, type = "participant")
   out    <- tempfile(fileext = ".tsv")
 
