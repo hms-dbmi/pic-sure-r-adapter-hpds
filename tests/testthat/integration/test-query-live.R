@@ -8,7 +8,7 @@ test_that("runQuery() with type='count' returns a CountResult", {
   }
 
   clause <- picsure::createClause(path, type = "REQUIRE")
-  query  <- picsure::buildClauseGroup(list(clause), root = "AND")
+  query  <- picsure::buildClauseGroup(list(clause), operator = "AND")
 
   count <- picsure::runQuery(session, query, type = "count")
   # Python returns a CountResult with $value / $margin / $cap. Small counts
@@ -33,7 +33,7 @@ test_that("runQuery() with type='participant' returns a data.frame with rows", {
   }
 
   clause <- picsure::createClause(path, type = "SELECT")
-  query  <- picsure::buildClauseGroup(list(clause), root = "AND")
+  query  <- picsure::buildClauseGroup(list(clause), operator = "AND")
 
   df <- picsure::runQuery(session, query, type = "participant")
   expect_s3_class(df, "data.frame")

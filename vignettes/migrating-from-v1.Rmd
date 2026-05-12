@@ -61,7 +61,7 @@ age_filter <- picsure::createClause(
   "\\phs000001\\pht000001\\phv00000005\\age\\",
   type = "FILTER", min = 40
 )
-query <- picsure::buildClauseGroup(list(age_filter), root = "AND")
+query <- picsure::buildClauseGroup(list(age_filter), operator = "AND")
 count <- picsure::runQuery(bdc, query, type = "count")
 ```
 
@@ -81,7 +81,7 @@ rows <- picsure::runQuery(q, "DATA_FRAME")
 ```{r}
 sex_filter <- picsure::createClause(sex_path, type = "FILTER", categories = list("male"))
 bmi_select <- picsure::createClause(bmi_path, type = "SELECT")
-query <- picsure::buildClauseGroup(list(sex_filter, bmi_select), root = "AND")
+query <- picsure::buildClauseGroup(list(sex_filter, bmi_select), operator = "AND")
 rows  <- picsure::runQuery(bdc, query, type = "participant")
 ```
 
@@ -92,8 +92,8 @@ There's no v1 equivalent — v1 query construction was flat. In v3:
 ```{r}
 copd    <- picsure::createClause(copd_path,   type = "FILTER", categories = list("Yes"))
 asthma  <- picsure::createClause(asthma_path, type = "FILTER", categories = list("Yes"))
-lung    <- picsure::buildClauseGroup(list(copd, asthma), root = "OR")
-query   <- picsure::buildClauseGroup(list(sex_filter, lung), root = "AND")
+lung    <- picsure::buildClauseGroup(list(copd, asthma), operator = "OR")
+query   <- picsure::buildClauseGroup(list(sex_filter, lung), operator = "AND")
 ```
 
 ## Error handling

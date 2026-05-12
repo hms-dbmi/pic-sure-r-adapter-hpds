@@ -63,14 +63,14 @@ sex_filter <- picsure::createClause(
 )
 ```
 
-The same applies to `buildClauseGroup(root = picsure::GroupOperator$AND)` and `runQuery(type = picsure::QueryType$COUNT)`. Strings remain valid for backwards compatibility; the enum members are new in this release.
+The same applies to `buildClauseGroup(operator = picsure::GroupOperator$AND)` and `runQuery(type = picsure::QueryType$COUNT)`. Strings remain valid for backwards compatibility; the enum members are new in this release.
 
 ## Combine with AND
 
 ```{r}
 query <- picsure::buildClauseGroup(
   list(sex_filter, age_filter, bmi_select),
-  root = "AND"
+  operator = "AND"
 )
 ```
 
@@ -90,17 +90,17 @@ asthma_filter <- picsure::createClause(
 
 copd_or_asthma <- picsure::buildClauseGroup(
   list(copd_filter, asthma_filter),
-  root = "OR"
+  operator = "OR"
 )
 
 full_query <- picsure::buildClauseGroup(
   list(sex_filter, age_filter, copd_or_asthma),
-  root = "AND"
+  operator = "AND"
 )
 ```
 
 ## Case-insensitive enums
 
-Both `type` (clause type) and `root` (group operator) accept
+Both `type` (clause type) and `operator` (group operator) accept
 case-insensitive strings: `"filter"`, `"Filter"`, `"FILTER"` are all
 equivalent.

@@ -54,8 +54,8 @@ createClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, 
 #' [`runQuery()`][picsure::runQuery].
 #'
 #' @param clauses A non-empty list of clause or clause-group handles.
-#' @param root The root operator. A case-insensitive string (`"AND"` or
-#'   `"OR"`) or a `GroupOperator` member (e.g.
+#' @param operator The group operator. A case-insensitive string (`"AND"`
+#'   or `"OR"`) or a `GroupOperator` member (e.g.
 #'   [`GroupOperator$AND`][picsure::GroupOperator]). Defaults to `"AND"`.
 #' @return An opaque ClauseGroup handle.
 #' @examples
@@ -63,17 +63,17 @@ createClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, 
 #' sex    <- picsure::createClause("\\phs1\\pht1\\phv1\\sex\\", type = "FILTER", categories = "male")
 #' copd   <- picsure::createClause("\\phs1\\pht2\\phv2\\copd\\", type = "FILTER", categories = "Yes")
 #' asthma <- picsure::createClause("\\phs1\\pht2\\phv3\\asth\\", type = "FILTER", categories = "Yes")
-#' lung <- picsure::buildClauseGroup(list(copd, asthma), root = "OR")
-#' full <- picsure::buildClauseGroup(list(sex, lung), root = "AND")
+#' lung <- picsure::buildClauseGroup(list(copd, asthma), operator = "OR")
+#' full <- picsure::buildClauseGroup(list(sex, lung), operator = "AND")
 #' }
 #' @export
-buildClauseGroup <- function(clauses, root = "AND") {
+buildClauseGroup <- function(clauses, operator = "AND") {
   if (missing(clauses) || !is.list(clauses) || length(clauses) == 0L) {
     stop("`clauses` must be a non-empty list of clause or clause-group handles.")
   }
 
   with_picsure_error(picsure_py$buildClauseGroup(
     clauses = clauses,
-    root    = to_py_enum(root, picsure_py$GroupOperator, "GroupOperator", "picsure_group_operator")
+    operator = to_py_enum(operator, picsure_py$GroupOperator, "GroupOperator", "picsure_group_operator")
   ))
 }

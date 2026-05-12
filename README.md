@@ -47,7 +47,7 @@ age_filter <- picsure::createClause(
   "\\phs000001\\pht000001\\phv00000005\\age\\",
   type = "FILTER", min = 40
 )
-query <- picsure::buildClauseGroup(list(sex_filter, age_filter), root = "AND")
+query <- picsure::buildClauseGroup(list(sex_filter, age_filter), operator = "AND")
 
 # Run
 count        <- picsure::runQuery(bdc, query, type = "count")

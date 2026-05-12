@@ -14,6 +14,7 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
   calls$exportPFB <- list()
   calls$exportCSV <- list()
   calls$exportTSV <- list()
+  calls$loadQueryByID <- list()
   structure(
     list(
       platform = platform,
@@ -63,6 +64,11 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
         invisible(NULL)
       },
       facets = function() new_fake_facet_set(),
+      loadQueryByID = function(query_id) {
+        calls$loadQueryByID <- c(calls$loadQueryByID, list(list(query_id = query_id)))
+        list(kind = "group", clauses = list(), operator = "AND",
+             loaded_from = query_id)
+      },
       .calls = calls
     ),
     class = "fake_session"
@@ -82,8 +88,8 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
     createClause = function(keys, type, ...) {
       list(kind = "clause", keys = keys, type = type, extra = list(...))
     },
-    buildClauseGroup = function(clauses, root) {
-      list(kind = "group", clauses = clauses, root = root)
+    buildClauseGroup = function(clauses, operator) {
+      list(kind = "group", clauses = clauses, operator = operator)
     },
 
     # Enums exposed as named lists so to_py_enum() and tests can look them up

@@ -54,7 +54,7 @@ sex_filter <- picsure::createClause(
   type       = "FILTER",
   categories = list("male")
 )
-query <- picsure::buildClauseGroup(list(sex_filter), root = "AND")
+query <- picsure::buildClauseGroup(list(sex_filter), operator = "AND")
 
 count <- picsure::runQuery(bdc, query, type = "count")
 count

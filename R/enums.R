@@ -67,7 +67,7 @@ ClauseType <- list(
 #' Logical operators for combining clauses in a group.
 #'
 #' Pass a member to [`buildClauseGroup()`][picsure::buildClauseGroup]'s
-#' `root` argument. Mirrors Python's `picsure.GroupOperator`.
+#' `operator` argument. Mirrors Python's `picsure.GroupOperator`.
 #'
 #' @format A list of `picsure_enum_member` objects:
 #' \describe{
@@ -84,7 +84,7 @@ ClauseType <- list(
 #'                              categories = "Yes")
 #' picsure::buildClauseGroup(
 #'   list(c1, c2),
-#'   root = picsure::GroupOperator$AND
+#'   operator = picsure::GroupOperator$AND
 #' )
 #' }
 #' @export
