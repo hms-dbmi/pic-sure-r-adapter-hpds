@@ -105,3 +105,59 @@ test_that("runQuery() forwards an unknown type to Python for the error", {
   )
   expect_s3_class(err, "error")
 })
+
+test_that("loadQueryByID() forwards query_id to session$loadQueryByID and returns its result", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  result <- picsure::loadQueryByID(bdc, "abc-123")
+
+  expect_equal(result$loaded_from, "abc-123")
+  call <- bdc$.calls$loadQueryByID[[1]]
+  expect_identical(call$query_id, "abc-123")
+})
+
+test_that("loadQueryByID() result can be piped back into runQuery()", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  loaded <- picsure::loadQueryByID(bdc, "abc-123")
+  count <- picsure::runQuery(bdc, loaded, type = "count")
+
+  expect_equal(count$value, 42L)
+})
+
+test_that("loadQueryByID() errors on missing query_id", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  expect_error(picsure::loadQueryByID(bdc), "query_id")
+})
+
+test_that("loadQueryByID() rejects empty, NA, or non-scalar query_id", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  expect_error(picsure::loadQueryByID(bdc, ""), "query_id")
+  expect_error(picsure::loadQueryByID(bdc, NA_character_), "query_id")
+  expect_error(picsure::loadQueryByID(bdc, c("a", "b")), "query_id")
+  expect_error(picsure::loadQueryByID(bdc, 123), "query_id")
+})
+
+test_that("loadQueryByID() re-raises Python exceptions as picsureError", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc$loadQueryByID <- function(query_id) {
+    stop(structure(
+      list(message = "query 'abc-123' not found"),
+      class = c("python.builtin.Exception", "error", "condition")
+    ))
+  }
+
+  err <- tryCatch(
+    picsure::loadQueryByID(bdc, "abc-123"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "not found", fixed = TRUE)
+})

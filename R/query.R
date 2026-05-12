@@ -43,3 +43,29 @@ runQuery <- function(session, query, type = "count", ...) {
 
   with_picsure_error(do.call(session$runQuery, kwargs))
 }
+
+#' Load a previously-saved PIC-SURE query by its query ID.
+#'
+#' Fetches the saved query body from the PIC-SURE backend and rebuilds it
+#' as a Clause or ClauseGroup that can be passed back into
+#' [`runQuery()`][picsure::runQuery], [`exportPFB()`][picsure::exportPFB],
+#' or composed inside another [`buildClauseGroup()`][picsure::buildClauseGroup].
+#'
+#' @param session A session object produced by [`connect()`][picsure::connect].
+#' @param query_id The UUID string of a previously-saved query.
+#' @return An opaque Clause / ClauseGroup handle suitable for `runQuery()`.
+#' @examples
+#' \dontrun{
+#' previous <- picsure::loadQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
+#' count <- picsure::runQuery(bdc, previous, type = "count")
+#' }
+#' @export
+loadQueryByID <- function(session, query_id) {
+  if (missing(query_id) || is.null(query_id) ||
+      !is.character(query_id) || length(query_id) != 1L ||
+      is.na(query_id) || !nzchar(query_id)) {
+    stop("`query_id` must be a non-empty character string (the saved query's UUID).")
+  }
+
+  with_picsure_error(session$loadQueryByID(query_id))
+}

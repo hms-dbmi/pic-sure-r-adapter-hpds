@@ -4,12 +4,12 @@
 \alias{buildClauseGroup}
 \title{Combine clauses (and nested groups) under an AND or OR operator.}
 \usage{
-buildClauseGroup(clauses, root = "AND")
+buildClauseGroup(clauses, operator = "AND")
 }
 \arguments{
 \item{clauses}{A non-empty list of clause or clause-group handles.}
 
-\item{root}{The root operator, a case-insensitive string; one of
+\item{operator}{The group operator, a case-insensitive string; one of
 `"AND"` or `"OR"`. Defaults to `"AND"`.}
 }
 \value{
@@ -26,7 +26,7 @@ ClauseGroup that can itself be nested inside another
 sex    <- picsure::createClause("\\\\phs1\\\\pht1\\\\phv1\\\\sex\\\\", type = "FILTER", categories = "male")
 copd   <- picsure::createClause("\\\\phs1\\\\pht2\\\\phv2\\\\copd\\\\", type = "FILTER", categories = "Yes")
 asthma <- picsure::createClause("\\\\phs1\\\\pht2\\\\phv3\\\\asth\\\\", type = "FILTER", categories = "Yes")
-lung <- picsure::buildClauseGroup(list(copd, asthma), root = "OR")
-full <- picsure::buildClauseGroup(list(sex, lung), root = "AND")
+lung <- picsure::buildClauseGroup(list(copd, asthma), operator = "OR")
+full <- picsure::buildClauseGroup(list(sex, lung), operator = "AND")
 }
 }
