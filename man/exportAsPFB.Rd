@@ -10,7 +10,7 @@ exportAsPFB(session, query, path)
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
 
 \item{query}{A clause group from
-[`buildClauseGroup()`][picsure::buildClauseGroup].}
+[`buildQuery()`][picsure::buildQuery].}
 
 \item{path}{Destination file path.}
 }

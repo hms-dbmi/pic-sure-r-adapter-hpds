@@ -7,8 +7,8 @@ test_that("exportCSV() writes a non-empty file from a participant DataFrame", {
     testthat::skip("PICSURE_TEST_REQUIRE_PATH not set.")
   }
 
-  clause <- picsure::createClause(path, type = "SELECT")
-  query  <- picsure::buildClauseGroup(list(clause), operator = "AND")
+  clause <- picsure::createSubQuery(path, type = "SELECT")
+  query  <- picsure::buildQuery(list(clause), operator = "AND")
   df     <- picsure::runQuery(session, query, type = "participant")
   out    <- tempfile(fileext = ".csv")
 
@@ -26,8 +26,8 @@ test_that("exportTSV() writes a non-empty file from a participant DataFrame", {
     testthat::skip("PICSURE_TEST_REQUIRE_PATH not set.")
   }
 
-  clause <- picsure::createClause(path, type = "SELECT")
-  query  <- picsure::buildClauseGroup(list(clause), operator = "AND")
+  clause <- picsure::createSubQuery(path, type = "SELECT")
+  query  <- picsure::buildQuery(list(clause), operator = "AND")
   df     <- picsure::runQuery(session, query, type = "participant")
   out    <- tempfile(fileext = ".tsv")
 

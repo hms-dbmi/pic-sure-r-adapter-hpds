@@ -10,7 +10,7 @@ runQuery(session, query, type = "count", ...)
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
 
 \item{query}{A clause group from
-[`buildClauseGroup()`][picsure::buildClauseGroup].}
+[`buildQuery()`][picsure::buildQuery].}
 
 \item{type}{A `QueryType` member (e.g.
 [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
@@ -28,7 +28,7 @@ For `type = "count"`, a Python `CountResult` object with
   `"timestamp"`, a `data.frame`.
 }
 \description{
-Runs the query tree produced by [`buildClauseGroup()`][picsure::buildClauseGroup]
+Runs the query tree produced by [`buildQuery()`][picsure::buildQuery]
 against the session's resource and returns the result in the shape
 dictated by `type`:
 }

@@ -109,10 +109,10 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
       calls$connect <- c(calls$connect, list(list(platform = platform, token = token, ...)))
       new_fake_session(platform = platform, token = token)
     },
-    createClause = function(keys, type, ...) {
+    createSubQuery = function(keys, type, ...) {
       list(kind = "clause", keys = keys, type = type, extra = list(...))
     },
-    buildClauseGroup = function(clauses, operator) {
+    buildQuery = function(clauses, operator) {
       list(kind = "group", clauses = clauses, operator = operator)
     },
 

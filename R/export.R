@@ -6,7 +6,7 @@
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query A clause group from
-#'   [`buildClauseGroup()`][picsure::buildClauseGroup].
+#'   [`buildQuery()`][picsure::buildQuery].
 #' @param path Destination file path.
 #' @return The path, invisibly.
 #' @examples
@@ -16,7 +16,7 @@
 #' @export
 exportAsPFB <- function(session, query, path) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required. Build one with picsure::buildClauseGroup().")
+    stop("`query` is required. Build one with picsure::buildQuery().")
   }
   if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
     stop("`path` is required. Provide a writable file path as a string.")

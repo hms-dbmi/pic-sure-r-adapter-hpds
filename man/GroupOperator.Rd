@@ -15,18 +15,18 @@ A list of `picsure_enum_member` objects:
 GroupOperator
 }
 \description{
-Pass a member to [`buildClauseGroup()`][picsure::buildClauseGroup]'s
+Pass a member to [`buildQuery()`][picsure::buildQuery]'s
 `operator` argument. Mirrors Python's `picsure.GroupOperator`.
 }
 \examples{
 \dontrun{
-c1 <- picsure::createClause("\\\\phs1\\\\sex\\\\",
+c1 <- picsure::createSubQuery("\\\\phs1\\\\sex\\\\",
                              type = picsure::ClauseType$FILTER,
                              categories = "male")
-c2 <- picsure::createClause("\\\\phs1\\\\copd\\\\",
+c2 <- picsure::createSubQuery("\\\\phs1\\\\copd\\\\",
                              type = picsure::ClauseType$FILTER,
                              categories = "Yes")
-picsure::buildClauseGroup(
+picsure::buildQuery(
   list(c1, c2),
   operator = picsure::GroupOperator$AND
 )

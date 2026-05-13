@@ -1,8 +1,8 @@
-test_that("createClause() delegates to picsure_py$createClause() with type resolved via to_py_enum", {
+test_that("createSubQuery() delegates to picsure_py$createSubQuery() with type resolved via to_py_enum", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  clause <- picsure::createClause("\\phs1\\pht1\\phv1\\sex\\", type = "FILTER",
+  clause <- picsure::createSubQuery("\\phs1\\pht1\\phv1\\sex\\", type = "FILTER",
                                   categories = list("male"))
 
   expect_equal(clause$kind, "clause")
@@ -11,23 +11,23 @@ test_that("createClause() delegates to picsure_py$createClause() with type resol
   expect_equal(clause$extra$categories, list("male"))
 })
 
-test_that("createClause() accepts case-insensitive type strings", {
+test_that("createSubQuery() accepts case-insensitive type strings", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  c1 <- picsure::createClause("x", type = "filter")
-  c2 <- picsure::createClause("x", type = "Filter")
-  c3 <- picsure::createClause("x", type = "FILTER")
+  c1 <- picsure::createSubQuery("x", type = "filter")
+  c2 <- picsure::createSubQuery("x", type = "Filter")
+  c3 <- picsure::createSubQuery("x", type = "FILTER")
 
   expect_equal(c1$type, "FILTER")
   expect_equal(c2$type, "FILTER")
   expect_equal(c3$type, "FILTER")
 })
 
-test_that("createClause() errors on unknown type string", {
+test_that("createSubQuery() errors on unknown type string", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   err <- tryCatch(
-    picsure::createClause("x", type = "BOGUS"),
+    picsure::createSubQuery("x", type = "BOGUS"),
     error = function(e) e
   )
   expect_s3_class(err, "error")
@@ -35,40 +35,40 @@ test_that("createClause() errors on unknown type string", {
   expect_match(err$message, "FILTER", fixed = TRUE)
 })
 
-test_that("createClause() coerces min and max to Python ints when integral", {
+test_that("createSubQuery() coerces min and max to Python ints when integral", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  clause <- picsure::createClause("x", type = "FILTER", min = 40L, max = 80L)
+  clause <- picsure::createSubQuery("x", type = "FILTER", min = 40L, max = 80L)
 
   expect_identical(clause$extra$min, 40L)
   expect_identical(clause$extra$max, 80L)
 })
 
-test_that("createClause() drops NULL optional args so Python defaults fire", {
+test_that("createSubQuery() drops NULL optional args so Python defaults fire", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  clause <- picsure::createClause("x", type = "FILTER")
+  clause <- picsure::createSubQuery("x", type = "FILTER")
 
   expect_false("min" %in% names(clause$extra))
   expect_false("max" %in% names(clause$extra))
   expect_false("categories" %in% names(clause$extra))
 })
 
-test_that("createClause() errors on missing keys", {
+test_that("createSubQuery() errors on missing keys", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  expect_error(picsure::createClause(type = "FILTER"), "keys")
+  expect_error(picsure::createSubQuery(type = "FILTER"), "keys")
 })
 
-test_that("createClause() errors on missing type", {
+test_that("createSubQuery() errors on missing type", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  expect_error(picsure::createClause("x"), "type")
+  expect_error(picsure::createSubQuery("x"), "type")
 })
 
-test_that("createClause() re-raises Python exceptions as picsureError", {
+test_that("createSubQuery() re-raises Python exceptions as picsureError", {
   failing <- fake_picsure_py()
-  failing$createClause <- function(path, type, ...) {
+  failing$createSubQuery <- function(path, type, ...) {
     stop(structure(
       list(message = "concept path 'x' not found in dictionary"),
       class = c("python.builtin.Exception", "error", "condition")
@@ -77,55 +77,55 @@ test_that("createClause() re-raises Python exceptions as picsureError", {
   testthat::local_mocked_bindings(picsure_py = failing)
 
   err <- tryCatch(
-    picsure::createClause("x", type = "FILTER"),
+    picsure::createSubQuery("x", type = "FILTER"),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "not found in dictionary", fixed = TRUE)
 })
 
-test_that("buildClauseGroup() delegates to picsure_py$buildClauseGroup()", {
+test_that("buildQuery() delegates to picsure_py$buildQuery()", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  c1 <- picsure::createClause("x", type = "FILTER")
-  c2 <- picsure::createClause("y", type = "FILTER")
+  c1 <- picsure::createSubQuery("x", type = "FILTER")
+  c2 <- picsure::createSubQuery("y", type = "FILTER")
 
-  group <- picsure::buildClauseGroup(list(c1, c2), operator = "AND")
+  group <- picsure::buildQuery(list(c1, c2), operator = "AND")
 
   expect_equal(group$kind, "group")
   expect_length(group$clauses, 2L)
   expect_equal(group$operator, "AND")
 })
 
-test_that("buildClauseGroup() defaults operator to AND", {
+test_that("buildQuery() defaults operator to AND", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  c1 <- picsure::createClause("x", type = "FILTER")
+  c1 <- picsure::createSubQuery("x", type = "FILTER")
 
-  group <- picsure::buildClauseGroup(list(c1))
+  group <- picsure::buildQuery(list(c1))
 
   expect_equal(group$operator, "AND")
 })
 
-test_that("buildClauseGroup() accepts case-insensitive operator", {
+test_that("buildQuery() accepts case-insensitive operator", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  c1 <- picsure::createClause("x", type = "FILTER")
+  c1 <- picsure::createSubQuery("x", type = "FILTER")
 
-  g_or  <- picsure::buildClauseGroup(list(c1), operator = "or")
-  g_and <- picsure::buildClauseGroup(list(c1), operator = "And")
+  g_or  <- picsure::buildQuery(list(c1), operator = "or")
+  g_and <- picsure::buildQuery(list(c1), operator = "And")
 
   expect_equal(g_or$operator,  "OR")
   expect_equal(g_and$operator, "AND")
 })
 
-test_that("buildClauseGroup() errors on unknown operator string", {
+test_that("buildQuery() errors on unknown operator string", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  c1 <- picsure::createClause("x", type = "FILTER")
+  c1 <- picsure::createSubQuery("x", type = "FILTER")
 
   err <- tryCatch(
-    picsure::buildClauseGroup(list(c1), operator = "XOR"),
+    picsure::buildQuery(list(c1), operator = "XOR"),
     error = function(e) e
   )
   expect_s3_class(err, "error")
@@ -133,20 +133,20 @@ test_that("buildClauseGroup() errors on unknown operator string", {
   expect_match(err$message, "AND", fixed = TRUE)
 })
 
-test_that("buildClauseGroup() errors on empty clauses list", {
+test_that("buildQuery() errors on empty clauses list", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  expect_error(picsure::buildClauseGroup(list()), "clauses")
+  expect_error(picsure::buildQuery(list()), "clauses")
 })
 
-test_that("buildClauseGroup() accepts nested groups", {
+test_that("buildQuery() accepts nested groups", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  c1 <- picsure::createClause("x", type = "FILTER")
-  c2 <- picsure::createClause("y", type = "FILTER")
-  inner <- picsure::buildClauseGroup(list(c1, c2), operator = "OR")
-  c3 <- picsure::createClause("z", type = "FILTER")
+  c1 <- picsure::createSubQuery("x", type = "FILTER")
+  c2 <- picsure::createSubQuery("y", type = "FILTER")
+  inner <- picsure::buildQuery(list(c1, c2), operator = "OR")
+  c3 <- picsure::createSubQuery("z", type = "FILTER")
 
-  outer <- picsure::buildClauseGroup(list(inner, c3), operator = "AND")
+  outer <- picsure::buildQuery(list(inner, c3), operator = "AND")
 
   expect_equal(outer$kind, "group")
   expect_length(outer$clauses, 2L)
@@ -154,9 +154,9 @@ test_that("buildClauseGroup() accepts nested groups", {
   expect_equal(outer$clauses[[1]]$operator, "OR")
 })
 
-test_that("buildClauseGroup() re-raises Python exceptions as picsureError", {
+test_that("buildQuery() re-raises Python exceptions as picsureError", {
   failing <- fake_picsure_py()
-  failing$buildClauseGroup <- function(clauses, operator) {
+  failing$buildQuery <- function(clauses, operator) {
     stop(structure(
       list(message = "clause tree exceeds max depth"),
       class = c("python.builtin.Exception", "error", "condition")
@@ -166,41 +166,41 @@ test_that("buildClauseGroup() re-raises Python exceptions as picsureError", {
   c1 <- list(kind = "clause", path = "x", type = "FILTER", extra = list())
 
   err <- tryCatch(
-    picsure::buildClauseGroup(list(c1)),
+    picsure::buildQuery(list(c1)),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "max depth", fixed = TRUE)
 })
 
-test_that("createClause() accepts a ClauseType member", {
+test_that("createSubQuery() accepts a ClauseType member", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  clause <- picsure::createClause("\\path\\", type = picsure::ClauseType$FILTER,
+  clause <- picsure::createSubQuery("\\path\\", type = picsure::ClauseType$FILTER,
                                   categories = list("male"))
 
   expect_equal(clause$kind, "clause")
   expect_equal(clause$type, "FILTER")  # fake's ClauseType$FILTER value
 })
 
-test_that("createClause() rejects a wrong-subclass member", {
+test_that("createSubQuery() rejects a wrong-subclass member", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
   err <- tryCatch(
-    picsure::createClause("\\x\\", type = picsure::GroupOperator$AND),
+    picsure::createSubQuery("\\x\\", type = picsure::GroupOperator$AND),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
   expect_match(err$message, "ClauseType", fixed = TRUE)
 })
 
-test_that("buildClauseGroup() accepts a GroupOperator member", {
+test_that("buildQuery() accepts a GroupOperator member", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  group <- picsure::buildClauseGroup(
+  group <- picsure::buildQuery(
     list(list(kind = "clause")),
     operator = picsure::GroupOperator$OR
   )
@@ -208,12 +208,12 @@ test_that("buildClauseGroup() accepts a GroupOperator member", {
   expect_equal(group$operator, "OR")  # fake's GroupOperator$OR value
 })
 
-test_that("buildClauseGroup() rejects a wrong-subclass member", {
+test_that("buildQuery() rejects a wrong-subclass member", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
   err <- tryCatch(
-    picsure::buildClauseGroup(
+    picsure::buildQuery(
       list(list(kind = "clause")),
       operator = picsure::ClauseType$FILTER
     ),
