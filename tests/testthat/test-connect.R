@@ -14,20 +14,42 @@ test_that("connect() forwards platform and token to picsure_py$connect()", {
 
 test_that("connect() errors when platform is missing", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  expect_error(picsure::connect(token = "abc"), "platform")
+  err <- tryCatch(picsure::connect(token = "abc"), error = function(e) e)
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "platform")
 })
 
 test_that("connect() errors when token is missing", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  expect_error(picsure::connect(platform = "Demo"), "token")
+  err <- tryCatch(picsure::connect(platform = "Demo"), error = function(e) e)
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "token")
 })
 
 test_that("connect() rejects NA platform and NA token", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  expect_error(picsure::connect(platform = NA, token = "abc"), "platform")
-  expect_error(picsure::connect(platform = NA_character_, token = "abc"), "platform")
-  expect_error(picsure::connect(platform = "Demo", token = NA), "token")
-  expect_error(picsure::connect(platform = "Demo", token = NA_character_), "token")
+  bad_platforms <- list(NA, NA_character_)
+  for (p in bad_platforms) {
+    err <- tryCatch(picsure::connect(platform = p, token = "abc"), error = function(e) e)
+    expect_s3_class(err, "picsureError")
+    expect_match(conditionMessage(err), "platform")
+  }
+  bad_tokens <- list(NA, NA_character_)
+  for (t in bad_tokens) {
+    err <- tryCatch(picsure::connect(platform = "Demo", token = t), error = function(e) e)
+    expect_s3_class(err, "picsureError")
+    expect_match(conditionMessage(err), "token")
+  }
+})
+
+test_that("connect() rejects length>1 token vectors as picsureError", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  err <- tryCatch(
+    picsure::connect(platform = "Demo", token = c("a", "b")),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "token")
 })
 
 test_that("connect() re-raises Python exceptions as picsureError", {
