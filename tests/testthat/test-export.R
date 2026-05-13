@@ -32,6 +32,18 @@ test_that("exportAsPFB() errors on missing path", {
   expect_error(picsure::exportAsPFB(bdc, q), "path")
 })
 
+test_that("export functions reject length>1 path vectors", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  q <- list(kind = "group", clauses = list(), operator = "AND")
+  df <- data.frame(patient_id = 1L, value = "a", stringsAsFactors = FALSE)
+  bad_path <- c(tempfile(), tempfile())
+
+  expect_error(picsure::exportAsPFB(bdc, q, bad_path), "path")
+  expect_error(picsure::exportCSV(bdc, df, bad_path), "path")
+  expect_error(picsure::exportTSV(bdc, df, bad_path), "path")
+})
+
 test_that("exportAsPFB() errors on missing query", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")

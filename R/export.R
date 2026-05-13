@@ -18,7 +18,7 @@ exportAsPFB <- function(session, query, path) {
   if (missing(query) || is.null(query)) {
     stop("`query` is required. Build one with picsure::buildClauseGroup().")
   }
-  if (missing(path) || is.null(path) || is.na(path) || !nzchar(path)) {
+  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
     stop("`path` is required. Provide a writable file path as a string.")
   }
 
@@ -49,7 +49,7 @@ exportCSV <- function(session, data, path) {
   if (missing(data) || is.null(data) || !is.data.frame(data)) {
     stop("`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result.")
   }
-  if (missing(path) || is.null(path) || is.na(path) || !nzchar(path)) {
+  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
     stop("`path` is required. Provide a writable file path as a string.")
   }
 
@@ -74,7 +74,7 @@ exportTSV <- function(session, data, path) {
   if (missing(data) || is.null(data) || !is.data.frame(data)) {
     stop("`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result.")
   }
-  if (missing(path) || is.null(path) || is.na(path) || !nzchar(path)) {
+  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
     stop("`path` is required. Provide a writable file path as a string.")
   }
 
