@@ -21,9 +21,21 @@ remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@query_v3")
 library(picsure)
 ```
 
-The first call in any R session triggers reticulate to provision an
-isolated Python environment. This takes a few seconds on first use; later
-sessions reuse the cached environment.
+## Python environment
+
+`picsure` declares its Python dependency via `reticulate::py_require()`,
+and reticulate uses `uv` to materialize an isolated environment on the
+first call that touches Python (typically `connect()`). There is no
+manual `pip`, `conda`, or `virtualenv` step, and no separate
+`install_picsure()` to invoke.
+
+The first such call takes a few seconds; the environment is cached and
+reused by later R sessions. To pay that cost up front — for example,
+before a demo, or while still on VPN — just call `picsure::connect(...)`
+early in the session.
+
+Requires `reticulate >= 1.41` (already declared in `DESCRIPTION`); `uv`
+is fetched by reticulate as needed.
 
 ## Connect
 
