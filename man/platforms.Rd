@@ -10,9 +10,9 @@ platforms()
 A character vector.
 }
 \description{
-Returns the character vector of platform labels (or enum member names)
-the Python `picsure` package recognizes. Pass one of these strings — or a
-full URL to a custom PIC-SURE deployment — as the `platform` argument to
+Returns the character vector of platform labels the Python `picsure`
+package recognizes. Pass one of these strings — or a full URL to a custom
+PIC-SURE deployment — as the `platform` argument to
 [`connect()`][picsure::connect].
 }
 \examples{
