@@ -26,7 +26,7 @@ reference:
   - title: Connection
     contents: [connect, platforms]
   - title: Search
-    contents: [dictionarySearch, facets, addFacet, removeFacet]
+    contents: [searchDictionary, facets, addFacet, removeFacet]
   - title: Query construction
     contents: [createClause, buildClauseGroup]
   - title: Query execution

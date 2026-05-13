@@ -26,7 +26,7 @@
 #'       the Python adapter's choice (currently `TRUE`).}
 #'   }
 #' @return An opaque session object. Pass it as the first argument to
-#'   `picsure::dictionarySearch()`, `picsure::runQuery()`, and friends.
+#'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
 #' @examples
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)

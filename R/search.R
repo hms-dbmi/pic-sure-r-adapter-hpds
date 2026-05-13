@@ -11,16 +11,16 @@
 #' @param include_values If TRUE (default), variable values are included in
 #'   the response. Set FALSE to omit them for a lighter payload.
 #' @param ... Additional keyword arguments forwarded to the Python
-#'   `Session.search()` call.
+#'   `Session.searchDictionary()` call.
 #' @return A `data.frame` of matching dictionary entries.
 #' @examples
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
-#' picsure::dictionarySearch(bdc, "sex")
-#' picsure::dictionarySearch(bdc, "")  # all variables
+#' picsure::searchDictionary(bdc, "sex")
+#' picsure::searchDictionary(bdc, "")  # all variables
 #' }
 #' @export
-dictionarySearch <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
+searchDictionary <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
   if (is.null(term) || length(term) != 1L || is.na(term) || !is.character(term)) {
     stop("`term` must be a single string (empty string is OK to fetch all).")
   }
@@ -32,5 +32,5 @@ dictionarySearch <- function(session, term = "", facets = NULL, include_values =
     ...
   ))
 
-  with_picsure_error(do.call(session$search, kwargs))
+  with_picsure_error(do.call(session$searchDictionary, kwargs))
 }

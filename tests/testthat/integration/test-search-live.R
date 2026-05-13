@@ -1,19 +1,19 @@
-test_that("dictionarySearch() against a live platform returns a data.frame", {
+test_that("searchDictionary() against a live platform returns a data.frame", {
   skip_unless_integration()
   session <- live_session()
 
   term <- Sys.getenv("PICSURE_TEST_SEARCH_TERM", unset = "age")
-  results <- picsure::dictionarySearch(session, term)
+  results <- picsure::searchDictionary(session, term)
   expect_s3_class(results, "data.frame")
   expect_true(nrow(results) > 0)
 })
 
-test_that("dictionarySearch() with include_values = FALSE still returns rows", {
+test_that("searchDictionary() with include_values = FALSE still returns rows", {
   skip_unless_integration()
   session <- live_session()
 
   term <- Sys.getenv("PICSURE_TEST_SEARCH_TERM", unset = "age")
-  lean <- picsure::dictionarySearch(session, term, include_values = FALSE)
+  lean <- picsure::searchDictionary(session, term, include_values = FALSE)
   expect_s3_class(lean, "data.frame")
   expect_true(nrow(lean) > 0)
 })

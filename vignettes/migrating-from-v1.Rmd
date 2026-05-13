@@ -22,7 +22,7 @@ equivalent and walks through three common notebook patterns end-to-end.
 | `initializeSession(url, token)` | `connect(platform, token)` |
 | `bdc.initializeSession(url, token)` | `connect(platform = "BDC Authorized", token)` |
 | `bdc.setResource(session, "OPEN")` | `connect(platform = "BDC Open", ...)` |
-| `bdc.searchPicsure(session, "sex")` | `dictionarySearch(session, "sex")` |
+| `bdc.searchPicsure(session, "sex")` | `searchDictionary(session, "sex")` |
 | `bdc.getStudies(session)` | (removed — not yet re-exposed) |
 | `newQuery(session)` | no direct replacement — use `createClause()` + `buildClauseGroup()` |
 | `addClause(q, path, "FILTER", min = 18)` | `createClause(keys = path, type = "FILTER", min = 18)` |

@@ -9,7 +9,7 @@
 
 new_fake_session <- function(platform = "Demo", token = "tok") {
   calls <- new.env(parent = emptyenv())
-  calls$search <- list()
+  calls$searchDictionary <- list()
   calls$runQuery <- list()
   calls$exportAsPFB <- list()
   calls$exportCSV <- list()
@@ -22,8 +22,8 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
       token = token,
       user_id = "user_123",
       token_expires = "2026-05-14",
-      search = function(...) {
-        calls$search <- c(calls$search, list(list(...)))
+      searchDictionary = function(...) {
+        calls$searchDictionary <- c(calls$searchDictionary, list(list(...)))
         data.frame(
           name = character(), description = character(),
           stringsAsFactors = FALSE
