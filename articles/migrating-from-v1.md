@@ -13,9 +13,9 @@ equivalent and walks through three common notebook patterns end-to-end.
 | `bdc.setResource(session, "OPEN")` | `connect(platform = "BDC Open", ...)` |
 | `bdc.searchPicsure(session, "sex")` | `searchDictionary(session, "sex")` |
 | `bdc.getStudies(session)` | (removed — not yet re-exposed) |
-| `newQuery(session)` | no direct replacement — use [`createClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createClause.md) + [`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md) |
-| `addClause(q, path, "FILTER", min = 18)` | `createClause(keys = path, type = "FILTER", min = 18)` |
-| `addClause(q, path, "SELECT")` | `createClause(keys = path, type = "SELECT")` |
+| `newQuery(session)` | no direct replacement — use [`createSubQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createSubQuery.md) + [`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md) |
+| `addClause(q, path, "FILTER", min = 18)` | `createSubQuery(keys = path, type = "FILTER", min = 18)` |
+| `addClause(q, path, "SELECT")` | `createSubQuery(keys = path, type = "SELECT")` |
 | `deleteClause(q, path)` | (removed — rebuild the tree) |
 | `showQuery(q)` | (removed — queries are opaque Python handles) |
 | `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")` — returns a `CountResult` (use `$value` / `$cap`) |
@@ -48,11 +48,11 @@ count <- picsure::runQuery(q, "COUNT")
 ``` r
 
 bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
-age_filter <- picsure::createClause(
+age_filter <- picsure::createSubQuery(
   "\\phs000001\\pht000001\\phv00000005\\age\\",
   type = "FILTER", min = 40
 )
-query <- picsure::buildClauseGroup(list(age_filter), operator = "AND")
+query <- picsure::buildQuery(list(age_filter), operator = "AND")
 count <- picsure::runQuery(bdc, query, type = "count")
 ```
 
@@ -72,9 +72,9 @@ rows <- picsure::runQuery(q, "DATA_FRAME")
 
 ``` r
 
-sex_filter <- picsure::createClause(sex_path, type = "FILTER", categories = list("male"))
-bmi_select <- picsure::createClause(bmi_path, type = "SELECT")
-query <- picsure::buildClauseGroup(list(sex_filter, bmi_select), operator = "AND")
+sex_filter <- picsure::createSubQuery(sex_path, type = "FILTER", categories = list("male"))
+bmi_select <- picsure::createSubQuery(bmi_path, type = "SELECT")
+query <- picsure::buildQuery(list(sex_filter, bmi_select), operator = "AND")
 rows  <- picsure::runQuery(bdc, query, type = "participant")
 ```
 
@@ -84,10 +84,10 @@ There’s no v1 equivalent — v1 query construction was flat. In v3:
 
 ``` r
 
-copd    <- picsure::createClause(copd_path,   type = "FILTER", categories = list("Yes"))
-asthma  <- picsure::createClause(asthma_path, type = "FILTER", categories = list("Yes"))
-lung    <- picsure::buildClauseGroup(list(copd, asthma), operator = "OR")
-query   <- picsure::buildClauseGroup(list(sex_filter, lung), operator = "AND")
+copd    <- picsure::createSubQuery(copd_path,   type = "FILTER", categories = list("Yes"))
+asthma  <- picsure::createSubQuery(asthma_path, type = "FILTER", categories = list("Yes"))
+lung    <- picsure::buildQuery(list(copd, asthma), operator = "OR")
+query   <- picsure::buildQuery(list(sex_filter, lung), operator = "AND")
 ```
 
 ## Error handling

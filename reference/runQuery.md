@@ -1,9 +1,8 @@
 # Execute a query against a PIC-SURE session.
 
 Runs the query tree produced by
-\[\`buildClauseGroup()\`\]\[picsure::buildClauseGroup\] against the
-session's resource and returns the result in the shape dictated by
-\`type\`:
+\[\`buildQuery()\`\]\[picsure::buildQuery\] against the session's
+resource and returns the result in the shape dictated by \`type\`:
 
 ## Usage
 
@@ -19,8 +18,7 @@ runQuery(session, query, type = "count", ...)
 
 - query:
 
-  A clause group from
-  \[\`buildClauseGroup()\`\]\[picsure::buildClauseGroup\].
+  A clause group from \[\`buildQuery()\`\]\[picsure::buildQuery\].
 
 - type:
 

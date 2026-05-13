@@ -1,8 +1,8 @@
 # Running and exporting
 
 Given a query built with
-[`createClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createClause.md) +
-[`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md),
+[`createSubQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createSubQuery.md) +
+[`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md),
 you can ask the server for:
 
 - a participant count (possibly obfuscated for small cohorts),
@@ -113,5 +113,5 @@ count <- picsure::runQuery(bdc, previous, type = "count")
 ```
 
 The loaded handle is the same shape as one built with
-[`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md),
+[`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md),
 so you can also nest it inside a new group to refine the cohort.

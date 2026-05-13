@@ -20,9 +20,9 @@
 
 ## Query construction
 
-- [`createClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createClause.md)
+- [`createSubQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createSubQuery.md)
   : Create a single query clause.
-- [`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md)
+- [`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md)
   : Combine clauses (and nested groups) under an AND or OR operator.
 
 ## Query execution

@@ -18,8 +18,7 @@ exportAsPFB(session, query, path)
 
 - query:
 
-  A clause group from
-  \[\`buildClauseGroup()\`\]\[picsure::buildClauseGroup\].
+  A clause group from \[\`buildQuery()\`\]\[picsure::buildQuery\].
 
 - path:
 

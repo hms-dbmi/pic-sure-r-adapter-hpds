@@ -60,12 +60,12 @@ for filtering by study or other facets.
 
 ``` r
 
-sex_filter <- picsure::createClause(
+sex_filter <- picsure::createSubQuery(
   "\\phs000001\\pht000001\\phv00000001\\sex\\",
   type       = "FILTER",
   categories = list("male")
 )
-query <- picsure::buildClauseGroup(list(sex_filter), operator = "AND")
+query <- picsure::buildQuery(list(sex_filter), operator = "AND")
 
 count <- picsure::runQuery(bdc, query, type = "count")
 count

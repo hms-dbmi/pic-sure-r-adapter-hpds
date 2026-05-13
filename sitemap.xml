@@ -16,9 +16,9 @@
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/QueryType.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/addFacet.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/as_enum_string.html</loc></url>
-<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.html</loc></url>
+<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/connect.html</loc></url>
-<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createClause.html</loc></url>
+<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createSubQuery.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/drop_nulls.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportAsPFB.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportCSV.html</loc></url>

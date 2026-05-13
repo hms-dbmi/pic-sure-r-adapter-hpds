@@ -1,6 +1,6 @@
 # Filter clause types.
 
-Pass a member to \[\`createClause()\`\]\[picsure::createClause\]'s
+Pass a member to \[\`createSubQuery()\`\]\[picsure::createSubQuery\]'s
 \`type\` argument. Mirrors Python's \`picsure.ClauseType\`.
 
 ## Usage
@@ -35,7 +35,7 @@ A list of \`picsure_enum_member\` objects:
 
 ``` r
 if (FALSE) { # \dontrun{
-picsure::createClause(
+picsure::createSubQuery(
   "\\phs1\\pht1\\phv1\\sex\\",
   type = picsure::ClauseType$FILTER,
   categories = "male"
