@@ -48,10 +48,10 @@ Valid platform names include `"Demo"`, `"BDC Open"`, and
 
 ``` r
 
-picsure::dictionarySearch(bdc, "sex")
+picsure::searchDictionary(bdc, "sex")
 ```
 
-[`dictionarySearch()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/dictionarySearch.md)
+[`searchDictionary()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchDictionary.md)
 returns a data frame of matching variables. See
 [`vignette("search-and-facets")`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/articles/search-and-facets.md)
 for filtering by study or other facets.

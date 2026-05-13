@@ -1,6 +1,6 @@
 # Search and facets
 
-[`picsure::dictionarySearch()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/dictionarySearch.md)
+[`picsure::searchDictionary()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchDictionary.md)
 returns matching dictionary entries as a data frame.
 [`picsure::facets()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/facets.md)
 narrows a search to a subset — by study, by consent group, etc.
@@ -12,7 +12,7 @@ narrows a search to a subset — by study, by consent group, etc.
 library(picsure)
 bdc <- picsure::connect(platform = "BDC Authorized", token = Sys.getenv("PICSURE_TOKEN"))
 
-results <- picsure::dictionarySearch(bdc, "sex")
+results <- picsure::searchDictionary(bdc, "sex")
 head(results)
 ```
 
@@ -39,7 +39,7 @@ underlying Python FacetSet and return it invisibly for chaining.
 
 ``` r
 
-picsure::dictionarySearch(bdc, "sex", facets = fs)
+picsure::searchDictionary(bdc, "sex", facets = fs)
 ```
 
 The server restricts the search to variables inside the facets.
@@ -51,7 +51,7 @@ Pass `include_values = FALSE` to omit variable values from the response
 
 ``` r
 
-picsure::dictionarySearch(bdc, "age", include_values = FALSE)
+picsure::searchDictionary(bdc, "age", include_values = FALSE)
 ```
 
 The search term is always matched server-side; you receive every

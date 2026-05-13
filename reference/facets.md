@@ -3,7 +3,7 @@
 Returns an opaque \`FacetSet\` handle tied to this session. Add entries
 with \[\`addFacet()\`\]\[picsure::addFacet\] and remove them with
 \[\`removeFacet()\`\]\[picsure::removeFacet\]. Pass the final FacetSet
-to \[\`dictionarySearch()\`\]\[picsure::dictionarySearch\] via the
+to \[\`searchDictionary()\`\]\[picsure::searchDictionary\] via the
 \`facets\` argument.
 
 ## Usage
@@ -28,6 +28,6 @@ An opaque FacetSet handle.
 if (FALSE) { # \dontrun{
 fs <- picsure::facets(bdc)
 fs <- picsure::addFacet(fs, "study_ids", "phs000007")
-picsure::dictionarySearch(bdc, "sex", facets = fs)
+picsure::searchDictionary(bdc, "sex", facets = fs)
 } # }
 ```

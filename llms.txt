@@ -92,7 +92,7 @@ GPL (≥ 3). See
 
 ## Search
 
-- [`dictionarySearch()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/dictionarySearch.md)
+- [`searchDictionary()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchDictionary.md)
   : Search the PIC-SURE data dictionary.
 - [`facets()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/facets.md)
   : Build a FacetSet for narrowing search results.

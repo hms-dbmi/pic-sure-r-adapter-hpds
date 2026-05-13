@@ -63,7 +63,7 @@
 
     
     
-<p><code><a href="../reference/dictionarySearch.html">picsure::dictionarySearch()</a></code> returns matching dictionary
+<p><code><a href="../reference/searchDictionary.html">picsure::searchDictionary()</a></code> returns matching dictionary
 entries as a data frame. <code><a href="../reference/facets.html">picsure::facets()</a></code> narrows a search
 to a subset — by study, by consent group, etc.</p>
 <div class="section level2">
@@ -73,7 +73,7 @@ to a subset — by study, by consent group, etc.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">picsure</span><span class="op">)</span></span>
 <span><span class="va">bdc</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/connect.html">connect</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="st">"BDC Authorized"</span>, token <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PICSURE_TOKEN"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/dictionarySearch.html">dictionarySearch</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"sex"</span><span class="op">)</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/searchDictionary.html">searchDictionary</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"sex"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -94,7 +94,7 @@ chaining.</p>
 <h2 id="search-with-facets">Search with facets<a class="anchor" aria-label="anchor" href="#search-with-facets"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/dictionarySearch.html">dictionarySearch</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"sex"</span>, facets <span class="op">=</span> <span class="va">fs</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/searchDictionary.html">searchDictionary</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"sex"</span>, facets <span class="op">=</span> <span class="va">fs</span><span class="op">)</span></span></code></pre></div>
 <p>The server restricts the search to variables inside the facets.</p>
 </div>
 <div class="section level2">
@@ -104,7 +104,7 @@ chaining.</p>
 the response — useful when you only need variable names and
 descriptions:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/dictionarySearch.html">dictionarySearch</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"age"</span>, include_values <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/searchDictionary.html">searchDictionary</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"age"</span>, include_values <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>The search term is always matched server-side; you receive every
 matching row. There is no <code>limit</code> or <code>offset</code> —
 narrow with a more specific term or a facet filter if a search returns

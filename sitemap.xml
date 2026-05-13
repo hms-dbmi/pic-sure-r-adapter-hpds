@@ -19,7 +19,6 @@
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/connect.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createClause.html</loc></url>
-<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/dictionarySearch.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/drop_nulls.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportAsPFB.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportCSV.html</loc></url>
@@ -33,6 +32,7 @@
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/removeFacet.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQuery.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQueryByID.html</loc></url>
+<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchDictionary.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/to_py_enum.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/with_picsure_error.html</loc></url>
 </urlset>

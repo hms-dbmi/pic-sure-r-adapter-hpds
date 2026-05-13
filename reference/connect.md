@@ -48,7 +48,7 @@ connect(platform, token, ...)
 ## Value
 
 An opaque session object. Pass it as the first argument to
-\`picsure::dictionarySearch()\`, \`picsure::runQuery()\`, and friends.
+\`picsure::searchDictionary()\`, \`picsure::runQuery()\`, and friends.
 
 ## Details
 
