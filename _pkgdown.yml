@@ -24,9 +24,9 @@ navbar:
 
 reference:
   - title: Connection
-    contents: [connect]
+    contents: [connect, platforms]
   - title: Search
-    contents: [search, facets, addFacet, removeFacet]
+    contents: [dictionarySearch, facets, addFacet, removeFacet]
   - title: Query construction
     contents: [createClause, buildClauseGroup]
   - title: Query execution

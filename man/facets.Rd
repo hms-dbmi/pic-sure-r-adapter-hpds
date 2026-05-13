@@ -16,12 +16,12 @@ An opaque FacetSet handle.
 Returns an opaque `FacetSet` handle tied to this session. Add entries with
 [`addFacet()`][picsure::addFacet] and remove them with
 [`removeFacet()`][picsure::removeFacet]. Pass the final FacetSet to
-[`search()`][picsure::search] via the `facets` argument.
+[`dictionarySearch()`][picsure::dictionarySearch] via the `facets` argument.
 }
 \examples{
 \dontrun{
 fs <- picsure::facets(bdc)
 fs <- picsure::addFacet(fs, "study_ids", "phs000007")
-picsure::search(bdc, "sex", facets = fs)
+picsure::dictionarySearch(bdc, "sex", facets = fs)
 }
 }

@@ -52,10 +52,10 @@ Valid platform names include `"Demo"`, `"BDC Open"`, and `"BDC Authorized"`.
 ## Search the dictionary
 
 ```{r}
-picsure::search(bdc, "sex")
+picsure::dictionarySearch(bdc, "sex")
 ```
 
-`search()` returns a data frame of matching variables. See
+`dictionarySearch()` returns a data frame of matching variables. See
 `vignette("search-and-facets")` for filtering by study or other facets.
 
 ## Build and run a query

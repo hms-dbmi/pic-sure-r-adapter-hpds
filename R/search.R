@@ -16,11 +16,11 @@
 #' @examples
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
-#' picsure::search(bdc, "sex")
-#' picsure::search(bdc, "")  # all variables
+#' picsure::dictionarySearch(bdc, "sex")
+#' picsure::dictionarySearch(bdc, "")  # all variables
 #' }
 #' @export
-search <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
+dictionarySearch <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
   if (is.null(term) || length(term) != 1L || is.na(term) || !is.character(term)) {
     stop("`term` must be a single string (empty string is OK to fetch all).")
   }

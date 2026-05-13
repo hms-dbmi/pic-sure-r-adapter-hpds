@@ -11,7 +11,7 @@ vignette: >
 knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
 ```
 
-`picsure::search()` returns matching dictionary entries as a data frame.
+`picsure::dictionarySearch()` returns matching dictionary entries as a data frame.
 `picsure::facets()` narrows a search to a subset — by study, by consent
 group, etc.
 
@@ -21,7 +21,7 @@ group, etc.
 library(picsure)
 bdc <- picsure::connect(platform = "BDC Authorized", token = Sys.getenv("PICSURE_TOKEN"))
 
-results <- picsure::search(bdc, "sex")
+results <- picsure::dictionarySearch(bdc, "sex")
 head(results)
 ```
 
@@ -44,7 +44,7 @@ underlying Python FacetSet and return it invisibly for chaining.
 ## Search with facets
 
 ```{r}
-picsure::search(bdc, "sex", facets = fs)
+picsure::dictionarySearch(bdc, "sex", facets = fs)
 ```
 
 The server restricts the search to variables inside the facets.
@@ -55,7 +55,7 @@ Pass `include_values = FALSE` to omit variable values from the response —
 useful when you only need variable names and descriptions:
 
 ```{r}
-picsure::search(bdc, "age", include_values = FALSE)
+picsure::dictionarySearch(bdc, "age", include_values = FALSE)
 ```
 
 The search term is always matched server-side; you receive every matching
