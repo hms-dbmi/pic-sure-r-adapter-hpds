@@ -15,21 +15,18 @@ picsure_py <- NULL
 
 # Pinned Python dependency.
 #
-# The pin is intentional and exact (==, not >=). The Python `picsure` package
-# is pre-1.0 and reserves the right to break behavior across patch releases.
-# Bumping this version requires:
+# Installed directly from the upstream GitHub repository's `main` branch via
+# PEP 508 direct-reference syntax (resolved by uv under `reticulate::py_require`).
+# `pic-sure-python-adapter-hpds` is not yet on PyPI; the only correctly
+# versioned 0.1.0 lives on `main`, which includes QueryType (merged
+# 2026-04-29). Once the Python package is published, swap this back to a
+# version-pinned spec (e.g. "picsure>=1.0,<2" after it reaches 1.0).
+#
+# Bumping the pinned ref requires:
 #   1. Re-running the full integration suite under VPN against a backend
 #      that ships the matching server protocol.
 #   2. Updating any wrapper signatures whose Python kwargs changed.
-# Once `picsure` reaches 1.0, relax to a compatible range (e.g. "picsure>=1.0,<2").
-#
-# Note: 0.1.0-on-`main` of `pic-sure-python-adapter-hpds` includes
-# QueryType (merged 2026-04-29 without a version bump). A published
-# 0.1.0 on PyPI predates QueryType. Until Python publishes a new
-# release, this pin only resolves correctly against a local install of
-# `pic-sure-python-adapter-hpds@main`. CI / fresh PyPI installs of
-# 0.1.0 will fail the QueryType drift test (tests/testthat/test-enums-parity.R).
-.PICSURE_PY_SPEC <- "picsure==0.1.0"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@main"
 
 .onLoad <- function(libname, pkgname) {
   reticulate::py_require(.PICSURE_PY_SPEC)
