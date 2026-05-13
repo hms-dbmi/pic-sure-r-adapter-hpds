@@ -32,7 +32,7 @@ equivalent and walks through three common notebook patterns end-to-end.
 | `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")` — returns a `CountResult` (use `$value` / `$cap`) |
 | `runQuery(q, "DATA_FRAME")` | `runQuery(session, query, type = "participant")` |
 | `getResultByQueryUUID(session, uuid)` | (removed — query UUID APIs not yet re-exposed) |
-| `exportPFB(...)` (new) | `exportPFB(session, query, path)` |
+| `exportPFB(...)` (new) | `exportAsPFB(session, query, path)` |
 | `exportCSV(...)` (new) | `df <- runQuery(...); exportCSV(session, df, path)` |
 | `getQueryByUUID(session, uuid)` | (removed) |
 

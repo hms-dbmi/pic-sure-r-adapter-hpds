@@ -203,3 +203,90 @@ test_that("loadQueryByID() re-raises Python exceptions as picsureError", {
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "not found", fixed = TRUE)
 })
+
+test_that("runQueryByID() forwards query_id and type to session$runQueryByID", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  result <- picsure::runQueryByID(bdc, "abc-123", type = "count")
+
+  expect_equal(result$value, 42L)
+  call <- bdc$.calls$runQueryByID[[1]]
+  expect_identical(call$query_id, "abc-123")
+  expect_equal(tolower(call$type), "count")
+})
+
+test_that("runQueryByID() defaults type to 'count'", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  result <- picsure::runQueryByID(bdc, "abc-123")
+
+  expect_equal(result$value, 42L)
+  call <- bdc$.calls$runQueryByID[[1]]
+  expect_equal(tolower(call$type), "count")
+})
+
+test_that("runQueryByID() with type='participant' returns a data.frame", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  result <- picsure::runQueryByID(bdc, "abc-123", type = "participant")
+
+  expect_s3_class(result, "data.frame")
+  expect_true(nrow(result) > 0)
+})
+
+test_that("runQueryByID() accepts a QueryType member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  session <- new_fake_session()
+
+  picsure::runQueryByID(session, "abc-123", type = picsure::QueryType$COUNT)
+
+  recorded <- session$.calls$runQueryByID[[1]]
+  expect_equal(recorded$type, "count")
+})
+
+test_that("runQueryByID() rejects a wrong-subclass member", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  session <- new_fake_session()
+
+  err <- tryCatch(
+    picsure::runQueryByID(session, "abc-123", type = picsure::ClauseType$FILTER),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(err$message, "QueryType", fixed = TRUE)
+})
+
+test_that("runQueryByID() rejects empty, NA, or non-scalar query_id", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+
+  expect_error(picsure::runQueryByID(bdc), "query_id")
+  expect_error(picsure::runQueryByID(bdc, ""), "query_id")
+  expect_error(picsure::runQueryByID(bdc, NA_character_), "query_id")
+  expect_error(picsure::runQueryByID(bdc, c("a", "b")), "query_id")
+  expect_error(picsure::runQueryByID(bdc, 123), "query_id")
+})
+
+test_that("runQueryByID() re-raises Python exceptions as picsureError", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc$runQueryByID <- function(query_id, type = "count") {
+    stop(structure(
+      list(message = "query 'abc-123' not found"),
+      class = c("python.builtin.Exception", "error", "condition")
+    ))
+  }
+
+  err <- tryCatch(
+    picsure::runQueryByID(bdc, "abc-123"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "not found", fixed = TRUE)
+})

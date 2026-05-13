@@ -67,14 +67,14 @@ timeseries <- picsure::runQuery(bdc, full_query, type = "timestamp")
 
 ## Export to disk
 
-`exportPFB()` runs the query and writes the PFB file in a single call:
+`exportAsPFB()` runs the query and writes the PFB file in a single call:
 
 ```{r}
-picsure::exportPFB(bdc, full_query, "~/cohort.pfb")
+picsure::exportAsPFB(bdc, full_query, "~/cohort.pfb")
 ```
 
 PFB export requires the Python `picsure[pfb]` optional dependency. If the
-Python env was provisioned without it, `exportPFB()` raises a
+Python env was provisioned without it, `exportAsPFB()` raises a
 `picsureError` pointing you at the install hint.
 
 `exportCSV()` and `exportTSV()` serialize an R `data.frame` — the typical
@@ -89,7 +89,7 @@ picsure::exportTSV(bdc, df, "~/cohort.tsv")
 All three export functions return the path invisibly, so you can chain:
 
 ```{r}
-pfb_path <- picsure::exportPFB(bdc, full_query, tempfile(fileext = ".pfb"))
+pfb_path <- picsure::exportAsPFB(bdc, full_query, tempfile(fileext = ".pfb"))
 ```
 
 ## Reload a previously-saved query

@@ -54,7 +54,7 @@ count        <- picsure::runQuery(bdc, query, type = "count")
 participants <- picsure::runQuery(bdc, query, type = "participant")
 
 # Export
-picsure::exportPFB(bdc, query, "~/cohort.pfb")
+picsure::exportAsPFB(bdc, query, "~/cohort.pfb")
 ```
 
 ## Documentation

@@ -17,7 +17,7 @@ An opaque Clause / ClauseGroup handle suitable for `runQuery()`.
 \description{
 Fetches the saved query body from the PIC-SURE backend and rebuilds it
 as a Clause or ClauseGroup that can be passed back into
-[`runQuery()`][picsure::runQuery], [`exportPFB()`][picsure::exportPFB],
+[`runQuery()`][picsure::runQuery], [`exportAsPFB()`][picsure::exportAsPFB],
 or composed inside another [`buildClauseGroup()`][picsure::buildClauseGroup].
 }
 \examples{

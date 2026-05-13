@@ -11,10 +11,10 @@
 #' @return The path, invisibly.
 #' @examples
 #' \dontrun{
-#' picsure::exportPFB(bdc, full_query, "~/cohort.pfb")
+#' picsure::exportAsPFB(bdc, full_query, "~/cohort.pfb")
 #' }
 #' @export
-exportPFB <- function(session, query, path) {
+exportAsPFB <- function(session, query, path) {
   if (missing(query) || is.null(query)) {
     stop("`query` is required. Build one with picsure::buildClauseGroup().")
   }
@@ -22,13 +22,13 @@ exportPFB <- function(session, query, path) {
     stop("`path` is required. Provide a writable file path as a string.")
   }
 
-  with_picsure_error(session$exportPFB(query, path))
+  with_picsure_error(session$exportAsPFB(query, path))
   invisible(path)
 }
 
 #' Write a participant data frame to a CSV file.
 #'
-#' Unlike [`exportPFB()`][picsure::exportPFB], `exportCSV` and `exportTSV`
+#' Unlike [`exportAsPFB()`][picsure::exportAsPFB], `exportCSV` and `exportTSV`
 #' write an already-materialized data frame — they do not re-run a query.
 #' The typical flow is `runQuery(..., type = "participant")` followed by
 #' `exportCSV(session, df, path)`.

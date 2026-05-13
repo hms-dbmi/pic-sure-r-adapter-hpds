@@ -19,7 +19,7 @@ exportCSV(session, data, path)
 The path, invisibly.
 }
 \description{
-Unlike [`exportPFB()`][picsure::exportPFB], `exportCSV` and `exportTSV`
+Unlike [`exportAsPFB()`][picsure::exportAsPFB], `exportCSV` and `exportTSV`
 write an already-materialized data frame — they do not re-run a query.
 The typical flow is `runQuery(..., type = "participant")` followed by
 `exportCSV(session, df, path)`.

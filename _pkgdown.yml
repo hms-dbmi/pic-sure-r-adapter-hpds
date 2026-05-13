@@ -30,9 +30,9 @@ reference:
   - title: Query construction
     contents: [createClause, buildClauseGroup]
   - title: Query execution
-    contents: [runQuery]
+    contents: [runQuery, runQueryByID, loadQueryByID]
   - title: Export
-    contents: [exportPFB, exportCSV, exportTSV]
+    contents: [exportAsPFB, exportCSV, exportTSV]
   - title: Errors
     contents: [picsureError]
   - title: Enums

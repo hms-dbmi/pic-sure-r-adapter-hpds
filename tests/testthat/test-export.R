@@ -1,50 +1,50 @@
-test_that("exportPFB() forwards query and path to session$exportPFB", {
+test_that("exportAsPFB() forwards query and path to session$exportAsPFB", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
   tmp <- tempfile(fileext = ".pfb")
 
-  result <- picsure::exportPFB(bdc, q, tmp)
+  result <- picsure::exportAsPFB(bdc, q, tmp)
 
   expect_equal(result, tmp)
   expect_true(file.exists(tmp))
-  call <- bdc$.calls$exportPFB[[1]]
+  call <- bdc$.calls$exportAsPFB[[1]]
   expect_identical(call$query, q)
   expect_equal(call$path, tmp)
 })
 
-test_that("exportPFB() returns the path invisibly", {
+test_that("exportAsPFB() returns the path invisibly", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
   tmp <- tempfile(fileext = ".pfb")
 
-  result <- withVisible(picsure::exportPFB(bdc, q, tmp))
+  result <- withVisible(picsure::exportAsPFB(bdc, q, tmp))
   expect_false(result$visible)
   expect_equal(result$value, tmp)
 })
 
-test_that("exportPFB() errors on missing path", {
+test_that("exportAsPFB() errors on missing path", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
-  expect_error(picsure::exportPFB(bdc, q), "path")
+  expect_error(picsure::exportAsPFB(bdc, q), "path")
 })
 
-test_that("exportPFB() errors on missing query", {
+test_that("exportAsPFB() errors on missing query", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "Demo", token = "tok")
   tmp <- tempfile(fileext = ".pfb")
 
-  expect_error(picsure::exportPFB(bdc, path = tmp), "query")
+  expect_error(picsure::exportAsPFB(bdc, path = tmp), "query")
 })
 
-test_that("exportPFB() re-raises Python exceptions as picsureError", {
+test_that("exportAsPFB() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
   bdc <- picsure::connect(platform = "Demo", token = "tok")
-  bdc$exportPFB <- function(query, path) {
+  bdc$exportAsPFB <- function(query, path) {
     stop(structure(
       list(message = "PFB export requires the picsure[pfb] optional dependency"),
       class = c("python.builtin.Exception", "error", "condition")
@@ -52,7 +52,7 @@ test_that("exportPFB() re-raises Python exceptions as picsureError", {
   }
 
   err <- tryCatch(
-    picsure::exportPFB(bdc, list(kind = "group"), tempfile()),
+    picsure::exportAsPFB(bdc, list(kind = "group"), tempfile()),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")

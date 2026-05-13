@@ -11,10 +11,11 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
   calls <- new.env(parent = emptyenv())
   calls$search <- list()
   calls$runQuery <- list()
-  calls$exportPFB <- list()
+  calls$exportAsPFB <- list()
   calls$exportCSV <- list()
   calls$exportTSV <- list()
   calls$loadQueryByID <- list()
+  calls$runQueryByID <- list()
   structure(
     list(
       platform = platform,
@@ -48,8 +49,8 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
           stop("fake runQuery: unknown type '", type, "'")
         )
       },
-      exportPFB = function(query, path) {
-        calls$exportPFB <- c(calls$exportPFB, list(list(query = query, path = path)))
+      exportAsPFB = function(query, path) {
+        calls$exportAsPFB <- c(calls$exportAsPFB, list(list(query = query, path = path)))
         writeLines(character(0), path)
         invisible(NULL)
       },
@@ -68,6 +69,29 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
         calls$loadQueryByID <- c(calls$loadQueryByID, list(list(query_id = query_id)))
         list(kind = "group", clauses = list(), operator = "AND",
              loaded_from = query_id)
+      },
+      runQueryByID = function(query_id, type = "count") {
+        calls$runQueryByID <- c(
+          calls$runQueryByID,
+          list(list(query_id = query_id, type = type))
+        )
+        t <- tolower(type %||% "count")
+        switch(
+          t,
+          count = list(value = 42L, margin = 0L, cap = NULL,
+                       loaded_from = query_id),
+          participant = data.frame(
+            patient_id = c(1L, 2L, 3L),
+            value      = c("a", "b", "c"),
+            stringsAsFactors = FALSE
+          ),
+          timestamp = data.frame(
+            patient_id = c(1L, 2L),
+            timestamp  = c("2026-01-01", "2026-01-02"),
+            stringsAsFactors = FALSE
+          ),
+          stop("fake runQueryByID: unknown type '", t, "'")
+        )
       },
       .calls = calls
     ),

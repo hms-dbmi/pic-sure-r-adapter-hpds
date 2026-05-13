@@ -50,7 +50,7 @@ runQuery <- function(session, query, type = "count", ...) {
 #'
 #' Fetches the saved query body from the PIC-SURE backend and rebuilds it
 #' as a Clause or ClauseGroup that can be passed back into
-#' [`runQuery()`][picsure::runQuery], [`exportPFB()`][picsure::exportPFB],
+#' [`runQuery()`][picsure::runQuery], [`exportAsPFB()`][picsure::exportAsPFB],
 #' or composed inside another [`buildClauseGroup()`][picsure::buildClauseGroup].
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
@@ -70,4 +70,38 @@ loadQueryByID <- function(session, query_id) {
   }
 
   with_picsure_error(session$loadQueryByID(query_id))
+}
+
+#' Load a saved PIC-SURE query by ID and execute it in one call.
+#'
+#' Convenience wrapper around [`loadQueryByID()`][picsure::loadQueryByID]
+#' followed by [`runQuery()`][picsure::runQuery]. Returns the same result
+#' shapes as `runQuery()`.
+#'
+#' @param session A session object produced by [`connect()`][picsure::connect].
+#' @param query_id The UUID string of a previously-saved query.
+#' @param type A `QueryType` member (e.g.
+#'   [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
+#'   string: `"count"` (default), `"participant"`, `"timestamp"`, or
+#'   `"cross_count"`.
+#' @return Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
+#'   `"count"`, a dict-like mapping for `"cross_count"`, or a
+#'   `data.frame` for `"participant"` / `"timestamp"`.
+#' @examples
+#' \dontrun{
+#' count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
+#' df    <- picsure::runQueryByID(bdc, "XXXXX-ID", type = "participant")
+#' }
+#' @export
+runQueryByID <- function(session, query_id, type = "count") {
+  if (missing(query_id) || is.null(query_id) ||
+      !is.character(query_id) || length(query_id) != 1L ||
+      is.na(query_id) || !nzchar(query_id)) {
+    stop("`query_id` must be a non-empty character string (the saved query's UUID).")
+  }
+
+  with_picsure_error(session$runQueryByID(
+    query_id,
+    type = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type")
+  ))
 }
