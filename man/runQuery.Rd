@@ -33,7 +33,10 @@ against the session's resource and returns the result in the shape
 dictated by `type`:
 }
 \details{
-- `"count"` — integer scalar, the number of matching participants.
+- `"count"` — a `CountResult` object with `$value` (exact count, or
+  `NULL` for obfuscated small cohorts), `$margin`, and `$cap`.
+- `"cross_count"` — a dict-like mapping of concept paths to
+  `CountResult` objects.
 - `"participant"` — data.frame with one row per matching participant
   across all SELECTed variables.
 - `"timestamp"` — data.frame of participant-level timestamps for

@@ -22,9 +22,10 @@ Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
   `data.frame` for `"participant"` / `"timestamp"`.
 }
 \description{
-Convenience wrapper around [`loadQueryByID()`][picsure::loadQueryByID]
-followed by [`runQuery()`][picsure::runQuery]. Returns the same result
-shapes as `runQuery()`.
+Fetches a previously-saved query by UUID and runs it. Semantically
+equivalent to [`loadQueryByID()`][picsure::loadQueryByID] followed by
+[`runQuery()`][picsure::runQuery], but delegated to the Python adapter
+as a single call. Returns the same result shapes as `runQuery()`.
 }
 \examples{
 \dontrun{

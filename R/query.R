@@ -4,7 +4,10 @@
 #' against the session's resource and returns the result in the shape
 #' dictated by `type`:
 #'
-#' - `"count"` — integer scalar, the number of matching participants.
+#' - `"count"` — a `CountResult` object with `$value` (exact count, or
+#'   `NULL` for obfuscated small cohorts), `$margin`, and `$cap`.
+#' - `"cross_count"` — a dict-like mapping of concept paths to
+#'   `CountResult` objects.
 #' - `"participant"` — data.frame with one row per matching participant
 #'   across all SELECTed variables.
 #' - `"timestamp"` — data.frame of participant-level timestamps for
@@ -74,9 +77,10 @@ loadQueryByID <- function(session, query_id) {
 
 #' Load a saved PIC-SURE query by ID and execute it in one call.
 #'
-#' Convenience wrapper around [`loadQueryByID()`][picsure::loadQueryByID]
-#' followed by [`runQuery()`][picsure::runQuery]. Returns the same result
-#' shapes as `runQuery()`.
+#' Fetches a previously-saved query by UUID and runs it. Semantically
+#' equivalent to [`loadQueryByID()`][picsure::loadQueryByID] followed by
+#' [`runQuery()`][picsure::runQuery], but delegated to the Python adapter
+#' as a single call. Returns the same result shapes as `runQuery()`.
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query_id The UUID string of a previously-saved query.
