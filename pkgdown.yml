@@ -1,0 +1,13 @@
+pandoc: 3.8.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  building-queries: building-queries.html
+  getting-started: getting-started.html
+  migrating-from-v1: migrating-from-v1.html
+  running-and-exporting: running-and-exporting.html
+  search-and-facets: search-and-facets.html
+last_built: 2026-05-13T17:00Z
+urls:
+  reference: https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference
+  article: https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/articles

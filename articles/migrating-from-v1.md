@@ -1,0 +1,107 @@
+# Migrating from picsure v1
+
+The v3 rewrite is a clean break from v1. Every v1 function is gone;
+there are no deprecation shims. This page maps each v1 call to its v3
+equivalent and walks through three common notebook patterns end-to-end.
+
+## Function-by-function mapping
+
+| v1 | v3 |
+|----|----|
+| `initializeSession(url, token)` | `connect(platform, token)` |
+| `bdc.initializeSession(url, token)` | `connect(platform = "BDC Authorized", token)` |
+| `bdc.setResource(session, "OPEN")` | `connect(platform = "BDC Open", ...)` |
+| `bdc.searchPicsure(session, "sex")` | `dictionarySearch(session, "sex")` |
+| `bdc.getStudies(session)` | (removed — not yet re-exposed) |
+| `newQuery(session)` | no direct replacement — use [`createClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createClause.md) + [`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md) |
+| `addClause(q, path, "FILTER", min = 18)` | `createClause(keys = path, type = "FILTER", min = 18)` |
+| `addClause(q, path, "SELECT")` | `createClause(keys = path, type = "SELECT")` |
+| `deleteClause(q, path)` | (removed — rebuild the tree) |
+| `showQuery(q)` | (removed — queries are opaque Python handles) |
+| `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")` — returns a `CountResult` (use `$value` / `$cap`) |
+| `runQuery(q, "DATA_FRAME")` | `runQuery(session, query, type = "participant")` |
+| `getResultByQueryUUID(session, uuid)` | (removed — query UUID APIs not yet re-exposed) |
+| `exportPFB(...)` (new) | `exportAsPFB(session, query, path)` |
+| `exportCSV(...)` (new) | `df <- runQuery(...); exportCSV(session, df, path)` |
+| `getQueryByUUID(session, uuid)` | (removed) |
+
+## Worked example 1: simple count
+
+**v1:**
+
+``` r
+
+session <- picsure::bdc.initializeSession(
+  url   = "https://picsure.biodatacatalyst.nhlbi.nih.gov/",
+  token = my_token
+)
+q <- picsure::bdc.newQuery(session)
+q <- picsure::bdc.addClause(
+  q, "\\phs000001\\pht000001\\phv00000005\\age\\",
+  "FILTER", min = 40
+)
+count <- picsure::runQuery(q, "COUNT")
+```
+
+**v3:**
+
+``` r
+
+bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
+age_filter <- picsure::createClause(
+  "\\phs000001\\pht000001\\phv00000005\\age\\",
+  type = "FILTER", min = 40
+)
+query <- picsure::buildClauseGroup(list(age_filter), operator = "AND")
+count <- picsure::runQuery(bdc, query, type = "count")
+```
+
+## Worked example 2: pull rows
+
+**v1:**
+
+``` r
+
+q <- picsure::bdc.newQuery(session)
+q <- picsure::bdc.addClause(q, sex_path, "FILTER", categories = list("male"))
+q <- picsure::bdc.addClause(q, bmi_path, "SELECT")
+rows <- picsure::runQuery(q, "DATA_FRAME")
+```
+
+**v3:**
+
+``` r
+
+sex_filter <- picsure::createClause(sex_path, type = "FILTER", categories = list("male"))
+bmi_select <- picsure::createClause(bmi_path, type = "SELECT")
+query <- picsure::buildClauseGroup(list(sex_filter, bmi_select), operator = "AND")
+rows  <- picsure::runQuery(bdc, query, type = "participant")
+```
+
+## Worked example 3: nested AND/OR
+
+There’s no v1 equivalent — v1 query construction was flat. In v3:
+
+``` r
+
+copd    <- picsure::createClause(copd_path,   type = "FILTER", categories = list("Yes"))
+asthma  <- picsure::createClause(asthma_path, type = "FILTER", categories = list("Yes"))
+lung    <- picsure::buildClauseGroup(list(copd, asthma), operator = "OR")
+query   <- picsure::buildClauseGroup(list(sex_filter, lung), operator = "AND")
+```
+
+## Error handling
+
+v1 emitted raw HTTP / R errors from `httr`. v3 emits `picsureError` with
+Python-crafted, researcher-facing messages. Catch the class if you need
+to:
+
+``` r
+
+tryCatch(
+  picsure::runQuery(bdc, query),
+  picsureError = function(e) {
+    message("PIC-SURE error: ", conditionMessage(e))
+  }
+)
+```
