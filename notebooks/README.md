@@ -11,20 +11,22 @@ directly when you're debugging the reticulate bridge.
 
 ## The numbered tour
 
-The numbered notebooks (`0_*` through `5_*`) walk through the package's
+The numbered notebooks (`0_*` through `7_*`) walk through the package's
 main surface area in order — each one runs standalone if you already
 know that step, but together they're the recommended on-ramp:
 
-| Notebook                        | What it covers                                                       |
-|---------------------------------|----------------------------------------------------------------------|
-| `0_Connect.ipynb`               | Opening sessions against authorized, open, and NHANES platforms.     |
-| `1_Search.ipynb`                | `searchDictionary()`; narrowing with FacetSets.                      |
-| `2_Query.ipynb`                 | One categorical FILTER → COUNT.                                      |
-| `3_Open_Query.ipynb`            | REQUIRE clause → CROSS_COUNT on an open platform.                    |
-| `4_Complex_Open_Queries.ipynb`  | Continuous FILTERs, AND/OR groups, nested groups.                    |
-| `5_Export_Query_By_ID.ipynb`    | Reloading a saved query by UUID and running it.                      |
+| Notebook                        | What it covers                                                          |
+|---------------------------------|-------------------------------------------------------------------------|
+| `0_Connect.ipynb`               | Opening sessions against authorized, open, and NHANES platforms.        |
+| `1_Search.ipynb`                | `searchDictionary()`; narrowing with FacetSets.                         |
+| `2_Query.ipynb`                 | One categorical FILTER → COUNT.                                         |
+| `3_Open_Query.ipynb`            | REQUIRE clause → CROSS_COUNT on an open platform.                       |
+| `4_Complex_Open_Queries.ipynb`  | Continuous FILTERs, AND/OR groups, nested groups.                       |
+| `5_Load_Query_By_ID.ipynb`      | `loadQueryByID()` — fetch a saved query handle for inspection / reuse.  |
+| `6_Run_Query_By_ID.ipynb`       | `runQueryByID()` — one-step load + run when you don't need the handle.  |
+| `7_Export_Query_As_PFB.ipynb`   | `exportAsPFB()` — write a cohort to disk as Avro/PFB.                   |
 
-All six notebooks read your PIC-SURE access token from `notebooks/token.txt`
+All eight notebooks read your PIC-SURE access token from `notebooks/token.txt`
 (one line, no trailing newline required). The file is gitignored by
 the repo-wide `*.token` / `token.txt` rules — don't commit it.
 
