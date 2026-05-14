@@ -109,3 +109,88 @@ runQueryByID <- function(session, query_id, type = "count") {
     type = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type")
   ))
 }
+
+#' Return a copy of a query with all matches of a sub-query removed.
+#'
+#' Matching is structural: any nested clause or clause-group that equals
+#' `target` (by value) is dropped. Empty groups left behind are removed
+#' automatically. Errors if the resulting query would be empty.
+#'
+#' @param target A clause or clause-group handle (the thing to remove).
+#' @param query  A clause or clause-group handle (the query to edit).
+#' @return A new clause or clause-group handle. The original `query` is
+#'   not mutated.
+#' @examples
+#' \dontrun{
+#' smaller <- picsure::removeSubQuery(age_filter, full_query)
+#' }
+#' @export
+removeSubQuery <- function(target, query) {
+  if (missing(target) || is.null(target)) {
+    stop("`target` is required.")
+  }
+  if (missing(query) || is.null(query)) {
+    stop("`query` is required.")
+  }
+  with_picsure_error(picsure_py$removeSubQuery(target, query))
+}
+
+#' Return a copy of a query with one sub-query swapped for another.
+#'
+#' Matching is structural (see [`removeSubQuery()`][picsure::removeSubQuery]).
+#'
+#' @param target      A clause or clause-group handle (the thing to replace).
+#' @param query       A clause or clause-group handle (the query to edit).
+#' @param replacement A clause or clause-group handle (the substitute).
+#' @return A new clause or clause-group handle.
+#' @examples
+#' \dontrun{
+#' adjusted <- picsure::replaceClause(old_age, full_query, new_age)
+#' }
+#' @export
+replaceClause <- function(target, query, replacement) {
+  if (missing(target) || is.null(target) ||
+      missing(query) || is.null(query) ||
+      missing(replacement) || is.null(replacement)) {
+    stop("`target`, `query`, and `replacement` are all required.")
+  }
+  with_picsure_error(picsure_py$replaceClause(target, query, replacement))
+}
+
+#' Save a query to the authenticated user's profile and return its query ID.
+#'
+#' Submits the query to PIC-SURE (creating a server-side query record), then
+#' associates `name` with it via the `/dataset/named/` endpoint. The returned
+#' UUID can later be passed to [`loadQueryByID()`][picsure::loadQueryByID]
+#' or [`runQueryByID()`][picsure::runQueryByID]. Not supported on open-access
+#' platforms.
+#'
+#' @param session A session object produced by [`connect()`][picsure::connect].
+#' @param query   A clause or clause-group handle.
+#' @param name    A non-empty character scalar. Allowed characters: letters,
+#'   digits, spaces, and `- _ \\ / ? + = [ ] . ( ) : " '`. Max 255 chars.
+#' @param overwrite Logical. When `FALSE` (default), errors if a named
+#'   query with `name` already exists for this user. When `TRUE`, the
+#'   existing record is updated to point at the freshly-submitted query.
+#' @return A character scalar -- the PIC-SURE query ID.
+#' @examples
+#' \dontrun{
+#' qid <- picsure::saveQueryByName(bdc, my_query, "Cohort 2026-Q2")
+#' qid <- picsure::saveQueryByName(bdc, my_query, "Cohort 2026-Q2", overwrite = TRUE)
+#' later <- picsure::loadQueryByID(bdc, qid)
+#' }
+#' @export
+saveQueryByName <- function(session, query, name, overwrite = FALSE) {
+  if (missing(query) || is.null(query)) {
+    stop("`query` is required. Build one with picsure::buildQuery().")
+  }
+  if (missing(name) || is.null(name) ||
+      !is.character(name) || length(name) != 1L ||
+      is.na(name) || !nzchar(name)) {
+    stop("`name` must be a non-empty character scalar.")
+  }
+  if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
+    stop("`overwrite` must be a single logical (TRUE or FALSE).")
+  }
+  with_picsure_error(session$saveQueryByName(query, name, overwrite = overwrite))
+}

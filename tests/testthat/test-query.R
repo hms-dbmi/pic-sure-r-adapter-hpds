@@ -290,3 +290,50 @@ test_that("runQueryByID() re-raises Python exceptions as picsureError", {
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "not found", fixed = TRUE)
 })
+
+test_that("removeSubQuery forwards to picsure_py$removeSubQuery", {
+  fake <- new_fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake, .package = "picsure")
+
+  picsure::removeSubQuery("TARGET", "QUERY")
+  expect_length(fake$calls$removeSubQuery, 1L)
+  expect_equal(fake$calls$removeSubQuery[[1]]$target, "TARGET")
+  expect_equal(fake$calls$removeSubQuery[[1]]$query,  "QUERY")
+})
+
+test_that("removeSubQuery rejects missing args", {
+  expect_error(picsure::removeSubQuery(query = "Q"), "`target` is required")
+  expect_error(picsure::removeSubQuery(target = "T"), "`query` is required")
+})
+
+test_that("replaceClause forwards all three args", {
+  fake <- new_fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake, .package = "picsure")
+
+  picsure::replaceClause("T", "Q", "R")
+  expect_length(fake$calls$replaceClause, 1L)
+  expect_equal(fake$calls$replaceClause[[1]]$target,      "T")
+  expect_equal(fake$calls$replaceClause[[1]]$query,       "Q")
+  expect_equal(fake$calls$replaceClause[[1]]$replacement, "R")
+})
+
+test_that("saveQueryByName forwards to session and returns the query id", {
+  session <- new_fake_session()
+  qid <- picsure::saveQueryByName(session, "QUERY", "Cohort A")
+  expect_identical(qid, "qid-fake-001")
+  expect_equal(session$.calls$saveQueryByName[[1]]$overwrite, FALSE)
+})
+
+test_that("saveQueryByName forwards overwrite=TRUE", {
+  session <- new_fake_session()
+  picsure::saveQueryByName(session, "QUERY", "Cohort A", overwrite = TRUE)
+  expect_equal(session$.calls$saveQueryByName[[1]]$overwrite, TRUE)
+})
+
+test_that("saveQueryByName validates name and overwrite", {
+  session <- new_fake_session()
+  expect_error(picsure::saveQueryByName(session, "Q", ""),  "non-empty")
+  expect_error(picsure::saveQueryByName(session, "Q", NA_character_), "non-empty")
+  expect_error(picsure::saveQueryByName(session, "Q", "Cohort", overwrite = NA),
+               "single logical")
+})

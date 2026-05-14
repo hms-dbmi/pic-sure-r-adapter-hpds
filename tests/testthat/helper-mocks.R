@@ -16,6 +16,7 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
   calls$exportTSV <- list()
   calls$loadQueryByID <- list()
   calls$runQueryByID <- list()
+  calls$saveQueryByName <- list()
   structure(
     list(
       platform = platform,
@@ -93,9 +94,42 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
           stop("fake runQueryByID: unknown type '", t, "'")
         )
       },
+      saveQueryByName = function(query, name, overwrite = FALSE) {
+        calls$saveQueryByName <- c(
+          calls$saveQueryByName,
+          list(list(query = query, name = name, overwrite = overwrite))
+        )
+        "qid-fake-001"
+      },
       .calls = calls
     ),
     class = "fake_session"
+  )
+}
+
+# Fake stand-in for the `picsure_py` module surface used by the tree-edit
+# wrappers (removeSubQuery, replaceClause). Records each call so tests can
+# assert on what was forwarded.
+new_fake_picsure_py <- function() {
+  calls <- new.env(parent = emptyenv())
+  calls$removeSubQuery <- list()
+  calls$replaceClause  <- list()
+  list(
+    calls = calls,
+    removeSubQuery = function(target, query) {
+      calls$removeSubQuery <- c(
+        calls$removeSubQuery,
+        list(list(target = target, query = query))
+      )
+      query  # echo back; tests verify the forward-call, not the algorithm
+    },
+    replaceClause = function(target, query, replacement) {
+      calls$replaceClause <- c(
+        calls$replaceClause,
+        list(list(target = target, query = query, replacement = replacement))
+      )
+      replacement
+    }
   )
 }
 
