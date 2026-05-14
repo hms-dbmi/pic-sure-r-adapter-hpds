@@ -51,7 +51,7 @@ services:
 
   # ---------------------------------------------------------------------------
   # Personal image — bake an AI agent (or anything else) into a Dockerfile
-  # that builds FROM picsure-r-dev:latest. See docs/development-docker.md
+  # that builds FROM picsure-r-dev:latest. See docs/development/docker.md
   # for the full example.
   # ---------------------------------------------------------------------------
   # dev:

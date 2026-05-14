@@ -18,7 +18,7 @@
 #   docker compose up rstudio            # RStudio Server on :8787
 #
 # Override mounts (e.g. AI-agent credentials) in
-# docker-compose.override.yml — see docs/development-docker.md.
+# docker-compose.override.yml — see docs/development/docker.md.
 
 x-common: &common
   image: picsure-r-dev:latest

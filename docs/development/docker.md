@@ -82,7 +82,7 @@ docker compose run --rm dev R CMD check .
 
 The `.Rbuildignore` additions (see below) keep `docker/`,
 `docker-compose.yml`, `.dockerignore`, `.devcontainer/`, `notebooks/`,
-and `docs/development-docker.md` out of the package tarball so
+and `docs/development/docker.md` out of the package tarball so
 `R CMD check` doesn't flag them.
 
 ## IDE setup
@@ -224,7 +224,7 @@ end up in the package tarball that `R CMD build` produces, and so
 - `.dockerignore`
 - `.devcontainer/`
 - `notebooks/` — Jupyter notebooks aren't part of the installed package
-- `docs/development-docker.md` — `docs/` is already excluded, listed
+- `docs/development/docker.md` — `docs/` is already excluded, listed
   here for clarity
 
 ## Bumping the R version
