@@ -111,6 +111,19 @@ RUN R -e "install.packages(c('pak', 'IRkernel', 'languageserver', 'devtools'), r
  && R -e "IRkernel::installspec(user = FALSE)" \
  && chown -R rstudio:rstudio /opt/R/library
 
+# RStudio Server defaults to the user's home as the session working
+# directory. Override at the system level so opening
+# http://127.0.0.1:8787 lands directly in the bind-mounted repo.
+RUN echo "session-default-working-dir=/workspace"  >> /etc/rstudio/rsession.conf \
+ && echo "session-default-new-project-dir=/workspace" >> /etc/rstudio/rsession.conf
+
+# Belt-and-suspenders: setwd() on R session start. Catches CLI R
+# sessions (the `dev` shell) and any RStudio session that bypasses
+# rsession.conf for whatever reason.
+RUN printf '\nif (interactive() && file.exists("/workspace")) setwd("/workspace")\n' \
+        >> /home/rstudio/.Rprofile \
+ && chown rstudio:rstudio /home/rstudio/.Rprofile
+
 USER rstudio
 WORKDIR /workspace
 
