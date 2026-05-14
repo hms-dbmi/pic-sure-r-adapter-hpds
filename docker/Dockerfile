@@ -2,9 +2,10 @@
 #
 # Dev container for picsure (R).
 #
-# Base: rocker/rstudio:4.4 — R 4.4 + RStudio Server on Debian bookworm,
-# with pandoc preinstalled (vignettes knit out of the box). LaTeX is
-# not baked in; PDF vignettes are not required for `R CMD check` here.
+# Base: rocker/rstudio:4.4 — R 4.4 + RStudio Server on Ubuntu noble
+# (24.04), with pandoc preinstalled (vignettes knit out of the box).
+# LaTeX is not baked in; PDF vignettes are not required for
+# `R CMD check` here.
 #
 # We keep the rocker-provided `rstudio` user (UID 1000) because RStudio
 # Server's auth machinery expects it. In the compose file the service
@@ -39,6 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libtiff5-dev \
         libjpeg-dev \
         libicu-dev \
+        libzmq3-dev \
         zlib1g-dev \
         python3 \
         python3-venv \
@@ -88,25 +90,26 @@ RUN printf '\n%s\n' \
     '})' \
     >> /usr/local/lib/R/etc/Rprofile.site
 
-# Bootstrap install: pak (fastest dep installer), IRkernel (R notebook
-# kernel), languageserver (R LSP for VS Code / jupyterlab-lsp), and
-# devtools (load_all / test / check loop). Project Suggests are
-# installed at entrypoint time so DESCRIPTION changes don't trigger
-# image rebuilds.
-RUN R -e "install.packages(c('pak', 'IRkernel', 'languageserver', 'devtools'), repos = 'https://packagemanager.posit.co/cran/__linux__/bookworm/latest')" \
- && R -e "IRkernel::installspec(user = FALSE)" \
- && chown -R rstudio:rstudio /opt/R/library
-
-# JupyterLab for the `notebook` service. Installed system-wide so both
-# the `notebook` service and an interactive `dev` shell can launch it.
-# python-lsp-server gives inline as-you-type completion for Python
-# cells; the R kernel uses the `languageserver` package installed
-# above for the same in R cells.
+# JupyterLab for the `notebook` service. Installed first so that the
+# IRkernel `installspec` step below can find `jupyter` on PATH when it
+# registers the R kernel. python-lsp-server gives inline as-you-type
+# completion for Python cells; R cells use the `languageserver` R
+# package installed in the next step.
 RUN pip install --break-system-packages --no-cache-dir \
         jupyterlab \
         jupyterlab-lsp \
         'python-lsp-server[all]' \
         ipykernel
+
+# Bootstrap install: pak (fastest dep installer), IRkernel (R notebook
+# kernel), languageserver (R LSP for VS Code / jupyterlab-lsp), and
+# devtools (load_all / test / check loop). Project Suggests are
+# installed at entrypoint time so DESCRIPTION changes don't trigger
+# image rebuilds. installspec runs system-wide so all users see the
+# R kernel without per-user setup.
+RUN R -e "install.packages(c('pak', 'IRkernel', 'languageserver', 'devtools'), repos = 'https://packagemanager.posit.co/cran/__linux__/noble/latest')" \
+ && R -e "IRkernel::installspec(user = FALSE)" \
+ && chown -R rstudio:rstudio /opt/R/library
 
 USER rstudio
 WORKDIR /workspace

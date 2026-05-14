@@ -35,12 +35,15 @@ fi
 
 # Pre-warm reticulate's Python env on first run so users don't pay the
 # uv resolve + venv create cost in their first interactive session.
-# Cheap on subsequent runs because the venv is cached on a named
-# volume.
+# `library(picsure)` triggers the package's own .onLoad, which calls
+# reticulate::py_require() with the correct (git-direct-reference)
+# spec; py_config() then forces eager Python initialization so uv
+# resolves and builds the venv. Cheap on subsequent runs because the
+# venv is cached on a named volume.
 if [ -f "${DESCRIPTION}" ] && [ ! -f "${PY_STAMP}" ]; then
     echo "==> Pre-warming reticulate Python environment"
     if R --quiet --no-save -e \
-        "tryCatch({ reticulate::py_require('picsurepy'); reticulate::py_config() }, error = function(e) { message('reticulate pre-warm skipped: ', conditionMessage(e)); quit(status = 0) })"; then
+        "tryCatch({ suppressPackageStartupMessages(library(picsure)); reticulate::py_config() }, error = function(e) { message('reticulate pre-warm skipped: ', conditionMessage(e)); quit(status = 0) })"; then
         touch "${PY_STAMP}"
     fi
 fi
