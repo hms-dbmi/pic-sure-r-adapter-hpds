@@ -1,0 +1,81 @@
+# Development container for picsure (R).
+#
+# Three services share a single image (built from docker/Dockerfile):
+#
+#   dev       — interactive bash shell. devtools::load_all/test, R CMD
+#               check, git — the iteration loop.
+#   notebook  — JupyterLab on http://127.0.0.1:8888 with both R
+#               (IRkernel) and Python (ipykernel) kernels available.
+#   rstudio   — RStudio Server on http://127.0.0.1:8787, no auth,
+#               host-only. The canonical R IDE.
+#
+# All three bind-mount the repo at /workspace and share named volumes
+# for the R package library and the uv cache.
+#
+# Quick start:
+#   docker compose run --rm dev          # interactive shell
+#   docker compose up notebook           # JupyterLab on :8888
+#   docker compose up rstudio            # RStudio Server on :8787
+#
+# Override mounts (e.g. AI-agent credentials) in
+# docker-compose.override.yml — see docs/development-docker.md.
+
+x-common: &common
+  image: picsure-r-dev:latest
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+    args:
+      USER_UID: ${UID:-1000}
+      USER_GID: ${GID:-1000}
+  env_file:
+    - path: .env
+      required: false
+  volumes:
+    - .:/workspace
+    - picsure-r-library:/opt/R/library
+    - uv-cache:/home/rstudio/.cache/uv
+    - ${HOME}/.gitconfig:/home/rstudio/.gitconfig
+    - ${HOME}/.ssh:/home/rstudio/.ssh
+  working_dir: /workspace
+
+services:
+  dev:
+    <<: *common
+    stdin_open: true
+    tty: true
+    command: ["bash"]
+
+  notebook:
+    <<: *common
+    ports:
+      - "127.0.0.1:8888:8888"
+    command:
+      - jupyter
+      - lab
+      - --ip=0.0.0.0
+      - --port=8888
+      - --no-browser
+      - --ServerApp.token=
+      - --ServerApp.password=
+      - --ServerApp.root_dir=/workspace
+      - --ServerApp.preferred_dir=/workspace/notebooks
+
+  rstudio:
+    <<: *common
+    # rocker/rstudio's s6 init starts rstudio-server. We bypass our
+    # entrypoint so dependency installs don't gate UI startup; users
+    # can run `make sync` (or just open a Terminal pane in RStudio
+    # and re-run pak::pkg_install) once they're logged in.
+    entrypoint: ["/init"]
+    command: []
+    environment:
+      DISABLE_AUTH: "true"
+      ROOT: "false"
+      USER: rstudio
+    ports:
+      - "127.0.0.1:8787:8787"
+
+volumes:
+  picsure-r-library:
+  uv-cache:

@@ -1,0 +1,44 @@
+# The repo is bind-mounted at runtime, so the build context only needs
+# what the Dockerfile actually COPYs (docker/entrypoint.sh). Keep this
+# tight to make `docker compose build` fast.
+
+# R artifacts
+.Rhistory
+.Rapp.history
+.RData
+*-Ex.R
+/*.tar.gz
+/*.Rcheck/
+.Rproj.user/
+vignettes/*.html
+vignettes/*.pdf
+/doc/
+/Meta/
+/*_cache/
+/cache/
+*.utf8.md
+*.knit.md
+
+# Built docs / pkgdown output
+docs/
+site/
+
+# Notebook / Jupyter scratch
+.ipynb_checkpoints/
+.virtual_documents/
+*.ipynb
+
+# Editor / IDE
+.idea/
+.vscode/
+*.iml
+
+# Local state
+.worktrees/
+.env
+.git/
+.github/
+.pytest_cache/
+
+# Claude superpowers docs — kept locally, not committed
+docs/superpowers/

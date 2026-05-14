@@ -8,3 +8,10 @@
 ^doc$
 ^Meta$
 ^_pkgdown\.yml$
+^docker$
+^docker-compose\.yml$
+^docker-compose\.override\.yml$
+^\.dockerignore$
+^\.devcontainer$
+^notebooks$
+^docker-dev-container-prompt\.md$

@@ -45,3 +45,22 @@ tests/testthat/results
 docs/superpowers/
 /doc/
 /Meta/
+
+# Jupyter / dev-container artifacts
+.ipynb_checkpoints/
+.virtual_documents/
+# Notebooks: ignore by default, allow-list committed examples under notebooks/
+*.ipynb
+!notebooks/**/*.ipynb
+
+# Trash / OS junk
+.Trash-*/
+
+# Credential scratch files
+token.txt
+*.token
+
+# Docker override files (user-local, often contain agent creds)
+docker-compose.override.yml
+docker/Dockerfile.local
+

@@ -1,0 +1,23 @@
+{
+  "name": "picsure-r-dev",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "rstudio",
+  "overrideCommand": true,
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "r.rterm.linux": "/usr/local/bin/R",
+        "r.bracketedPaste": true,
+        "r.lsp.path": "/usr/local/bin/R",
+        "r.libPaths": ["/opt/R/library"],
+        "r.rpath.linux": "/usr/local/bin/R"
+      },
+      "extensions": [
+        "reditorsupport.r",
+        "rdebugger.r-debugger"
+      ]
+    }
+  }
+}
