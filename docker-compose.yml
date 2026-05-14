@@ -63,12 +63,14 @@ services:
 
   rstudio:
     <<: *common
-    # rocker/rstudio's s6 init starts rstudio-server. We bypass our
-    # entrypoint so dependency installs don't gate UI startup; users
-    # can run `make sync` (or just open a Terminal pane in RStudio
-    # and re-run pak::pkg_install) once they're logged in.
+    # rocker/rstudio's s6 init must start as root so it can chown/chmod
+    # its supervisor files; it drops privileges to the `rstudio` user
+    # internally before launching rstudio-server. We bypass our
+    # entrypoint so dependency installs don't gate UI startup; open a
+    # Terminal pane in RStudio and run pak::pkg_install once logged in.
     entrypoint: ["/init"]
     command: []
+    user: root
     environment:
       DISABLE_AUTH: "true"
       ROOT: "false"
