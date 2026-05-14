@@ -11,6 +11,7 @@
 ^docker$
 ^docker-compose\.yml$
 ^docker-compose\.override\.yml$
+^docker-compose\.override\.yml\.example$
 ^\.dockerignore$
 ^\.devcontainer$
 ^notebooks$

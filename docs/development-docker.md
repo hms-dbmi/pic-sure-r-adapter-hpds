@@ -168,7 +168,16 @@ resolve for ten seconds.
 The container is agent-agnostic. To use an agent that runs as a CLI
 inside the container, drop a `docker-compose.override.yml` next to
 `docker-compose.yml` with the mounts and env it needs. Compose merges
-override files automatically.
+override files automatically. A starter template lives at
+`docker-compose.override.yml.example` — copy it and uncomment the
+sections you want:
+
+```bash
+cp docker-compose.override.yml.example docker-compose.override.yml
+```
+
+The override file itself is gitignored so per-developer tweaks (and
+any credentials they reference) don't get committed.
 
 The agent's CLI needs to be on `PATH` inside the container. Two ways:
 

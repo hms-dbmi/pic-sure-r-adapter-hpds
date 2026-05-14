@@ -1,0 +1,60 @@
+# Template for a user-local docker-compose.override.yml.
+#
+# Copy this file to docker-compose.override.yml (which is gitignored)
+# and uncomment / edit the sections you want. Compose merges it on top
+# of docker-compose.yml automatically — no extra `-f` flag needed:
+#
+#   cp docker-compose.override.yml.example docker-compose.override.yml
+#
+# Each section is independent; you can pick and choose.
+
+services:
+  # ---------------------------------------------------------------------------
+  # AI coding agents — mount your host config and pass API keys through.
+  # Defaults assume the container's `rstudio` user (UID 1000).
+  # ---------------------------------------------------------------------------
+  # dev:
+  #   volumes:
+  #     # Claude Code
+  #     - ${HOME}/.claude:/home/rstudio/.claude
+  #     - ${HOME}/.config/claude-code:/home/rstudio/.config/claude-code
+  #     # GitHub CLI (gh, gh-copilot)
+  #     - ${HOME}/.config/gh:/home/rstudio/.config/gh
+  #     # Generic: any tool that reads ~/.config/<tool>
+  #     # - ${HOME}/.config/<tool>:/home/rstudio/.config/<tool>
+  #   environment:
+  #     ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  #     OPENAI_API_KEY:    ${OPENAI_API_KEY:-}
+
+  # ---------------------------------------------------------------------------
+  # Port remap — use if 8787 (RStudio) or 8888 (JupyterLab) is taken on
+  # your host. Keeps the 127.0.0.1 bind so neither is exposed to the LAN.
+  # ---------------------------------------------------------------------------
+  # rstudio:
+  #   ports:
+  #     - "127.0.0.1:8788:8787"
+  # notebook:
+  #   ports:
+  #     - "127.0.0.1:8889:8888"
+
+  # ---------------------------------------------------------------------------
+  # Architecture pin — force x86_64 (e.g. to match a CI image) instead of
+  # the host's native arch. Apple Silicon users only need this if a
+  # downstream env requires linux/amd64 binaries.
+  # ---------------------------------------------------------------------------
+  # dev:
+  #   platform: linux/amd64
+  # notebook:
+  #   platform: linux/amd64
+  # rstudio:
+  #   platform: linux/amd64
+
+  # ---------------------------------------------------------------------------
+  # Personal image — bake an AI agent (or anything else) into a Dockerfile
+  # that builds FROM picsure-r-dev:latest. See docs/development-docker.md
+  # for the full example.
+  # ---------------------------------------------------------------------------
+  # dev:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile.local
