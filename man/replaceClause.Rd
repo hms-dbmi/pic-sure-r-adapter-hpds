@@ -4,12 +4,12 @@
 \alias{replaceClause}
 \title{Return a copy of a query with one sub-query swapped for another.}
 \usage{
-replaceClause(target, query, replacement)
+replaceClause(query, target, replacement)
 }
 \arguments{
-\item{target}{A clause or clause-group handle (the thing to replace).}
-
 \item{query}{A clause or clause-group handle (the query to edit).}
+
+\item{target}{A clause or clause-group handle (the thing to replace).}
 
 \item{replacement}{A clause or clause-group handle (the substitute).}
 }
@@ -21,6 +21,6 @@ Matching is structural (see [`removeSubQuery()`][picsure::removeSubQuery]).
 }
 \examples{
 \dontrun{
-adjusted <- picsure::replaceClause(old_age, full_query, new_age)
+adjusted <- picsure::replaceClause(full_query, old_age, new_age)
 }
 }

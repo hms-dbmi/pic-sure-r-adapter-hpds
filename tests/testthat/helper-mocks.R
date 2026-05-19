@@ -116,17 +116,17 @@ new_fake_picsure_py <- function() {
   calls$replaceClause  <- list()
   list(
     calls = calls,
-    removeSubQuery = function(target, query) {
+    removeSubQuery = function(query, target) {
       calls$removeSubQuery <- c(
         calls$removeSubQuery,
-        list(list(target = target, query = query))
+        list(list(query = query, target = target))
       )
       query  # echo back; tests verify the forward-call, not the algorithm
     },
-    replaceClause = function(target, query, replacement) {
+    replaceClause = function(query, target, replacement) {
       calls$replaceClause <- c(
         calls$replaceClause,
-        list(list(target = target, query = query, replacement = replacement))
+        list(list(query = query, target = target, replacement = replacement))
       )
       replacement
     }

@@ -116,45 +116,45 @@ runQueryByID <- function(session, query_id, type = "count") {
 #' `target` (by value) is dropped. Empty groups left behind are removed
 #' automatically. Errors if the resulting query would be empty.
 #'
-#' @param target A clause or clause-group handle (the thing to remove).
 #' @param query  A clause or clause-group handle (the query to edit).
+#' @param target A clause or clause-group handle (the thing to remove).
 #' @return A new clause or clause-group handle. The original `query` is
 #'   not mutated.
 #' @examples
 #' \dontrun{
-#' smaller <- picsure::removeSubQuery(age_filter, full_query)
+#' smaller <- picsure::removeSubQuery(full_query, age_filter)
 #' }
 #' @export
-removeSubQuery <- function(target, query) {
-  if (missing(target) || is.null(target)) {
-    stop("`target` is required.")
-  }
+removeSubQuery <- function(query, target) {
   if (missing(query) || is.null(query)) {
     stop("`query` is required.")
   }
-  with_picsure_error(picsure_py$removeSubQuery(target, query))
+  if (missing(target) || is.null(target)) {
+    stop("`target` is required.")
+  }
+  with_picsure_error(picsure_py$removeSubQuery(query, target))
 }
 
 #' Return a copy of a query with one sub-query swapped for another.
 #'
 #' Matching is structural (see [`removeSubQuery()`][picsure::removeSubQuery]).
 #'
-#' @param target      A clause or clause-group handle (the thing to replace).
 #' @param query       A clause or clause-group handle (the query to edit).
+#' @param target      A clause or clause-group handle (the thing to replace).
 #' @param replacement A clause or clause-group handle (the substitute).
 #' @return A new clause or clause-group handle.
 #' @examples
 #' \dontrun{
-#' adjusted <- picsure::replaceClause(old_age, full_query, new_age)
+#' adjusted <- picsure::replaceClause(full_query, old_age, new_age)
 #' }
 #' @export
-replaceClause <- function(target, query, replacement) {
-  if (missing(target) || is.null(target) ||
-      missing(query) || is.null(query) ||
+replaceClause <- function(query, target, replacement) {
+  if (missing(query) || is.null(query) ||
+      missing(target) || is.null(target) ||
       missing(replacement) || is.null(replacement)) {
-    stop("`target`, `query`, and `replacement` are all required.")
+    stop("`query`, `target`, and `replacement` are all required.")
   }
-  with_picsure_error(picsure_py$replaceClause(target, query, replacement))
+  with_picsure_error(picsure_py$replaceClause(query, target, replacement))
 }
 
 #' Save a query to the authenticated user's profile and return its query ID.

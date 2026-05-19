@@ -295,10 +295,10 @@ test_that("removeSubQuery forwards to picsure_py$removeSubQuery", {
   fake <- new_fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake, .package = "picsure")
 
-  picsure::removeSubQuery("TARGET", "QUERY")
+  picsure::removeSubQuery("QUERY", "TARGET")
   expect_length(fake$calls$removeSubQuery, 1L)
-  expect_equal(fake$calls$removeSubQuery[[1]]$target, "TARGET")
   expect_equal(fake$calls$removeSubQuery[[1]]$query,  "QUERY")
+  expect_equal(fake$calls$removeSubQuery[[1]]$target, "TARGET")
 })
 
 test_that("removeSubQuery rejects missing args", {
@@ -310,10 +310,10 @@ test_that("replaceClause forwards all three args", {
   fake <- new_fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake, .package = "picsure")
 
-  picsure::replaceClause("T", "Q", "R")
+  picsure::replaceClause("Q", "T", "R")
   expect_length(fake$calls$replaceClause, 1L)
-  expect_equal(fake$calls$replaceClause[[1]]$target,      "T")
   expect_equal(fake$calls$replaceClause[[1]]$query,       "Q")
+  expect_equal(fake$calls$replaceClause[[1]]$target,      "T")
   expect_equal(fake$calls$replaceClause[[1]]$replacement, "R")
 })
 

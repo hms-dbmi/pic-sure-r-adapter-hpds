@@ -4,12 +4,12 @@
 \alias{removeSubQuery}
 \title{Return a copy of a query with all matches of a sub-query removed.}
 \usage{
-removeSubQuery(target, query)
+removeSubQuery(query, target)
 }
 \arguments{
-\item{target}{A clause or clause-group handle (the thing to remove).}
-
 \item{query}{A clause or clause-group handle (the query to edit).}
+
+\item{target}{A clause or clause-group handle (the thing to remove).}
 }
 \value{
 A new clause or clause-group handle. The original `query` is
@@ -22,6 +22,6 @@ automatically. Errors if the resulting query would be empty.
 }
 \examples{
 \dontrun{
-smaller <- picsure::removeSubQuery(age_filter, full_query)
+smaller <- picsure::removeSubQuery(full_query, age_filter)
 }
 }
