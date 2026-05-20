@@ -11,7 +11,10 @@
 #'   [`Platform$BDC_OPEN`][picsure::Platform]) or a platform-label string
 #'   (e.g. `"BDC Open"`, `"BDC Authorized"`).
 #' @param token Your personal PIC-SURE access token, obtained from the
-#'   "User Profile" tab of your PIC-SURE instance.
+#'   "User Profile" tab of your PIC-SURE instance. Optional for open-access
+#'   platforms (`Platform$BDC_OPEN`, `Platform$BDC_DEV_OPEN`,
+#'   `Platform$BDC_PREDEV_OPEN`, `Platform$NHANES_OPEN`); required for
+#'   authenticated platforms. Defaults to `""`.
 #' @param ... Optional keyword arguments forwarded to the Python
 #'   `picsure.connect()` call. Unknown keys raise a `picsureError` with the
 #'   list of valid keys. Supported keys:
@@ -30,13 +33,19 @@
 #' @examples
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
+#' open <- picsure::connect(platform = picsure::Platform$BDC_OPEN)
 #' }
 #' @export
-connect <- function(platform, token, ...) {
+connect <- function(platform, token = "", ...) {
   bad_platform_msg <- "`platform` is required. Call picsure::platforms() to list valid values."
   if (missing(platform) || is.null(platform)) {
     stop(picsureError(bad_platform_msg))
   }
+  # Track whether the platform is identifiably auth-required from R-side
+  # info alone. For label strings or raw Python objects we can't tell
+  # here and defer to Python's resolve_platform check.
+  requires_auth_known <- inherits(platform, "picsure_platform") &&
+                         isTRUE(platform$requires_auth)
   if (inherits(platform, "picsure_enum_member")) {
     if (!inherits(platform, "picsure_platform")) {
       stop(picsureError(sprintf(
@@ -59,8 +68,20 @@ connect <- function(platform, token, ...) {
     # wrapped Platform enum member).
     stop(picsureError(bad_platform_msg))
   }
-  if (missing(token) || is.null(token) || length(token) != 1L || is.na(token) || !nzchar(token)) {
-    stop(picsureError("`token` is required. Copy it from the 'User Profile' tab of PIC-SURE."))
+  # Token type validation runs regardless of platform. The non-empty
+  # check fires only when the R-side platform info confirms auth is
+  # required; otherwise Python's own check (which sees the resolved
+  # PlatformInfo) decides.
+  if (is.null(token)) token <- ""
+  if (!is.character(token) || length(token) != 1L || is.na(token)) {
+    stop(picsureError(
+      "`token` must be a single character string (use \"\" for open platforms)."
+    ))
+  }
+  if (requires_auth_known && !nzchar(token)) {
+    stop(picsureError(
+      "`token` is required for this platform. Copy it from the 'User Profile' tab of PIC-SURE."
+    ))
   }
 
   extras <- list(...)

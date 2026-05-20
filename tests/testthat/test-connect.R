@@ -19,11 +19,33 @@ test_that("connect() errors when platform is missing", {
   expect_match(conditionMessage(err), "platform")
 })
 
-test_that("connect() errors when token is missing", {
+test_that("connect() errors when an auth-required Platform member is given without a token", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  err <- tryCatch(picsure::connect(platform = "Demo"), error = function(e) e)
+  err <- tryCatch(
+    picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED),
+    error = function(e) e
+  )
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "token")
+})
+
+test_that("connect() defers token-presence check to Python for string platforms", {
+  # We can't tell from R whether a label like "Demo" requires auth, so
+  # an empty/missing token is forwarded as "" and Python's
+  # resolve_platform + validator decides.
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  picsure::connect(platform = "Demo")
+  recorded <- fake$.calls$connect[[1]]
+  expect_equal(recorded$token, "")
+})
+
+test_that("connect() accepts an open Platform member with no token", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  picsure::connect(platform = picsure::Platform$BDC_OPEN)
+  recorded <- fake$.calls$connect[[1]]
+  expect_equal(recorded$token, "")
 })
 
 test_that("connect() rejects NA platform and NA token", {
