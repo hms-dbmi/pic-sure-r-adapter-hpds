@@ -99,6 +99,48 @@ full_query <- picsure::buildQuery(
 )
 ```
 
+## Editing an existing query
+
+`removeSubQuery()` and `replaceClause()` let you edit a query tree
+without rebuilding it from scratch. Both return a **new** handle — the
+input is not mutated. Matching is structural: any nested clause or
+clause-group that is equal by value to `target` is matched.
+
+```{r}
+# Drop the copd_or_asthma sub-tree:
+without_lung <- picsure::removeSubQuery(full_query, copd_or_asthma)
+
+# Swap "Yes" for a more specific COPD answer set:
+copd_specific <- picsure::createSubQuery(
+  "\\phs000001\\pht000002\\phv00000050\\copd\\",
+  type = "FILTER",
+  categories = list("Yes, severe", "Yes, very severe")
+)
+refined <- picsure::replaceClause(full_query, copd_filter, copd_specific)
+```
+
+`removeSubQuery()` drops `ClauseGroup`s that are emptied by a removal,
+so you don't end up with orphan operators. It errors if the removal
+would empty the entire tree — build a fresh query instead in that case.
+
+## Save a query by name
+
+On authorized deployments, persist a query to your user profile under
+a display name with `saveQueryByName()`. It returns the PIC-SURE query
+ID, which you can later pass to `loadQueryByID()` or `runQueryByID()`:
+
+```{r}
+qid <- picsure::saveQueryByName(bdc, full_query, "Cohort 2026-Q2")
+
+# Re-point an existing name at a refined query:
+qid <- picsure::saveQueryByName(bdc, refined, "Cohort 2026-Q2", overwrite = TRUE)
+```
+
+Allowed characters in `name`: letters, digits, spaces, and
+``- _ \ / ? + = [ ] . ( ) : " '`` (max 255 chars; validated by the
+Python adapter against the backend `NamedDataset` pattern). Not
+supported on open-access platforms.
+
 ## Case-insensitive enums
 
 Both `type` (clause type) and `operator` (group operator) accept

@@ -92,6 +92,38 @@ All three export functions return the path invisibly, so you can chain:
 pfb_path <- picsure::exportAsPFB(bdc, full_query, tempfile(fileext = ".pfb"))
 ```
 
+## Save a query by name
+
+On authorized deployments, `saveQueryByName()` persists a query to
+the user's profile under a display name. It submits the query to
+PIC-SURE and associates the name with it server-side, returning the
+PIC-SURE query ID:
+
+```{r}
+qid <- picsure::saveQueryByName(bdc, full_query, "Cohort 2026-Q2")
+```
+
+The returned UUID is the same one you'd pass to `loadQueryByID()` or
+`runQueryByID()`:
+
+```{r}
+restored <- picsure::loadQueryByID(bdc, qid)
+df       <- picsure::runQueryByID(bdc, qid, type = "participant")
+```
+
+By default, saving a second time under the same name is rejected. To
+repoint the existing record at a freshly-built query, pass
+`overwrite = TRUE`:
+
+```{r}
+qid <- picsure::saveQueryByName(bdc, refined, "Cohort 2026-Q2", overwrite = TRUE)
+```
+
+`name` must be a non-empty character scalar; allowed characters are
+letters, digits, spaces, and ``- _ \ / ? + = [ ] . ( ) : " '`` (max
+255). `saveQueryByName()` is not supported on open-access platforms —
+the `/dataset/named/` endpoint requires an authenticated principal.
+
 ## Reload a previously-saved query
 
 If you have the UUID of a previously-saved query, `loadQueryByID()` fetches

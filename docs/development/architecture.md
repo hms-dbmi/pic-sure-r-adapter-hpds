@@ -75,7 +75,7 @@ delegate to a `picsure_py$*` or `session$*` callable inside
 |----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`R/connect.R`](../../R/connect.R)           | `connect()`: validates platform/token, resolves Platform enum members (R-side or reticulate-wrapped) to the Python `Platform` member, forwards a whitelist of optional kwargs (`CONNECT_EXTRA_KWARGS`). |
 | [`R/clauses.R`](../../R/clauses.R)           | `createSubQuery()` and `buildQuery()`: clause and clause-group constructors. Coerces `type` to `ClauseType` and `operator` to `GroupOperator`.                                                       |
-| [`R/query.R`](../../R/query.R)               | `runQuery()`, `loadQueryByID()`, `runQueryByID()`: query execution against an open session, with `QueryType` coercion.                                                                              |
+| [`R/query.R`](../../R/query.R)               | `runQuery()`, `loadQueryByID()`, `runQueryByID()`, `saveQueryByName()`, `removeSubQuery()`, `replaceClause()`: query execution against an open session (with `QueryType` coercion), named-query persistence, and local structural tree edits that forward 1:1 to the Python adapter. |
 | [`R/search.R`](../../R/search.R)             | `searchDictionary()`: dictionary keyword search, optionally narrowed by a `FacetSet`.                                                                                                                |
 | [`R/facets.R`](../../R/facets.R)             | `facets()`, `addFacet()`, `removeFacet()`: build and mutate FacetSets. `addFacet()` accepts a value vector and adds one entry per value.                                                             |
 | [`R/export.R`](../../R/export.R)             | `exportAsPFB()` (re-runs the query and writes PFB), `exportCSV()` / `exportTSV()` (write an already-materialized data.frame).                                                                       |
@@ -92,7 +92,7 @@ The exported names (see [`NAMESPACE`](../../NAMESPACE)) are:
 - Connection: `connect`, `platforms`
 - Enums: `ClauseType`, `GroupOperator`, `QueryType`, `Platform`
 - Search and facets: `searchDictionary`, `facets`, `addFacet`, `removeFacet`
-- Query: `createSubQuery`, `buildQuery`, `runQuery`, `loadQueryByID`, `runQueryByID`
+- Query: `createSubQuery`, `buildQuery`, `runQuery`, `loadQueryByID`, `runQueryByID`, `saveQueryByName`, `removeSubQuery`, `replaceClause`
 - Export: `exportAsPFB`, `exportCSV`, `exportTSV`
 - Errors: `picsureError`
 
