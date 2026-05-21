@@ -41,7 +41,7 @@ reference:
       a member to the wrapper functions instead of a string for
       autocomplete and parity with the Python API.
     contents:
-      - ClauseType
+      - PhenotypicFilterType
       - GroupOperator
       - QueryType
       - Platform

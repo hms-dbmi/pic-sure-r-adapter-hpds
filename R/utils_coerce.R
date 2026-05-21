@@ -22,13 +22,13 @@ drop_nulls <- function(x) {
 #' Used by `to_py_enum()` and any other site that needs a string
 #' representation of either a `picsure_enum_member` or a plain string.
 #' Members are required to match `expected_subclass` to prevent passing
-#' a `ClauseType` member where a `GroupOperator` is expected.
+#' a `PhenotypicFilterType` member where a `GroupOperator` is expected.
 #'
 #' @param value NULL, a single string, or a `picsure_enum_member`.
 #' @param expected_subclass The required `picsure_*` subclass
-#'   (e.g. `"picsure_clause_type"`).
+#'   (e.g. `"picsure_phenotypic_filter_type"`).
 #' @param enum_name Human-readable enum name for error messages
-#'   (e.g. `"ClauseType"`).
+#'   (e.g. `"PhenotypicFilterType"`).
 #' @param field For members, which field to extract: `"name"` (default)
 #'   or `"value"`.
 #' @return NULL if `value` is NULL; otherwise a character scalar.
@@ -55,8 +55,8 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
 #' Python enum proxy.
 #'
 #' The R API accepts strings like "FILTER", "and", or members like
-#' [`picsure::ClauseType$FILTER`][picsure::ClauseType] and maps them to
-#' the Python enum member at call time.
+#' [`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]
+#' and maps them to the Python enum member at call time.
 #'
 #' @param value NULL, a single string, or a `picsure_enum_member`.
 #' @param enum_obj The Python enum proxy (or a named list in tests).

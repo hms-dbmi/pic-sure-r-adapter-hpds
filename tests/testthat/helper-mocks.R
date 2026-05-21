@@ -151,7 +151,7 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
     },
 
     # Enums exposed as named lists so to_py_enum() and tests can look them up
-    ClauseType = list(
+    PhenotypicFilterType = list(
       FILTER = "FILTER", SELECT = "SELECT",
       REQUIRE = "REQUIRE", ANYRECORD = "ANYRECORD"
     ),

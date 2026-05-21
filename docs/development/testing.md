@@ -34,7 +34,7 @@ provides:
 
 - `fake_picsure_py(platform_names = ...)` — a list standing in for the
   Python module. Exposes `connect`, `createSubQuery`, `buildQuery`,
-  and named lists for `ClauseType`, `GroupOperator`, `QueryType`, and
+  and named lists for `PhenotypicFilterType`, `GroupOperator`, `QueryType`, and
   `Platform`. Records every call on `$.calls`.
 - `new_fake_session(...)` — returned by `fake_picsure_py()$connect()`.
   Records calls to `searchDictionary`, `runQuery`, `exportAsPFB`,
@@ -165,13 +165,13 @@ been initialized.
 
 The test checks:
 
-1. For each of `ClauseType`, `GroupOperator`, `QueryType`,
+1. For each of `PhenotypicFilterType`, `GroupOperator`, `QueryType`,
    `Platform`: R member names match Python member names, and each
    member's `$name` and `$value` match.
 2. For `Platform`: every dataclass field on the Python
    `PlatformConfig` (`url`, `resource_uuid`, `label`,
    `include_consents`, `requires_auth`) is mirrored on the R member.
 3. The set of public `Enum` subclasses exported by the Python package
-   exactly equals `c("ClauseType", "GroupOperator", "Platform",
+   exactly equals `c("PhenotypicFilterType", "GroupOperator", "Platform",
    "QueryType")`. **If you add a new enum in Python, this test fails
    until you mirror it in `R/enums.R` and add it to this list.**

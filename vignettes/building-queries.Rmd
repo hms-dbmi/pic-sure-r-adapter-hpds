@@ -58,7 +58,7 @@ You can also pass an enum member instead of a string for editor autocomplete:
 # equivalent to type = "FILTER":
 sex_filter <- picsure::createSubQuery(
   "\\phs000001\\pht000001\\phv00000001\\sex\\",
-  type       = picsure::ClauseType$FILTER,
+  type       = picsure::PhenotypicFilterType$FILTER,
   categories = list("male")
 )
 ```

@@ -139,7 +139,7 @@ test_that("connect() rejects a non-Platform member with a clear error", {
   testthat::local_mocked_bindings(picsure_py = fake)
 
   err <- tryCatch(
-    picsure::connect(platform = picsure::ClauseType$FILTER, token = "tok"),
+    picsure::connect(platform = picsure::PhenotypicFilterType$FILTER, token = "tok"),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")

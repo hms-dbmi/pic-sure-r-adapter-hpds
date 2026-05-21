@@ -23,7 +23,7 @@ NULL if value is NULL; otherwise the corresponding enum member.
 }
 \description{
 The R API accepts strings like "FILTER", "and", or members like
-[`picsure::ClauseType$FILTER`][picsure::ClauseType] and maps them to
+[`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType] and maps them to
 the Python enum member at call time.
 }
 \keyword{internal}

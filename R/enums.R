@@ -1,9 +1,9 @@
 # Public enum constants mirroring the Python adapter's enums.
 #
 # Each member is an S3 list with class c(<subclass>, "picsure_enum_member").
-# Subclasses (picsure_clause_type, picsure_group_operator, picsure_query_type,
-# picsure_platform) reserve room for per-enum dispatch; today only
-# picsure_platform uses it (richer print).
+# Subclasses (picsure_phenotypic_filter_type, picsure_group_operator,
+# picsure_query_type, picsure_platform) reserve room for per-enum dispatch;
+# today only picsure_platform uses it (richer print).
 #
 # Member objects are accepted as inputs by createSubQuery(), buildQuery(),
 # runQuery(), and connect() in addition to the existing case-insensitive
@@ -34,10 +34,10 @@ print.picsure_enum_member <- function(x, ...) {
 #' @export
 as.character.picsure_enum_member <- function(x, ...) x$name
 
-#' Filter clause types.
+#' Phenotypic filter clause types.
 #'
 #' Pass a member to [`createSubQuery()`][picsure::createSubQuery]'s `type`
-#' argument. Mirrors Python's `picsure.ClauseType`.
+#' argument. Mirrors Python's `picsure.PhenotypicFilterType`.
 #'
 #' @format A list of `picsure_enum_member` objects:
 #' \describe{
@@ -52,16 +52,16 @@ as.character.picsure_enum_member <- function(x, ...) x$name
 #' \dontrun{
 #' picsure::createSubQuery(
 #'   "\\phs1\\pht1\\phv1\\sex\\",
-#'   type = picsure::ClauseType$FILTER,
+#'   type = picsure::PhenotypicFilterType$FILTER,
 #'   categories = "male"
 #' )
 #' }
 #' @export
-ClauseType <- list(
-  FILTER    = .enum_member("FILTER",    "filter",    enum_name = "ClauseType", subclass = "picsure_clause_type"),
-  ANYRECORD = .enum_member("ANYRECORD", "anyrecord", enum_name = "ClauseType", subclass = "picsure_clause_type"),
-  SELECT    = .enum_member("SELECT",    "select",    enum_name = "ClauseType", subclass = "picsure_clause_type"),
-  REQUIRE   = .enum_member("REQUIRE",   "require",   enum_name = "ClauseType", subclass = "picsure_clause_type")
+PhenotypicFilterType <- list(
+  FILTER    = .enum_member("FILTER",    "filter",    enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type"),
+  ANYRECORD = .enum_member("ANYRECORD", "anyrecord", enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type"),
+  SELECT    = .enum_member("SELECT",    "select",    enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type"),
+  REQUIRE   = .enum_member("REQUIRE",   "require",   enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type")
 )
 
 #' Logical operators for combining clauses in a group.
@@ -77,10 +77,10 @@ ClauseType <- list(
 #' @examples
 #' \dontrun{
 #' c1 <- picsure::createSubQuery("\\phs1\\sex\\",
-#'                              type = picsure::ClauseType$FILTER,
+#'                              type = picsure::PhenotypicFilterType$FILTER,
 #'                              categories = "male")
 #' c2 <- picsure::createSubQuery("\\phs1\\copd\\",
-#'                              type = picsure::ClauseType$FILTER,
+#'                              type = picsure::PhenotypicFilterType$FILTER,
 #'                              categories = "Yes")
 #' picsure::buildQuery(
 #'   list(c1, c2),

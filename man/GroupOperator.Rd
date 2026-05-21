@@ -21,10 +21,10 @@ Pass a member to [`buildQuery()`][picsure::buildQuery]'s
 \examples{
 \dontrun{
 c1 <- picsure::createSubQuery("\\\\phs1\\\\sex\\\\",
-                             type = picsure::ClauseType$FILTER,
+                             type = picsure::PhenotypicFilterType$FILTER,
                              categories = "male")
 c2 <- picsure::createSubQuery("\\\\phs1\\\\copd\\\\",
-                             type = picsure::ClauseType$FILTER,
+                             type = picsure::PhenotypicFilterType$FILTER,
                              categories = "Yes")
 picsure::buildQuery(
   list(c1, c2),

@@ -14,7 +14,7 @@ The bridge lives in [`R/zzz.R`](../../R/zzz.R). The relevant moves:
 
 - A package-private binding `picsure_py` starts as `NULL`. Every
   wrapper in the package refers to this binding (`picsure_py$connect`,
-  `picsure_py$ClauseType`, etc.).
+  `picsure_py$PhenotypicFilterType`, etc.).
 - `.onLoad()` calls `reticulate::py_require(.PICSURE_PY_SPEC)` to
   declare the Python dependency. The spec is a PEP 508 direct
   reference pointing at the upstream package's `main` branch (the
@@ -74,12 +74,12 @@ delegate to a `picsure_py$*` or `session$*` callable inside
 | File                                         | Responsibility                                                                                                                                                                                       |
 |----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`R/connect.R`](../../R/connect.R)           | `connect()`: validates platform/token, resolves Platform enum members (R-side or reticulate-wrapped) to the Python `Platform` member, forwards a whitelist of optional kwargs (`CONNECT_EXTRA_KWARGS`). |
-| [`R/clauses.R`](../../R/clauses.R)           | `createSubQuery()` and `buildQuery()`: clause and clause-group constructors. Coerces `type` to `ClauseType` and `operator` to `GroupOperator`.                                                       |
+| [`R/clauses.R`](../../R/clauses.R)           | `createSubQuery()` and `buildQuery()`: clause and clause-group constructors. Coerces `type` to `PhenotypicFilterType` and `operator` to `GroupOperator`.                                                       |
 | [`R/query.R`](../../R/query.R)               | `runQuery()`, `loadQueryByID()`, `runQueryByID()`, `saveQueryByName()`, `removeSubQuery()`, `replaceClause()`: query execution against an open session (with `QueryType` coercion), named-query persistence, and local structural tree edits that forward 1:1 to the Python adapter. |
 | [`R/search.R`](../../R/search.R)             | `searchDictionary()`: dictionary keyword search, optionally narrowed by a `FacetSet`.                                                                                                                |
 | [`R/facets.R`](../../R/facets.R)             | `facets()`, `addFacet()`, `removeFacet()`: build and mutate FacetSets. `addFacet()` accepts a value vector and adds one entry per value.                                                             |
 | [`R/export.R`](../../R/export.R)             | `exportAsPFB()` (re-runs the query and writes PFB), `exportCSV()` / `exportTSV()` (write an already-materialized data.frame).                                                                       |
-| [`R/enums.R`](../../R/enums.R)               | R-side enum constants `ClauseType`, `GroupOperator`, `QueryType`, `Platform`. Each member is an S3 list of class `c(<subclass>, "picsure_enum_member")`. Mirrors the Python enums.                  |
+| [`R/enums.R`](../../R/enums.R)               | R-side enum constants `PhenotypicFilterType`, `GroupOperator`, `QueryType`, `Platform`. Each member is an S3 list of class `c(<subclass>, "picsure_enum_member")`. Mirrors the Python enums.                  |
 | [`R/errors.R`](../../R/errors.R)             | `picsureError()` condition constructor, `with_picsure_error()` wrapper that catches `python.builtin.Exception` and re-raises as `picsureError`.                                                     |
 | [`R/platforms.R`](../../R/platforms.R)       | `platforms()`: returns the label strings of the Python `Platform` enum. `.platform_labels()` is the field-read helper unit tests exercise without a live Python session.                            |
 | [`R/utils_coerce.R`](../../R/utils_coerce.R) | Type-coercion helpers used at the R<->Python boundary: `drop_nulls()`, `as_enum_string()`, `to_py_enum()`.                                                                                          |
@@ -90,7 +90,7 @@ delegate to a `picsure_py$*` or `session$*` callable inside
 The exported names (see [`NAMESPACE`](../../NAMESPACE)) are:
 
 - Connection: `connect`, `platforms`
-- Enums: `ClauseType`, `GroupOperator`, `QueryType`, `Platform`
+- Enums: `PhenotypicFilterType`, `GroupOperator`, `QueryType`, `Platform`
 - Search and facets: `searchDictionary`, `facets`, `addFacet`, `removeFacet`
 - Query: `createSubQuery`, `buildQuery`, `runQuery`, `loadQueryByID`, `runQueryByID`, `saveQueryByName`, `removeSubQuery`, `replaceClause`
 - Export: `exportAsPFB`, `exportCSV`, `exportTSV`
@@ -120,7 +120,7 @@ concerns:
 - **`as_enum_string(value, expected_subclass, enum_name, field)`** —
   resolves either a plain string or a `picsure_enum_member` to its
   string identifier. Rejects members of the wrong subclass (e.g. a
-  `GroupOperator` member where a `ClauseType` is expected) before
+  `GroupOperator` member where a `PhenotypicFilterType` is expected) before
   doing anything else.
 - **`to_py_enum(value, enum_obj, enum_name, expected_subclass)`** —
   case-insensitively resolves a string or a typed enum member against
@@ -162,7 +162,7 @@ Every public wrapper that crosses the boundary uses
 ## Enum parity
 
 [`R/enums.R`](../../R/enums.R) declares the R-side enums
-(`ClauseType`, `GroupOperator`, `QueryType`, `Platform`) as named
+(`PhenotypicFilterType`, `GroupOperator`, `QueryType`, `Platform`) as named
 lists of `picsure_enum_member` objects. These mirror the upstream
 Python enums one-to-one: same member names, same `$value` strings,
 same `Platform` fields.

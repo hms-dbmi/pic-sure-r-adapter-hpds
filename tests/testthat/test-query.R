@@ -126,7 +126,7 @@ test_that("runQuery() rejects a wrong-subclass member", {
 
   err <- tryCatch(
     picsure::runQuery(session, query = list(kind = "group"),
-                      type = picsure::ClauseType$FILTER),
+                      type = picsure::PhenotypicFilterType$FILTER),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
@@ -254,7 +254,7 @@ test_that("runQueryByID() rejects a wrong-subclass member", {
   session <- new_fake_session()
 
   err <- tryCatch(
-    picsure::runQueryByID(session, "abc-123", type = picsure::ClauseType$FILTER),
+    picsure::runQueryByID(session, "abc-123", type = picsure::PhenotypicFilterType$FILTER),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")

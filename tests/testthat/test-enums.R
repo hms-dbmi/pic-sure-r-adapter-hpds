@@ -4,12 +4,12 @@
 test_that(".enum_member builds a list with name, value, and class", {
   m <- picsure:::.enum_member(
     "FILTER", "filter",
-    enum_name = "ClauseType",
-    subclass = "picsure_clause_type"
+    enum_name = "PhenotypicFilterType",
+    subclass = "picsure_phenotypic_filter_type"
   )
   expect_equal(m$name, "FILTER")
   expect_equal(m$value, "filter")
-  expect_s3_class(m, "picsure_clause_type")
+  expect_s3_class(m, "picsure_phenotypic_filter_type")
   expect_s3_class(m, "picsure_enum_member")
 })
 
@@ -39,10 +39,10 @@ test_that(".enum_member accepts extra fields via ...", {
 test_that("format.picsure_enum_member uses the enum_name attribute", {
   m <- picsure:::.enum_member(
     "FILTER", "filter",
-    enum_name = "ClauseType",
-    subclass = "picsure_clause_type"
+    enum_name = "PhenotypicFilterType",
+    subclass = "picsure_phenotypic_filter_type"
   )
-  expect_equal(format(m), "<ClauseType.FILTER>")
+  expect_equal(format(m), "<PhenotypicFilterType.FILTER>")
 })
 
 test_that("format.picsure_enum_member falls back to 'Enum' if attribute missing", {
@@ -65,30 +65,30 @@ test_that("print.picsure_enum_member writes format() output", {
 test_that("as.character.picsure_enum_member returns the name", {
   m <- picsure:::.enum_member(
     "REQUIRE", "require",
-    enum_name = "ClauseType",
-    subclass = "picsure_clause_type"
+    enum_name = "PhenotypicFilterType",
+    subclass = "picsure_phenotypic_filter_type"
   )
   expect_equal(as.character(m), "REQUIRE")
 })
 
-# ClauseType
+# PhenotypicFilterType
 
-test_that("ClauseType has 4 members with expected names and values", {
-  expect_setequal(names(picsure::ClauseType),
+test_that("PhenotypicFilterType has 4 members with expected names and values", {
+  expect_setequal(names(picsure::PhenotypicFilterType),
                   c("FILTER", "ANYRECORD", "SELECT", "REQUIRE"))
-  expect_equal(picsure::ClauseType$FILTER$name,    "FILTER")
-  expect_equal(picsure::ClauseType$FILTER$value,   "filter")
-  expect_equal(picsure::ClauseType$ANYRECORD$name, "ANYRECORD")
-  expect_equal(picsure::ClauseType$ANYRECORD$value, "anyrecord")
-  expect_equal(picsure::ClauseType$SELECT$name,    "SELECT")
-  expect_equal(picsure::ClauseType$SELECT$value,   "select")
-  expect_equal(picsure::ClauseType$REQUIRE$name,   "REQUIRE")
-  expect_equal(picsure::ClauseType$REQUIRE$value,  "require")
+  expect_equal(picsure::PhenotypicFilterType$FILTER$name,    "FILTER")
+  expect_equal(picsure::PhenotypicFilterType$FILTER$value,   "filter")
+  expect_equal(picsure::PhenotypicFilterType$ANYRECORD$name, "ANYRECORD")
+  expect_equal(picsure::PhenotypicFilterType$ANYRECORD$value, "anyrecord")
+  expect_equal(picsure::PhenotypicFilterType$SELECT$name,    "SELECT")
+  expect_equal(picsure::PhenotypicFilterType$SELECT$value,   "select")
+  expect_equal(picsure::PhenotypicFilterType$REQUIRE$name,   "REQUIRE")
+  expect_equal(picsure::PhenotypicFilterType$REQUIRE$value,  "require")
 })
 
-test_that("ClauseType members are picsure_clause_type", {
-  for (m in picsure::ClauseType) {
-    expect_s3_class(m, "picsure_clause_type")
+test_that("PhenotypicFilterType members are picsure_phenotypic_filter_type", {
+  for (m in picsure::PhenotypicFilterType) {
+    expect_s3_class(m, "picsure_phenotypic_filter_type")
     expect_s3_class(m, "picsure_enum_member")
   }
 })
@@ -133,7 +133,7 @@ test_that("QueryType members are picsure_query_type", {
 })
 
 test_that("one member per simple enum formats as <EnumName.MEMBER>", {
-  expect_equal(format(picsure::ClauseType$FILTER),    "<ClauseType.FILTER>")
+  expect_equal(format(picsure::PhenotypicFilterType$FILTER),    "<PhenotypicFilterType.FILTER>")
   expect_equal(format(picsure::GroupOperator$AND),    "<GroupOperator.AND>")
   expect_equal(format(picsure::QueryType$COUNT),      "<QueryType.COUNT>")
 })

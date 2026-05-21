@@ -9,8 +9,9 @@
 #'   `"\\phs000001\\pht000001\\phv00000001\\sex\\"` or
 #'   `c("\\path\\a\\", "\\path\\b\\")`.
 #' @param type Clause type. A case-insensitive string (one of `"FILTER"`,
-#'   `"SELECT"`, `"REQUIRE"`, `"ANYRECORD"`) or a `ClauseType` member
-#'   (e.g. [`ClauseType$FILTER`][picsure::ClauseType]).
+#'   `"SELECT"`, `"REQUIRE"`, `"ANYRECORD"`) or a `PhenotypicFilterType`
+#'   member (e.g.
+#'   [`PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]).
 #' @param min,max Optional numeric bounds for continuous FILTER clauses.
 #' @param categories Optional vector or list of accepted category values for
 #'   categorical FILTER clauses.
@@ -36,7 +37,7 @@ createSubQuery <- function(keys, type, min = NULL, max = NULL, categories = NULL
 
   kwargs <- drop_nulls(list(
     keys       = keys,
-    type       = to_py_enum(type, picsure_py$ClauseType, "ClauseType", "picsure_clause_type"),
+    type       = to_py_enum(type, picsure_py$PhenotypicFilterType, "PhenotypicFilterType", "picsure_phenotypic_filter_type"),
     min        = min,
     max        = max,
     categories = categories,

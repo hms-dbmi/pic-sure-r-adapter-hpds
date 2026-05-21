@@ -16,13 +16,13 @@ py_members <- function(py_enum) {
   lapply(members, function(m) list(name = m$name, value = m$value))
 }
 
-test_that("ClauseType matches Python", {
+test_that("PhenotypicFilterType matches Python", {
   skip_if_no_picsure_py()
-  py <- py_members(picsure:::picsure_py$ClauseType)
-  expect_setequal(names(picsure::ClauseType), names(py))
-  for (n in names(picsure::ClauseType)) {
-    expect_equal(picsure::ClauseType[[n]]$name,  py[[n]]$name,  info = n)
-    expect_equal(picsure::ClauseType[[n]]$value, py[[n]]$value, info = n)
+  py <- py_members(picsure:::picsure_py$PhenotypicFilterType)
+  expect_setequal(names(picsure::PhenotypicFilterType), names(py))
+  for (n in names(picsure::PhenotypicFilterType)) {
+    expect_equal(picsure::PhenotypicFilterType[[n]]$name,  py[[n]]$name,  info = n)
+    expect_equal(picsure::PhenotypicFilterType[[n]]$value, py[[n]]$value, info = n)
   }
 })
 
@@ -82,6 +82,6 @@ _picsure_enum_names = sorted([
 ])"
   )
   py_enums <- reticulate::py$`_picsure_enum_names`
-  r_enums <- c("ClauseType", "GroupOperator", "Platform", "QueryType")
+  r_enums <- c("PhenotypicFilterType", "GroupOperator", "Platform", "QueryType")
   expect_setequal(py_enums, r_enums)
 })

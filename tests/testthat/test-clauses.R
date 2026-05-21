@@ -7,7 +7,7 @@ test_that("createSubQuery() delegates to picsure_py$createSubQuery() with type r
 
   expect_equal(clause$kind, "clause")
   expect_equal(clause$keys, "\\phs1\\pht1\\phv1\\sex\\")
-  expect_equal(clause$type, "FILTER")  # fake's ClauseType$FILTER value
+  expect_equal(clause$type, "FILTER")  # fake's PhenotypicFilterType$FILTER value
   expect_equal(clause$extra$categories, list("male"))
 })
 
@@ -173,15 +173,15 @@ test_that("buildQuery() re-raises Python exceptions as picsureError", {
   expect_match(conditionMessage(err), "max depth", fixed = TRUE)
 })
 
-test_that("createSubQuery() accepts a ClauseType member", {
+test_that("createSubQuery() accepts a PhenotypicFilterType member", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 
-  clause <- picsure::createSubQuery("\\path\\", type = picsure::ClauseType$FILTER,
+  clause <- picsure::createSubQuery("\\path\\", type = picsure::PhenotypicFilterType$FILTER,
                                   categories = list("male"))
 
   expect_equal(clause$kind, "clause")
-  expect_equal(clause$type, "FILTER")  # fake's ClauseType$FILTER value
+  expect_equal(clause$type, "FILTER")  # fake's PhenotypicFilterType$FILTER value
 })
 
 test_that("createSubQuery() rejects a wrong-subclass member", {
@@ -193,7 +193,7 @@ test_that("createSubQuery() rejects a wrong-subclass member", {
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
-  expect_match(err$message, "ClauseType", fixed = TRUE)
+  expect_match(err$message, "PhenotypicFilterType", fixed = TRUE)
 })
 
 test_that("buildQuery() accepts a GroupOperator member", {
@@ -215,7 +215,7 @@ test_that("buildQuery() rejects a wrong-subclass member", {
   err <- tryCatch(
     picsure::buildQuery(
       list(list(kind = "clause")),
-      operator = picsure::ClauseType$FILTER
+      operator = picsure::PhenotypicFilterType$FILTER
     ),
     error = function(e) e
   )
