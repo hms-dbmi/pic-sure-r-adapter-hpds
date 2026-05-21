@@ -5,7 +5,7 @@
 # picsure_query_type, picsure_platform) reserve room for per-enum dispatch;
 # today only picsure_platform uses it (richer print).
 #
-# Member objects are accepted as inputs by createSubQuery(), buildQuery(),
+# Member objects are accepted as inputs by buildClause(), buildClauseGroup(),
 # runQuery(), and connect() in addition to the existing case-insensitive
 # string inputs.
 
@@ -36,21 +36,24 @@ as.character.picsure_enum_member <- function(x, ...) x$name
 
 #' Phenotypic filter clause types.
 #'
-#' Pass a member to [`createSubQuery()`][picsure::createSubQuery]'s `type`
+#' Pass a member to [`buildClause()`][picsure::buildClause]'s `type`
 #' argument. Mirrors Python's `picsure.PhenotypicFilterType`.
+#'
+#' To include concept paths in query output without filtering, use
+#' [`buildQuery()`][picsure::buildQuery]'s `includeConcepts` argument — output
+#' columns are no longer a clause type.
 #'
 #' @format A list of `picsure_enum_member` objects:
 #' \describe{
 #'   \item{`FILTER`}{Filter by categorical values or numeric range.}
 #'   \item{`ANYRECORD`}{Match records where the concept path *or any
 #'     descendant* has a value (wire: `ANY_RECORD_OF`).}
-#'   \item{`SELECT`}{Include the concept path(s) in query output.}
 #'   \item{`REQUIRE`}{Require the concept path to have a non-null value
 #'     (wire: `REQUIRED`).}
 #' }
 #' @examples
 #' \dontrun{
-#' picsure::createSubQuery(
+#' picsure::buildClause(
 #'   "\\phs1\\pht1\\phv1\\sex\\",
 #'   type = picsure::PhenotypicFilterType$FILTER,
 #'   categories = "male"
@@ -60,13 +63,12 @@ as.character.picsure_enum_member <- function(x, ...) x$name
 PhenotypicFilterType <- list(
   FILTER    = .enum_member("FILTER",    "filter",    enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type"),
   ANYRECORD = .enum_member("ANYRECORD", "anyrecord", enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type"),
-  SELECT    = .enum_member("SELECT",    "select",    enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type"),
   REQUIRE   = .enum_member("REQUIRE",   "require",   enum_name = "PhenotypicFilterType", subclass = "picsure_phenotypic_filter_type")
 )
 
 #' Logical operators for combining clauses in a group.
 #'
-#' Pass a member to [`buildQuery()`][picsure::buildQuery]'s
+#' Pass a member to [`buildClauseGroup()`][picsure::buildClauseGroup]'s
 #' `operator` argument. Mirrors Python's `picsure.GroupOperator`.
 #'
 #' @format A list of `picsure_enum_member` objects:
@@ -76,13 +78,13 @@ PhenotypicFilterType <- list(
 #' }
 #' @examples
 #' \dontrun{
-#' c1 <- picsure::createSubQuery("\\phs1\\sex\\",
+#' c1 <- picsure::buildClause("\\phs1\\sex\\",
 #'                              type = picsure::PhenotypicFilterType$FILTER,
 #'                              categories = "male")
-#' c2 <- picsure::createSubQuery("\\phs1\\copd\\",
+#' c2 <- picsure::buildClause("\\phs1\\copd\\",
 #'                              type = picsure::PhenotypicFilterType$FILTER,
 #'                              categories = "Yes")
-#' picsure::buildQuery(
+#' picsure::buildClauseGroup(
 #'   list(c1, c2),
 #'   operator = picsure::GroupOperator$AND
 #' )

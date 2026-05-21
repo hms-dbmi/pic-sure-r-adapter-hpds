@@ -70,7 +70,7 @@ test_that("runQuery() re-raises Python exceptions as picsureError", {
   bdc <- picsure::connect(platform = "Demo", token = "tok")
   bdc$runQuery <- function(...) {
     stop(structure(
-      list(message = "query rejected: no SELECT clauses"),
+      list(message = "query rejected: empty phenotypic clause"),
       class = c("python.builtin.Exception", "error", "condition")
     ))
   }
@@ -80,7 +80,7 @@ test_that("runQuery() re-raises Python exceptions as picsureError", {
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
-  expect_match(conditionMessage(err), "no SELECT clauses", fixed = TRUE)
+  expect_match(conditionMessage(err), "empty phenotypic clause", fixed = TRUE)
 })
 
 test_that("runQuery() with type='timestamp' returns a data.frame", {

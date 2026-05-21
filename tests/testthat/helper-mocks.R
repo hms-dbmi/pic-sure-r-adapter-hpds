@@ -143,16 +143,23 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
       calls$connect <- c(calls$connect, list(list(platform = platform, token = token, ...)))
       new_fake_session(platform = platform, token = token)
     },
-    createSubQuery = function(keys, type, ...) {
+    buildClause = function(keys, type, ...) {
       list(kind = "clause", keys = keys, type = type, extra = list(...))
     },
-    buildQuery = function(clauses, operator) {
+    buildClauseGroup = function(clauses, operator) {
       list(kind = "group", clauses = clauses, operator = operator)
+    },
+    buildQuery = function(phenotypicFilter = NULL, includeConcepts = NULL) {
+      list(
+        kind = "query",
+        phenotypicFilter = phenotypicFilter,
+        includeConcepts = includeConcepts
+      )
     },
 
     # Enums exposed as named lists so to_py_enum() and tests can look them up
     PhenotypicFilterType = list(
-      FILTER = "FILTER", SELECT = "SELECT",
+      FILTER = "FILTER",
       REQUIRE = "REQUIRE", ANYRECORD = "ANYRECORD"
     ),
     GroupOperator = list(AND = "AND", OR = "OR"),

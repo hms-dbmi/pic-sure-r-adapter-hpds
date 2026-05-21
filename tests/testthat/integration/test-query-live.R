@@ -7,8 +7,8 @@ test_that("runQuery() with type='count' returns a CountResult", {
     testthat::skip("PICSURE_TEST_REQUIRE_PATH not set.")
   }
 
-  clause <- picsure::createSubQuery(path, type = "REQUIRE")
-  query  <- picsure::buildQuery(list(clause), operator = "AND")
+  clause <- picsure::buildClause(path, type = "REQUIRE")
+  query  <- picsure::buildClauseGroup(list(clause), operator = "AND")
 
   count <- picsure::runQuery(session, query, type = "count")
   # Python returns a CountResult with $value / $margin / $cap. Small counts
@@ -32,8 +32,7 @@ test_that("runQuery() with type='participant' returns a data.frame with rows", {
     testthat::skip("PICSURE_TEST_REQUIRE_PATH not set.")
   }
 
-  clause <- picsure::createSubQuery(path, type = "SELECT")
-  query  <- picsure::buildQuery(list(clause), operator = "AND")
+  query <- picsure::buildQuery(includeConcepts = path)
 
   df <- picsure::runQuery(session, query, type = "participant")
   expect_s3_class(df, "data.frame")

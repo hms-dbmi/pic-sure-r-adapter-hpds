@@ -1,21 +1,25 @@
 #' Execute a query against a PIC-SURE session.
 #'
-#' Runs the query tree produced by [`buildQuery()`][picsure::buildQuery]
-#' against the session's resource and returns the result in the shape
-#' dictated by `type`:
+#' Runs a query — a clause/clause-group from
+#' [`buildClause()`][picsure::buildClause] /
+#' [`buildClauseGroup()`][picsure::buildClauseGroup], or a Query from
+#' [`buildQuery()`][picsure::buildQuery] — against the session's resource and
+#' returns the result in the shape dictated by `type`:
 #'
 #' - `"count"` — a `CountResult` object with `$value` (exact count, or
 #'   `NULL` for obfuscated small cohorts), `$margin`, and `$cap`.
 #' - `"cross_count"` — a dict-like mapping of concept paths to
 #'   `CountResult` objects.
 #' - `"participant"` — data.frame with one row per matching participant
-#'   across all SELECTed variables.
+#'   across all included concepts.
 #' - `"timestamp"` — data.frame of participant-level timestamps for
 #'   longitudinal concepts.
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
-#' @param query A clause group from
-#'   [`buildQuery()`][picsure::buildQuery].
+#' @param query A clause/clause-group handle (from
+#'   [`buildClause()`][picsure::buildClause] /
+#'   [`buildClauseGroup()`][picsure::buildClauseGroup]) or a Query handle (from
+#'   [`buildQuery()`][picsure::buildQuery]).
 #' @param type A `QueryType` member (e.g.
 #'   [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
 #'   string: `"count"` (default), `"participant"`, `"timestamp"`, or
@@ -37,7 +41,7 @@
 #' @export
 runQuery <- function(session, query, type = "count", ...) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required. Build one with picsure::buildQuery().")
+    stop("`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery().")
   }
 
   kwargs <- drop_nulls(list(
@@ -52,9 +56,9 @@ runQuery <- function(session, query, type = "count", ...) {
 #' Load a previously-saved PIC-SURE query by its query ID.
 #'
 #' Fetches the saved query body from the PIC-SURE backend and rebuilds it
-#' as a Clause or ClauseGroup that can be passed back into
-#' [`runQuery()`][picsure::runQuery], [`exportAsPFB()`][picsure::exportAsPFB],
-#' or composed inside another [`buildQuery()`][picsure::buildQuery].
+#' as a Clause/ClauseGroup (or a Query, when the saved query selected output
+#' concepts) that can be passed back into [`runQuery()`][picsure::runQuery] or
+#' [`exportAsPFB()`][picsure::exportAsPFB].
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query_id The UUID string of a previously-saved query.
@@ -182,7 +186,7 @@ replaceClause <- function(query, target, replacement) {
 #' @export
 saveQueryByName <- function(session, query, name, overwrite = FALSE) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required. Build one with picsure::buildQuery().")
+    stop("`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery().")
   }
   if (missing(name) || is.null(name) ||
       !is.character(name) || length(name) != 1L ||
