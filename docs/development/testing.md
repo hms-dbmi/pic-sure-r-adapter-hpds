@@ -33,9 +33,9 @@ wrapper reaches Python. Unit tests swap it with a fake via
 provides:
 
 - `fake_picsure_py(platform_names = ...)` — a list standing in for the
-  Python module. Exposes `connect`, `createSubQuery`, `buildQuery`,
-  and named lists for `PhenotypicFilterType`, `GroupOperator`, `QueryType`, and
-  `Platform`. Records every call on `$.calls`.
+  Python module. Exposes `connect`, `buildClause`, `buildClauseGroup`,
+  `buildQuery`, and named lists for `PhenotypicFilterType`, `GroupOperator`,
+  `QueryType`, and `Platform`. Records every call on `$.calls`.
 - `new_fake_session(...)` — returned by `fake_picsure_py()$connect()`.
   Records calls to `searchDictionary`, `runQuery`, `exportAsPFB`,
   `exportCSV`, `exportTSV`, `loadQueryByID`, `runQueryByID`. Returns
@@ -70,7 +70,7 @@ condition whose class includes `"python.builtin.Exception"`:
 ```r
 bdc$runQuery <- function(...) {
   stop(structure(
-    list(message = "query rejected: no SELECT clauses"),
+    list(message = "query rejected: empty phenotypic clause"),
     class = c("python.builtin.Exception", "error", "condition")
   ))
 }
@@ -105,7 +105,7 @@ is gated by environment variables. The relevant helpers are in
 | `PICSURE_INTEGRATION`        | Must be `"1"` for any live test to run. Otherwise every test calls `skip_unless_integration()` and is skipped.                                          |
 | `PICSURE_TEST_PLATFORM`      | Platform string or enum-member name (e.g. `BDC_OPEN`). Enum-member names are preferred — they disambiguate platforms that share a human-readable label. |
 | `PICSURE_TEST_TOKEN`         | Personal access token. Tests skip if unset.                                                                                                             |
-| `PICSURE_TEST_REQUIRE_PATH`  | A concept path used by REQUIRE/SELECT-driven export tests. Tests skip if unset.                                                                         |
+| `PICSURE_TEST_REQUIRE_PATH`  | A concept path used by REQUIRE filters and `includeConcepts`-driven export tests. Tests skip if unset.                                                   |
 | `PICSURE_TEST_SEARCH_TERM`   | Search term for live search tests. Defaults to `"age"`.                                                                                                 |
 | `PICSURE_TEST_FACET_CATEGORY`, `PICSURE_TEST_FACET_VALUE` | Facet category and value for live facet tests. Skips if value is unset.                                                       |
 

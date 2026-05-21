@@ -70,7 +70,7 @@ the transient note at the top while the v3 rewrite is in flight.)
 
 - Every exported function is documented with roxygen2. Do not edit
   `man/*.Rd` directly; edit the source and rerun `devtools::document()`.
-- The public API uses **camelCase** (`createSubQuery`, `runQuery`,
+- The public API uses **camelCase** (`buildClause`, `runQuery`,
   `addFacet`) to match the upstream Python wrapper 1:1. Keep new
   public functions in the same style.
 - Internal helpers use snake_case (`to_py_enum`, `with_picsure_error`).

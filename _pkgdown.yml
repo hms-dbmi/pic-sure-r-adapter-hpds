@@ -28,7 +28,7 @@ reference:
   - title: Search
     contents: [searchDictionary, facets, addFacet, removeFacet]
   - title: Query construction
-    contents: [createSubQuery, buildQuery]
+    contents: [buildClause, buildClauseGroup, buildQuery]
   - title: Query execution
     contents: [runQuery, runQueryByID, loadQueryByID]
   - title: Export
