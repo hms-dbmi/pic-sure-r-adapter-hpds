@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.github$
+^_site$
 ^\.pytest_cache$
 ^docs$
 ^CODE_OF_CONDUCT\.md$

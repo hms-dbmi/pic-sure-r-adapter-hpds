@@ -1,5 +1,11 @@
 url: https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/
 
+# Build into _site/ rather than the pkgdown default docs/, because docs/
+# holds hand-authored developer documentation (docs/development/*) that
+# pkgdown must not own or clean. The pkgdown workflow deploys _site/ to the
+# gh-pages branch.
+destination: _site
+
 template:
   bootstrap: 5
 
@@ -29,8 +35,10 @@ reference:
     contents: [searchDictionary, facets, addFacet, removeFacet]
   - title: Query construction
     contents: [buildClause, buildClauseGroup, buildQuery]
+  - title: Query editing
+    contents: [removeSubQuery, replaceClause]
   - title: Query execution
-    contents: [runQuery, runQueryByID, loadQueryByID]
+    contents: [runQuery, runQueryByID, loadQueryByID, saveQueryByName]
   - title: Export
     contents: [exportAsPFB, exportCSV, exportTSV]
   - title: Errors
