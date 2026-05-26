@@ -1,7 +1,9 @@
 # Execute a query against a PIC-SURE session.
 
-Runs the query tree produced by
-\[\`buildQuery()\`\]\[picsure::buildQuery\] against the session's
+Runs a query — a clause/clause-group from
+\[\`buildClause()\`\]\[picsure::buildClause\] /
+\[\`buildClauseGroup()\`\]\[picsure::buildClauseGroup\], or a Query from
+\[\`buildQuery()\`\]\[picsure::buildQuery\] — against the session's
 resource and returns the result in the shape dictated by \`type\`:
 
 ## Usage
@@ -18,7 +20,10 @@ runQuery(session, query, type = "count", ...)
 
 - query:
 
-  A clause group from \[\`buildQuery()\`\]\[picsure::buildQuery\].
+  A clause/clause-group handle (from
+  \[\`buildClause()\`\]\[picsure::buildClause\] /
+  \[\`buildClauseGroup()\`\]\[picsure::buildClauseGroup\]) or a Query
+  handle (from \[\`buildQuery()\`\]\[picsure::buildQuery\]).
 
 - type:
 
@@ -46,9 +51,8 @@ paths to CountResults. For \`"participant"\` and \`"timestamp"\`, a
 or \`NULL\` for obfuscated small cohorts), \`\$margin\`, and
 \`\$cap\`. - \`"cross_count"\` — a dict-like mapping of concept paths to
 \`CountResult\` objects. - \`"participant"\` — data.frame with one row
-per matching participant across all SELECTed variables. -
-\`"timestamp"\` — data.frame of participant-level timestamps for
-longitudinal concepts.
+per matching participant across all included concepts. - \`"timestamp"\`
+— data.frame of participant-level timestamps for longitudinal concepts.
 
 ## Examples
 

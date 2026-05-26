@@ -37,16 +37,16 @@ bdc <- picsure::connect(
 results <- picsure::search(bdc, "sex")
 
 # Build a query
-sex_filter <- picsure::createSubQuery(
+sex_filter <- picsure::buildClause(
   "\\phs000001\\pht000001\\phv00000001\\sex\\",
   type       = "FILTER",
   categories = list("male")
 )
-age_filter <- picsure::createSubQuery(
+age_filter <- picsure::buildClause(
   "\\phs000001\\pht000001\\phv00000005\\age\\",
   type = "FILTER", min = 40
 )
-query <- picsure::buildQuery(list(sex_filter, age_filter), operator = "AND")
+query <- picsure::buildClauseGroup(list(sex_filter, age_filter), operator = "AND")
 
 # Run
 count        <- picsure::runQuery(bdc, query, type = "count")

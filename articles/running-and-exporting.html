@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Running and exporting • picsure</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Running and exporting">
 </head>
@@ -63,8 +63,9 @@
 
     
     
-<p>Given a query built with <code><a href="../reference/createSubQuery.html">createSubQuery()</a></code> +
-<code><a href="../reference/buildQuery.html">buildQuery()</a></code>, you can ask the server for:</p>
+<p>Given a query built with <code><a href="../reference/buildClause.html">buildClause()</a></code> /
+<code><a href="../reference/buildClauseGroup.html">buildClauseGroup()</a></code> (and optionally
+<code><a href="../reference/buildQuery.html">buildQuery()</a></code>), you can ask the server for:</p>
 <ul>
 <li>a participant count (possibly obfuscated for small cohorts),</li>
 <li>a participant-level data frame,</li>
@@ -144,18 +145,45 @@ chain:</p>
 <code class="sourceCode R"><span><span class="va">pfb_path</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/exportAsPFB.html">exportAsPFB</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".pfb"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="save-a-query-by-name">Save a query by name<a class="anchor" aria-label="anchor" href="#save-a-query-by-name"></a>
+</h2>
+<p>On authorized deployments, <code><a href="../reference/saveQueryByName.html">saveQueryByName()</a></code> persists a
+query to the user’s profile under a display name. It submits the query
+to PIC-SURE and associates the name with it server-side, returning the
+PIC-SURE query ID:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">qid</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/saveQueryByName.html">saveQueryByName</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, <span class="st">"Cohort 2026-Q2"</span><span class="op">)</span></span></code></pre></div>
+<p>The returned UUID is the same one you’d pass to
+<code><a href="../reference/loadQueryByID.html">loadQueryByID()</a></code> or <code><a href="../reference/runQueryByID.html">runQueryByID()</a></code>:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">restored</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/loadQueryByID.html">loadQueryByID</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">qid</span><span class="op">)</span></span>
+<span><span class="va">df</span>       <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQueryByID.html">runQueryByID</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">qid</span>, type <span class="op">=</span> <span class="st">"participant"</span><span class="op">)</span></span></code></pre></div>
+<p>By default, saving a second time under the same name is rejected. To
+repoint the existing record at a freshly-built query, pass
+<code>overwrite = TRUE</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">qid</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/saveQueryByName.html">saveQueryByName</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">refined</span>, <span class="st">"Cohort 2026-Q2"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><code>name</code> must be a non-empty character scalar; allowed
+characters are letters, digits, spaces, and
+<code>- _ \ / ? + = [ ] . ( ) : " '</code> (max 255).
+<code><a href="../reference/saveQueryByName.html">saveQueryByName()</a></code> is not supported on open-access platforms
+— the <code>/dataset/named/</code> endpoint requires an authenticated
+principal.</p>
+</div>
+<div class="section level2">
 <h2 id="reload-a-previously-saved-query">Reload a previously-saved query<a class="anchor" aria-label="anchor" href="#reload-a-previously-saved-query"></a>
 </h2>
 <p>If you have the UUID of a previously-saved query,
 <code><a href="../reference/loadQueryByID.html">loadQueryByID()</a></code> fetches the saved body from the backend and
 rebuilds it as a Clause / ClauseGroup that drops straight back into
 <code><a href="../reference/runQuery.html">runQuery()</a></code> or any of the export functions:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">previous</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/loadQueryByID.html">loadQueryByID</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"11111111-2222-3333-4444-555555555555"</span><span class="op">)</span></span>
 <span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">previous</span>, type <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span></span></code></pre></div>
-<p>The loaded handle is the same shape as one built with
-<code><a href="../reference/buildQuery.html">buildQuery()</a></code>, so you can also nest it inside a new group to
-refine the cohort.</p>
+<p>The loaded handle is a clause/clause-group (or a Query, when the
+saved query selected output concepts) — the same shapes the builders
+produce — so a bare clause/group can also be nested inside a new group
+to refine the cohort.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -1,8 +1,8 @@
 # Resolve a case-insensitive string OR a typed enum member against a Python enum proxy.
 
 The R API accepts strings like "FILTER", "and", or members like
-\[\`picsure::ClauseType\$FILTER\`\]\[picsure::ClauseType\] and maps them
-to the Python enum member at call time.
+\[\`picsure::PhenotypicFilterType\$FILTER\`\]\[picsure::PhenotypicFilterType\]
+and maps them to the Python enum member at call time.
 
 ## Usage
 

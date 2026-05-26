@@ -1,8 +1,11 @@
 # Running and exporting
 
 Given a query built with
-[`createSubQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createSubQuery.md) +
-[`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md),
+[`buildClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClause.md)
+/
+[`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md)
+(and optionally
+[`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md)),
 you can ask the server for:
 
 - a participant count (possibly obfuscated for small cohorts),
@@ -97,6 +100,45 @@ All three export functions return the path invisibly, so you can chain:
 pfb_path <- picsure::exportAsPFB(bdc, full_query, tempfile(fileext = ".pfb"))
 ```
 
+## Save a query by name
+
+On authorized deployments,
+[`saveQueryByName()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/saveQueryByName.md)
+persists a query to the user’s profile under a display name. It submits
+the query to PIC-SURE and associates the name with it server-side,
+returning the PIC-SURE query ID:
+
+``` r
+
+qid <- picsure::saveQueryByName(bdc, full_query, "Cohort 2026-Q2")
+```
+
+The returned UUID is the same one you’d pass to
+[`loadQueryByID()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/loadQueryByID.md)
+or
+[`runQueryByID()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQueryByID.md):
+
+``` r
+
+restored <- picsure::loadQueryByID(bdc, qid)
+df       <- picsure::runQueryByID(bdc, qid, type = "participant")
+```
+
+By default, saving a second time under the same name is rejected. To
+repoint the existing record at a freshly-built query, pass
+`overwrite = TRUE`:
+
+``` r
+
+qid <- picsure::saveQueryByName(bdc, refined, "Cohort 2026-Q2", overwrite = TRUE)
+```
+
+`name` must be a non-empty character scalar; allowed characters are
+letters, digits, spaces, and `- _ \ / ? + = [ ] . ( ) : " '` (max 255).
+[`saveQueryByName()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/saveQueryByName.md)
+is not supported on open-access platforms — the `/dataset/named/`
+endpoint requires an authenticated principal.
+
 ## Reload a previously-saved query
 
 If you have the UUID of a previously-saved query,
@@ -112,6 +154,7 @@ previous <- picsure::loadQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
 count <- picsure::runQuery(bdc, previous, type = "count")
 ```
 
-The loaded handle is the same shape as one built with
-[`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md),
-so you can also nest it inside a new group to refine the cohort.
+The loaded handle is a clause/clause-group (or a Query, when the saved
+query selected output concepts) — the same shapes the builders produce —
+so a bare clause/group can also be nested inside a new group to refine
+the cohort.

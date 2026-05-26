@@ -6,7 +6,7 @@ personal token. Platforms are listed by \`picsure::platforms()\`.
 ## Usage
 
 ``` r
-connect(platform, token, ...)
+connect(platform, token = "", ...)
 ```
 
 ## Arguments
@@ -20,7 +20,10 @@ connect(platform, token, ...)
 - token:
 
   Your personal PIC-SURE access token, obtained from the "User Profile"
-  tab of your PIC-SURE instance.
+  tab of your PIC-SURE instance. Optional for open-access platforms
+  (\`Platform\$BDC_OPEN\`, \`Platform\$BDC_DEV_OPEN\`,
+  \`Platform\$BDC_PREDEV_OPEN\`, \`Platform\$NHANES_OPEN\`); required
+  for authenticated platforms. Defaults to \`""\`.
 
 - ...:
 
@@ -62,5 +65,6 @@ env.
 ``` r
 if (FALSE) { # \dontrun{
 bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
+open <- picsure::connect(platform = picsure::Platform$BDC_OPEN)
 } # }
 ```

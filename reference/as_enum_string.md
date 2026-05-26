@@ -3,7 +3,7 @@
 Used by \`to_py_enum()\` and any other site that needs a string
 representation of either a \`picsure_enum_member\` or a plain string.
 Members are required to match \`expected_subclass\` to prevent passing a
-\`ClauseType\` member where a \`GroupOperator\` is expected.
+\`PhenotypicFilterType\` member where a \`GroupOperator\` is expected.
 
 ## Usage
 
@@ -20,11 +20,12 @@ as_enum_string(value, expected_subclass, enum_name, field = "name")
 - expected_subclass:
 
   The required \`picsure\_\*\` subclass (e.g.
-  \`"picsure_clause_type"\`).
+  \`"picsure_phenotypic_filter_type"\`).
 
 - enum_name:
 
-  Human-readable enum name for error messages (e.g. \`"ClauseType"\`).
+  Human-readable enum name for error messages (e.g.
+  \`"PhenotypicFilterType"\`).
 
 - field:
 

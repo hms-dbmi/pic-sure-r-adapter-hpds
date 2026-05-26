@@ -20,10 +20,19 @@
 
 ## Query construction
 
-- [`createSubQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/createSubQuery.md)
+- [`buildClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClause.md)
   : Create a single query clause.
-- [`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md)
+- [`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md)
   : Combine clauses (and nested groups) under an AND or OR operator.
+- [`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md)
+  : Assemble a complete query from a filter tree and/or output concepts.
+
+## Query editing
+
+- [`removeSubQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/removeSubQuery.md)
+  : Return a copy of a query with all matches of a sub-query removed.
+- [`replaceClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/replaceClause.md)
+  : Return a copy of a query with one sub-query swapped for another.
 
 ## Query execution
 
@@ -33,6 +42,9 @@
   : Load a saved PIC-SURE query by ID and execute it in one call.
 - [`loadQueryByID()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/loadQueryByID.md)
   : Load a previously-saved PIC-SURE query by its query ID.
+- [`saveQueryByName()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/saveQueryByName.md)
+  : Save a query to the authenticated user's profile and return its
+  query ID.
 
 ## Export
 
@@ -54,8 +66,8 @@ Public enum constants mirroring the Python adapter’s enums. Pass a
 member to the wrapper functions instead of a string for autocomplete and
 parity with the Python API.
 
-- [`ClauseType`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/ClauseType.md)
-  : Filter clause types.
+- [`PhenotypicFilterType`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/PhenotypicFilterType.md)
+  : Phenotypic filter clause types.
 - [`GroupOperator`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/GroupOperator.md)
   : Logical operators for combining clauses in a group.
 - [`QueryType`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/QueryType.md)

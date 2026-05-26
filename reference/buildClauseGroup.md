@@ -2,7 +2,8 @@
 
 Takes a list of clause / group handles and returns a single opaque
 ClauseGroup that can itself be nested inside another
-\`buildClauseGroup()\` call, or passed to
+\`buildClauseGroup()\` call, assembled into a query with
+\[\`buildQuery()\`\]\[picsure::buildQuery\], or passed to
 \[\`runQuery()\`\]\[picsure::runQuery\].
 
 ## Usage
@@ -32,9 +33,9 @@ An opaque ClauseGroup handle.
 
 ``` r
 if (FALSE) { # \dontrun{
-sex    <- picsure::createClause("\\phs1\\pht1\\phv1\\sex\\", type = "FILTER", categories = "male")
-copd   <- picsure::createClause("\\phs1\\pht2\\phv2\\copd\\", type = "FILTER", categories = "Yes")
-asthma <- picsure::createClause("\\phs1\\pht2\\phv3\\asth\\", type = "FILTER", categories = "Yes")
+sex    <- picsure::buildClause("\\phs1\\pht1\\phv1\\sex\\", type = "FILTER", categories = "male")
+copd   <- picsure::buildClause("\\phs1\\pht2\\phv2\\copd\\", type = "FILTER", categories = "Yes")
+asthma <- picsure::buildClause("\\phs1\\pht2\\phv3\\asth\\", type = "FILTER", categories = "Yes")
 lung <- picsure::buildClauseGroup(list(copd, asthma), operator = "OR")
 full <- picsure::buildClauseGroup(list(sex, lung), operator = "AND")
 } # }
