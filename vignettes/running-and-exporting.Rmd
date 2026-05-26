@@ -11,8 +11,8 @@ vignette: >
 knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
 ```
 
-Given a query built with `createSubQuery()` + `buildQuery()`, you can
-ask the server for:
+Given a query built with `buildClause()` / `buildClauseGroup()` (and
+optionally `buildQuery()`), you can ask the server for:
 
 - a participant count (possibly obfuscated for small cohorts),
 - a participant-level data frame,
@@ -135,5 +135,7 @@ previous <- picsure::loadQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
 count <- picsure::runQuery(bdc, previous, type = "count")
 ```
 
-The loaded handle is the same shape as one built with `buildQuery()`,
-so you can also nest it inside a new group to refine the cohort.
+The loaded handle is a clause/clause-group (or a Query, when the saved
+query selected output concepts) — the same shapes the builders produce —
+so a bare clause/group can also be nested inside a new group to refine
+the cohort.

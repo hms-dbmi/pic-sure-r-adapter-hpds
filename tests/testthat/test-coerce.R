@@ -10,20 +10,20 @@ test_that("drop_nulls preserves non-NULL falsy values", {
 })
 
 test_that("to_py_enum resolves a case-insensitive string against the enum's members", {
-  fake_enum <- list(FILTER = "python_FILTER", SELECT = "python_SELECT")
+  fake_enum <- list(FILTER = "python_FILTER", ANYRECORD = "python_ANYRECORD")
   expect_equal(to_py_enum("FILTER", fake_enum, "PhenotypicFilterType", "picsure_phenotypic_filter_type"), "python_FILTER")
   expect_equal(to_py_enum("filter", fake_enum, "PhenotypicFilterType", "picsure_phenotypic_filter_type"), "python_FILTER")
-  expect_equal(to_py_enum("Select", fake_enum, "PhenotypicFilterType", "picsure_phenotypic_filter_type"), "python_SELECT")
+  expect_equal(to_py_enum("Anyrecord", fake_enum, "PhenotypicFilterType", "picsure_phenotypic_filter_type"), "python_ANYRECORD")
 })
 
 test_that("to_py_enum errors on unknown string with a helpful message listing valid values", {
-  fake_enum <- list(FILTER = "x", SELECT = "y")
-  err <- tryCatch(to_py_enum("REQUIRE", fake_enum, "PhenotypicFilterType", "picsure_phenotypic_filter_type"),
+  fake_enum <- list(FILTER = "x", ANYRECORD = "y")
+  err <- tryCatch(to_py_enum("BOGUS", fake_enum, "PhenotypicFilterType", "picsure_phenotypic_filter_type"),
                   error = function(e) e)
   expect_s3_class(err, "error")
   expect_match(err$message, "PhenotypicFilterType", fixed = TRUE)
   expect_match(err$message, "FILTER", fixed = TRUE)
-  expect_match(err$message, "SELECT", fixed = TRUE)
+  expect_match(err$message, "ANYRECORD", fixed = TRUE)
 })
 
 test_that("to_py_enum passes NULL through unchanged", {
@@ -82,7 +82,7 @@ test_that("as_enum_string rejects non-string non-member input", {
 # to_py_enum extended
 
 test_that("to_py_enum unwraps a member of the right subclass and resolves it via the proxy", {
-  fake_enum <- list(FILTER = "python_FILTER", SELECT = "python_SELECT")
+  fake_enum <- list(FILTER = "python_FILTER", ANYRECORD = "python_ANYRECORD")
   m <- picsure::PhenotypicFilterType$FILTER
   expect_equal(
     to_py_enum(m, fake_enum, "PhenotypicFilterType", "picsure_phenotypic_filter_type"),

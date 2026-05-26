@@ -74,7 +74,7 @@ delegate to a `picsure_py$*` or `session$*` callable inside
 | File                                         | Responsibility                                                                                                                                                                                       |
 |----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`R/connect.R`](../../R/connect.R)           | `connect()`: validates platform/token, resolves Platform enum members (R-side or reticulate-wrapped) to the Python `Platform` member, forwards a whitelist of optional kwargs (`CONNECT_EXTRA_KWARGS`). |
-| [`R/clauses.R`](../../R/clauses.R)           | `createSubQuery()` and `buildQuery()`: clause and clause-group constructors. Coerces `type` to `PhenotypicFilterType` and `operator` to `GroupOperator`.                                                       |
+| [`R/clauses.R`](../../R/clauses.R)           | `buildClause()`, `buildClauseGroup()`, and `buildQuery()`: clause, clause-group, and query constructors. Coerces `type` to `PhenotypicFilterType` and `operator` to `GroupOperator`.                                                       |
 | [`R/query.R`](../../R/query.R)               | `runQuery()`, `loadQueryByID()`, `runQueryByID()`, `saveQueryByName()`, `removeSubQuery()`, `replaceClause()`: query execution against an open session (with `QueryType` coercion), named-query persistence, and local structural tree edits that forward 1:1 to the Python adapter. |
 | [`R/search.R`](../../R/search.R)             | `searchDictionary()`: dictionary keyword search, optionally narrowed by a `FacetSet`.                                                                                                                |
 | [`R/facets.R`](../../R/facets.R)             | `facets()`, `addFacet()`, `removeFacet()`: build and mutate FacetSets. `addFacet()` accepts a value vector and adds one entry per value.                                                             |
@@ -92,7 +92,7 @@ The exported names (see [`NAMESPACE`](../../NAMESPACE)) are:
 - Connection: `connect`, `platforms`
 - Enums: `PhenotypicFilterType`, `GroupOperator`, `QueryType`, `Platform`
 - Search and facets: `searchDictionary`, `facets`, `addFacet`, `removeFacet`
-- Query: `createSubQuery`, `buildQuery`, `runQuery`, `loadQueryByID`, `runQueryByID`, `saveQueryByName`, `removeSubQuery`, `replaceClause`
+- Query: `buildClause`, `buildClauseGroup`, `buildQuery`, `runQuery`, `loadQueryByID`, `runQueryByID`, `saveQueryByName`, `removeSubQuery`, `replaceClause`
 - Export: `exportAsPFB`, `exportCSV`, `exportTSV`
 - Errors: `picsureError`
 
@@ -133,7 +133,7 @@ Notes on the gotchas the wrappers actually encode:
   it propagate.
 - Strings are passed through to Python verbatim; reticulate handles
   the `str` conversion. Character vectors of length > 1 are accepted
-  by `createSubQuery(keys = ...)` and forwarded as a Python list.
+  by `buildClause(keys = ...)` and forwarded as a Python list.
 - `data.frame` values returned by Python (e.g. participant tables)
   arrive as native R data frames via reticulate's pandas converter.
 - The `Platform` R member carries both the Python `value` shape (a

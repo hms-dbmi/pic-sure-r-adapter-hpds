@@ -43,6 +43,9 @@ tests/testthat/results
 
 # Claude superpowers docs — kept locally, not committed
 docs/superpowers/
+
+# pkgdown build output (deployed to the gh-pages branch by CI)
+_site/
 /doc/
 /Meta/
 

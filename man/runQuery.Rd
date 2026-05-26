@@ -9,8 +9,10 @@ runQuery(session, query, type = "count", ...)
 \arguments{
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
 
-\item{query}{A clause group from
-[`buildQuery()`][picsure::buildQuery].}
+\item{query}{A clause/clause-group handle (from
+[`buildClause()`][picsure::buildClause] /
+[`buildClauseGroup()`][picsure::buildClauseGroup]) or a Query handle (from
+[`buildQuery()`][picsure::buildQuery]).}
 
 \item{type}{A `QueryType` member (e.g.
 [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
@@ -28,9 +30,11 @@ For `type = "count"`, a Python `CountResult` object with
   `"timestamp"`, a `data.frame`.
 }
 \description{
-Runs the query tree produced by [`buildQuery()`][picsure::buildQuery]
-against the session's resource and returns the result in the shape
-dictated by `type`:
+Runs a query — a clause/clause-group from
+[`buildClause()`][picsure::buildClause] /
+[`buildClauseGroup()`][picsure::buildClauseGroup], or a Query from
+[`buildQuery()`][picsure::buildQuery] — against the session's resource and
+returns the result in the shape dictated by `type`:
 }
 \details{
 - `"count"` — a `CountResult` object with `$value` (exact count, or
@@ -38,7 +42,7 @@ dictated by `type`:
 - `"cross_count"` — a dict-like mapping of concept paths to
   `CountResult` objects.
 - `"participant"` — data.frame with one row per matching participant
-  across all SELECTed variables.
+  across all included concepts.
 - `"timestamp"` — data.frame of participant-level timestamps for
   longitudinal concepts.
 }

@@ -73,17 +73,16 @@ test_that("as.character.picsure_enum_member returns the name", {
 
 # PhenotypicFilterType
 
-test_that("PhenotypicFilterType has 4 members with expected names and values", {
+test_that("PhenotypicFilterType has 3 members with expected names and values", {
   expect_setequal(names(picsure::PhenotypicFilterType),
-                  c("FILTER", "ANYRECORD", "SELECT", "REQUIRE"))
+                  c("FILTER", "ANYRECORD", "REQUIRE"))
   expect_equal(picsure::PhenotypicFilterType$FILTER$name,    "FILTER")
   expect_equal(picsure::PhenotypicFilterType$FILTER$value,   "filter")
   expect_equal(picsure::PhenotypicFilterType$ANYRECORD$name, "ANYRECORD")
   expect_equal(picsure::PhenotypicFilterType$ANYRECORD$value, "anyrecord")
-  expect_equal(picsure::PhenotypicFilterType$SELECT$name,    "SELECT")
-  expect_equal(picsure::PhenotypicFilterType$SELECT$value,   "select")
   expect_equal(picsure::PhenotypicFilterType$REQUIRE$name,   "REQUIRE")
   expect_equal(picsure::PhenotypicFilterType$REQUIRE$value,  "require")
+  expect_null(picsure::PhenotypicFilterType$SELECT)
 })
 
 test_that("PhenotypicFilterType members are picsure_phenotypic_filter_type", {

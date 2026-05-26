@@ -2,32 +2,35 @@
 % Please edit documentation in R/clauses.R
 \name{buildQuery}
 \alias{buildQuery}
-\title{Combine clauses (and nested groups) under an AND or OR operator.}
+\title{Assemble a complete query from a filter tree and/or output concepts.}
 \usage{
-buildQuery(clauses, operator = "AND")
+buildQuery(phenotypicFilter = NULL, includeConcepts = NULL)
 }
 \arguments{
-\item{clauses}{A non-empty list of clause or clause-group handles.}
+\item{phenotypicFilter}{A clause or clause-group handle (from
+[`buildClause()`][picsure::buildClause] /
+[`buildClauseGroup()`][picsure::buildClauseGroup]) to filter on, or `NULL`
+for an include-only query.}
 
-\item{operator}{The group operator. A case-insensitive string (`"AND"`
-or `"OR"`) or a `GroupOperator` member (e.g.
-[`GroupOperator$AND`][picsure::GroupOperator]). Defaults to `"AND"`.}
+\item{includeConcepts}{Optional character vector of concept paths to include
+as output columns. Order is preserved and duplicates are dropped.}
 }
 \value{
-An opaque ClauseGroup handle.
+An opaque Query handle.
 }
 \description{
-Takes a list of clause / group handles and returns a single opaque
-ClauseGroup that can itself be nested inside another
-`buildQuery()` call, or passed to
-[`runQuery()`][picsure::runQuery].
+Bundles a phenotypic filter (a clause or clause-group handle) with the
+concept paths to include as output columns into a single Query handle that
+can be passed to [`runQuery()`][picsure::runQuery],
+[`exportAsPFB()`][picsure::exportAsPFB], or
+[`saveQueryByName()`][picsure::saveQueryByName].
 }
 \examples{
 \dontrun{
-sex    <- picsure::createSubQuery("\\\\phs1\\\\pht1\\\\phv1\\\\sex\\\\", type = "FILTER", categories = "male")
-copd   <- picsure::createSubQuery("\\\\phs1\\\\pht2\\\\phv2\\\\copd\\\\", type = "FILTER", categories = "Yes")
-asthma <- picsure::createSubQuery("\\\\phs1\\\\pht2\\\\phv3\\\\asth\\\\", type = "FILTER", categories = "Yes")
-lung <- picsure::buildQuery(list(copd, asthma), operator = "OR")
-full <- picsure::buildQuery(list(sex, lung), operator = "AND")
+males <- picsure::buildClause("\\\\phs1\\\\sex\\\\", type = "FILTER", categories = "male")
+q <- picsure::buildQuery(
+  phenotypicFilter = males,
+  includeConcepts = c("\\\\phs1\\\\bmi\\\\", "\\\\phs1\\\\hdl\\\\")
+)
 }
 }
