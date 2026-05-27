@@ -10,7 +10,7 @@ narrows a search to a subset — by study, by consent group, etc.
 ``` r
 
 library(picsure)
-bdc <- picsure::connect(platform = "BDC Authorized", token = Sys.getenv("PICSURE_TOKEN"))
+bdc <- picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, token = Sys.getenv("PICSURE_TOKEN"))
 
 results <- picsure::searchDictionary(bdc, "sex")
 head(results)

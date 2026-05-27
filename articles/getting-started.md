@@ -35,14 +35,18 @@ is fetched by reticulate as needed.
 ``` r
 
 bdc <- picsure::connect(
-  platform = "BDC Authorized",
+  platform = picsure::Platform$BDC_AUTHORIZED,
   token    = Sys.getenv("PICSURE_TOKEN")
 )
 ```
 
 Your token comes from the “User Profile” tab on the PIC-SURE web UI.
-Valid platform names include `"Demo"`, `"BDC Open"`, and
-`"BDC Authorized"`.
+Pass a `Platform` member — e.g. `picsure::Platform$BDC_AUTHORIZED`,
+`picsure::Platform$BDC_OPEN`, or `picsure::Platform$NHANES_OPEN` — or a
+full URL string for an unlisted deployment. See
+[`?picsure::Platform`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/Platform.md)
+for the full set of members. A human-readable label string like
+`"BDC Authorized"` is rejected.
 
 ## Search the dictionary
 

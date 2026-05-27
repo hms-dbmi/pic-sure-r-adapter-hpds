@@ -95,12 +95,17 @@ needed.</p>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bdc</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/connect.html">connect</a></span><span class="op">(</span></span>
-<span>  platform <span class="op">=</span> <span class="st">"BDC Authorized"</span>,</span>
+<span>  platform <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="../reference/Platform.html">Platform</a></span><span class="op">$</span><span class="va">BDC_AUTHORIZED</span>,</span>
 <span>  token    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"PICSURE_TOKEN"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Your token comes from the “User Profile” tab on the PIC-SURE web UI.
-Valid platform names include <code>"Demo"</code>,
-<code>"BDC Open"</code>, and <code>"BDC Authorized"</code>.</p>
+Pass a <code>Platform</code> member —
+e.g. <code>picsure::Platform$BDC_AUTHORIZED</code>,
+<code>picsure::Platform$BDC_OPEN</code>, or
+<code>picsure::Platform$NHANES_OPEN</code> — or a full URL string for an
+unlisted deployment. See <code><a href="../reference/Platform.html">?picsure::Platform</a></code> for the full
+set of members. A human-readable label string like
+<code>"BDC Authorized"</code> is rejected.</p>
 </div>
 <div class="section level2">
 <h2 id="search-the-dictionary">Search the dictionary<a class="anchor" aria-label="anchor" href="#search-the-dictionary"></a>

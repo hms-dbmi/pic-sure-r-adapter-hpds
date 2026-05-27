@@ -1,7 +1,8 @@
 # Connect to a PIC-SURE instance.
 
 Opens a session against the named PIC-SURE platform using the supplied
-personal token. Platforms are listed by \`picsure::platforms()\`.
+personal token. See \[\`Platform\`\]\[picsure::Platform\] for the known
+platform members.
 
 ## Usage
 
@@ -14,8 +15,11 @@ connect(platform, token = "", ...)
 - platform:
 
   A \`Platform\` member (e.g.
-  \[\`Platform\$BDC_OPEN\`\]\[picsure::Platform\]) or a platform-label
-  string (e.g. \`"BDC Open"\`, \`"BDC Authorized"\`).
+  \[\`Platform\$BDC_AUTHORIZED\`\]\[picsure::Platform\]) or a full URL
+  string for an unlisted deployment (e.g.
+  \`"https://my-picsure.example.com"\`). Human-readable label strings
+  such as \`"BDC Authorized"\` are \*\*not\*\* accepted and raise a
+  \`picsureError\`.
 
 - token:
 
@@ -64,7 +68,7 @@ env.
 
 ``` r
 if (FALSE) { # \dontrun{
-bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
+bdc <- picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, token = my_token)
 open <- picsure::connect(platform = picsure::Platform$BDC_OPEN)
 } # }
 ```

@@ -86,11 +86,11 @@ end-to-end.</p>
 </tr>
 <tr class="even">
 <td><code>bdc.initializeSession(url, token)</code></td>
-<td><code>connect(platform = "BDC Authorized", token)</code></td>
+<td><code>connect(platform = Platform$BDC_AUTHORIZED, token)</code></td>
 </tr>
 <tr class="odd">
 <td><code>bdc.setResource(session, "OPEN")</code></td>
-<td><code>connect(platform = "BDC Open", ...)</code></td>
+<td><code>connect(platform = Platform$BDC_OPEN, ...)</code></td>
 </tr>
 <tr class="even">
 <td><code>bdc.searchPicsure(session, "sex")</code></td>
@@ -171,7 +171,7 @@ end-to-end.</p>
 <span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">q</span>, <span class="st">"COUNT"</span><span class="op">)</span></span></code></pre></div>
 <p><strong>v3:</strong></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bdc</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/connect.html">connect</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="st">"BDC Authorized"</span>, token <span class="op">=</span> <span class="va">my_token</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">bdc</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/connect.html">connect</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="../reference/Platform.html">Platform</a></span><span class="op">$</span><span class="va">BDC_AUTHORIZED</span>, token <span class="op">=</span> <span class="va">my_token</span><span class="op">)</span></span>
 <span><span class="va">age_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildClause.html">buildClause</a></span><span class="op">(</span></span>
 <span>  <span class="st">"\\phs000001\\pht000001\\phv00000005\\age\\"</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"FILTER"</span>, min <span class="op">=</span> <span class="fl">40</span></span>

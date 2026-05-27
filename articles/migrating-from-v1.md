@@ -9,8 +9,8 @@ equivalent and walks through three common notebook patterns end-to-end.
 | v1 | v3 |
 |----|----|
 | `initializeSession(url, token)` | `connect(platform, token)` |
-| `bdc.initializeSession(url, token)` | `connect(platform = "BDC Authorized", token)` |
-| `bdc.setResource(session, "OPEN")` | `connect(platform = "BDC Open", ...)` |
+| `bdc.initializeSession(url, token)` | `connect(platform = Platform$BDC_AUTHORIZED, token)` |
+| `bdc.setResource(session, "OPEN")` | `connect(platform = Platform$BDC_OPEN, ...)` |
 | `bdc.searchPicsure(session, "sex")` | `searchDictionary(session, "sex")` |
 | `bdc.getStudies(session)` | (removed — not yet re-exposed) |
 | `newQuery(session)` | no direct replacement — use [`buildClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClause.md) + [`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md) / [`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md) |
@@ -47,7 +47,7 @@ count <- picsure::runQuery(q, "COUNT")
 
 ``` r
 
-bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
+bdc <- picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, token = my_token)
 age_filter <- picsure::buildClause(
   "\\phs000001\\pht000001\\phv00000005\\age\\",
   type = "FILTER", min = 40
