@@ -1,7 +1,7 @@
 test_that("searchDictionary() delegates to session$searchDictionary() and returns a data.frame", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   result <- picsure::searchDictionary(bdc, "sex")
 
@@ -13,7 +13,7 @@ test_that("searchDictionary() delegates to session$searchDictionary() and return
 test_that("searchDictionary() forwards include_values to Python", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   picsure::searchDictionary(bdc, "age", include_values = FALSE)
 
@@ -25,7 +25,7 @@ test_that("searchDictionary() forwards include_values to Python", {
 test_that("searchDictionary() defaults term to empty string (all variables)", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   picsure::searchDictionary(bdc)
 
@@ -35,7 +35,7 @@ test_that("searchDictionary() defaults term to empty string (all variables)", {
 
 test_that("searchDictionary() rejects non-string term (NULL, NA, numeric, multi-length)", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   expect_error(picsure::searchDictionary(bdc, NULL), "term")
   expect_error(picsure::searchDictionary(bdc, NA_character_), "term")
@@ -46,7 +46,7 @@ test_that("searchDictionary() rejects non-string term (NULL, NA, numeric, multi-
 test_that("searchDictionary() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$searchDictionary <- function(...) {
     stop(structure(
       list(message = "The concept path 'sex' was not found in the dictionary."),
@@ -61,7 +61,7 @@ test_that("searchDictionary() re-raises Python exceptions as picsureError", {
 
 test_that("searchDictionary() forwards a FacetSet as the facets kwarg", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
   picsure::addFacet(fs, "data_source", "topmed")
 

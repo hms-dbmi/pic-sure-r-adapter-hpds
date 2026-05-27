@@ -1,6 +1,6 @@
 test_that("runQuery() with type='count' returns a CountResult-shaped object", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q, type = "count")
@@ -11,7 +11,7 @@ test_that("runQuery() with type='count' returns a CountResult-shaped object", {
 
 test_that("runQuery() with type='participant' returns a data.frame", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q, type = "participant")
@@ -23,7 +23,7 @@ test_that("runQuery() with type='participant' returns a data.frame", {
 
 test_that("runQuery() accepts case-insensitive type", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   r1 <- picsure::runQuery(bdc, q, type = "COUNT")
@@ -37,7 +37,7 @@ test_that("runQuery() accepts case-insensitive type", {
 
 test_that("runQuery() defaults type to 'count'", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q)
@@ -48,7 +48,7 @@ test_that("runQuery() defaults type to 'count'", {
 test_that("runQuery() forwards query and type to session$runQuery", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   picsure::runQuery(bdc, q, type = "participant")
@@ -60,14 +60,14 @@ test_that("runQuery() forwards query and type to session$runQuery", {
 
 test_that("runQuery() errors on missing query", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   expect_error(picsure::runQuery(bdc), "query")
 })
 
 test_that("runQuery() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$runQuery <- function(...) {
     stop(structure(
       list(message = "query rejected: empty phenotypic clause"),
@@ -85,7 +85,7 @@ test_that("runQuery() re-raises Python exceptions as picsureError", {
 
 test_that("runQuery() with type='timestamp' returns a data.frame", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   result <- picsure::runQuery(bdc, q, type = "timestamp")
@@ -96,7 +96,7 @@ test_that("runQuery() with type='timestamp' returns a data.frame", {
 
 test_that("runQuery() forwards an unknown type to Python for the error", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   err <- tryCatch(
@@ -150,7 +150,7 @@ test_that("runQuery() still accepts case-insensitive strings (backwards compat)"
 
 test_that("loadQueryByID() forwards query_id to session$loadQueryByID and returns its result", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   result <- picsure::loadQueryByID(bdc, "abc-123")
 
@@ -161,7 +161,7 @@ test_that("loadQueryByID() forwards query_id to session$loadQueryByID and return
 
 test_that("loadQueryByID() result can be piped back into runQuery()", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   loaded <- picsure::loadQueryByID(bdc, "abc-123")
   count <- picsure::runQuery(bdc, loaded, type = "count")
@@ -171,13 +171,13 @@ test_that("loadQueryByID() result can be piped back into runQuery()", {
 
 test_that("loadQueryByID() errors on missing query_id", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   expect_error(picsure::loadQueryByID(bdc), "query_id")
 })
 
 test_that("loadQueryByID() rejects empty, NA, or non-scalar query_id", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   expect_error(picsure::loadQueryByID(bdc, ""), "query_id")
   expect_error(picsure::loadQueryByID(bdc, NA_character_), "query_id")
@@ -188,7 +188,7 @@ test_that("loadQueryByID() rejects empty, NA, or non-scalar query_id", {
 test_that("loadQueryByID() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$loadQueryByID <- function(query_id) {
     stop(structure(
       list(message = "query 'abc-123' not found"),
@@ -206,7 +206,7 @@ test_that("loadQueryByID() re-raises Python exceptions as picsureError", {
 
 test_that("runQueryByID() forwards query_id and type to session$runQueryByID", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   result <- picsure::runQueryByID(bdc, "abc-123", type = "count")
 
@@ -218,7 +218,7 @@ test_that("runQueryByID() forwards query_id and type to session$runQueryByID", {
 
 test_that("runQueryByID() defaults type to 'count'", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   result <- picsure::runQueryByID(bdc, "abc-123")
 
@@ -229,7 +229,7 @@ test_that("runQueryByID() defaults type to 'count'", {
 
 test_that("runQueryByID() with type='participant' returns a data.frame", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   result <- picsure::runQueryByID(bdc, "abc-123", type = "participant")
 
@@ -263,7 +263,7 @@ test_that("runQueryByID() rejects a wrong-subclass member", {
 
 test_that("runQueryByID() rejects empty, NA, or non-scalar query_id", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   expect_error(picsure::runQueryByID(bdc), "query_id")
   expect_error(picsure::runQueryByID(bdc, ""), "query_id")
@@ -275,7 +275,7 @@ test_that("runQueryByID() rejects empty, NA, or non-scalar query_id", {
 test_that("runQueryByID() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$runQueryByID <- function(query_id, type = "count") {
     stop(structure(
       list(message = "query 'abc-123' not found"),

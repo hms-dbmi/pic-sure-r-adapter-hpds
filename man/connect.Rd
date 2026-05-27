@@ -8,8 +8,10 @@ connect(platform, token = "", ...)
 }
 \arguments{
 \item{platform}{A `Platform` member (e.g.
-[`Platform$BDC_OPEN`][picsure::Platform]) or a platform-label string
-(e.g. `"BDC Open"`, `"BDC Authorized"`).}
+[`Platform$BDC_AUTHORIZED`][picsure::Platform]) or a full URL string
+for an unlisted deployment (e.g. `"https://my-picsure.example.com"`).
+Human-readable label strings such as `"BDC Authorized"` are **not**
+accepted and raise a `picsureError`.}
 
 \item{token}{Your personal PIC-SURE access token, obtained from the
 "User Profile" tab of your PIC-SURE instance. Optional for open-access
@@ -37,7 +39,8 @@ An opaque session object. Pass it as the first argument to
 }
 \description{
 Opens a session against the named PIC-SURE platform using the supplied
-personal token. Platforms are listed by `picsure::platforms()`.
+personal token. See [`Platform`][picsure::Platform] for the known
+platform members.
 }
 \details{
 On the first call of the R session, reticulate provisions an isolated
@@ -46,7 +49,7 @@ a few seconds the first time; subsequent calls reuse the cached env.
 }
 \examples{
 \dontrun{
-bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
+bdc <- picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, token = my_token)
 open <- picsure::connect(platform = picsure::Platform$BDC_OPEN)
 }
 }

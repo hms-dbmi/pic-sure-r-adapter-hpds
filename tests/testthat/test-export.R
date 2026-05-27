@@ -1,6 +1,6 @@
 test_that("exportAsPFB() forwards query and path to session$exportAsPFB", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
   tmp <- tempfile(fileext = ".pfb")
 
@@ -15,7 +15,7 @@ test_that("exportAsPFB() forwards query and path to session$exportAsPFB", {
 
 test_that("exportAsPFB() returns the path invisibly", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
   tmp <- tempfile(fileext = ".pfb")
 
@@ -26,7 +26,7 @@ test_that("exportAsPFB() returns the path invisibly", {
 
 test_that("exportAsPFB() errors on missing path", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
 
   expect_error(picsure::exportAsPFB(bdc, q), "path")
@@ -34,7 +34,7 @@ test_that("exportAsPFB() errors on missing path", {
 
 test_that("export functions reject length>1 path vectors", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   q <- list(kind = "group", clauses = list(), operator = "AND")
   df <- data.frame(patient_id = 1L, value = "a", stringsAsFactors = FALSE)
   bad_path <- c(tempfile(), tempfile())
@@ -46,7 +46,7 @@ test_that("export functions reject length>1 path vectors", {
 
 test_that("exportAsPFB() errors on missing query", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   tmp <- tempfile(fileext = ".pfb")
 
   expect_error(picsure::exportAsPFB(bdc, path = tmp), "query")
@@ -55,7 +55,7 @@ test_that("exportAsPFB() errors on missing query", {
 test_that("exportAsPFB() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$exportAsPFB <- function(query, path) {
     stop(structure(
       list(message = "PFB export requires the picsure[pfb] optional dependency"),
@@ -73,7 +73,7 @@ test_that("exportAsPFB() re-raises Python exceptions as picsureError", {
 
 test_that("exportCSV() forwards data.frame + path, returns path invisibly", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   df <- data.frame(id = 1:3, val = c("a", "b", "c"), stringsAsFactors = FALSE)
   tmp <- tempfile(fileext = ".csv")
 
@@ -88,7 +88,7 @@ test_that("exportCSV() forwards data.frame + path, returns path invisibly", {
 
 test_that("exportTSV() forwards data.frame + path, returns path invisibly", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   df <- data.frame(id = 1:3, val = c("a", "b", "c"), stringsAsFactors = FALSE)
   tmp <- tempfile(fileext = ".tsv")
 
@@ -103,7 +103,7 @@ test_that("exportTSV() forwards data.frame + path, returns path invisibly", {
 
 test_that("exportCSV() errors when data is not a data.frame", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   tmp <- tempfile(fileext = ".csv")
 
   expect_error(picsure::exportCSV(bdc, list(a = 1), tmp), "data.frame")
@@ -112,7 +112,7 @@ test_that("exportCSV() errors when data is not a data.frame", {
 
 test_that("exportTSV() errors on missing path", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   df <- data.frame(id = 1:2)
   expect_error(picsure::exportTSV(bdc, df), "path")
 })
@@ -120,7 +120,7 @@ test_that("exportTSV() errors on missing path", {
 test_that("exportCSV() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$exportCSV <- function(data, path) {
     stop(structure(
       list(message = "permission denied on path"),
@@ -139,14 +139,14 @@ test_that("exportCSV() re-raises Python exceptions as picsureError", {
 
 test_that("exportCSV() errors on missing path", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   df <- data.frame(id = 1:2)
   expect_error(picsure::exportCSV(bdc, df), "path")
 })
 
 test_that("exportTSV() errors when data is not a data.frame", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   tmp <- tempfile(fileext = ".tsv")
   expect_error(picsure::exportTSV(bdc, list(a = 1), tmp), "data.frame")
   expect_error(picsure::exportTSV(bdc, NULL, tmp), "data.frame")

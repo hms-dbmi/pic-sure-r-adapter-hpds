@@ -1,9 +1,11 @@
 #' List available PIC-SURE platforms.
 #'
-#' Returns the character vector of platform labels the Python `picsure`
-#' package recognizes. Pass one of these strings — or a full URL to a custom
-#' PIC-SURE deployment — as the `platform` argument to
-#' [`connect()`][picsure::connect].
+#' Returns the character vector of human-readable platform labels the
+#' Python `picsure` package recognizes. These labels are display-only:
+#' [`connect()`][picsure::connect] does **not** accept them. To connect,
+#' pass a [`Platform`][picsure::Platform] member (e.g.
+#' `Platform$BDC_AUTHORIZED`) or a full URL to a custom PIC-SURE
+#' deployment.
 #'
 #' @return A character vector.
 #' @examples

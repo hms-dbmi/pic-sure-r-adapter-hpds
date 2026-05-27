@@ -1,15 +1,18 @@
 #' Connect to a PIC-SURE instance.
 #'
 #' Opens a session against the named PIC-SURE platform using the supplied
-#' personal token. Platforms are listed by `picsure::platforms()`.
+#' personal token. See [`Platform`][picsure::Platform] for the known
+#' platform members.
 #'
 #' On the first call of the R session, reticulate provisions an isolated
 #' Python environment containing the `picsure` Python package. This may take
 #' a few seconds the first time; subsequent calls reuse the cached env.
 #'
 #' @param platform A `Platform` member (e.g.
-#'   [`Platform$BDC_OPEN`][picsure::Platform]) or a platform-label string
-#'   (e.g. `"BDC Open"`, `"BDC Authorized"`).
+#'   [`Platform$BDC_AUTHORIZED`][picsure::Platform]) or a full URL string
+#'   for an unlisted deployment (e.g. `"https://my-picsure.example.com"`).
+#'   Human-readable label strings such as `"BDC Authorized"` are **not**
+#'   accepted and raise a `picsureError`.
 #' @param token Your personal PIC-SURE access token, obtained from the
 #'   "User Profile" tab of your PIC-SURE instance. Optional for open-access
 #'   platforms (`Platform$BDC_OPEN`, `Platform$BDC_DEV_OPEN`,
@@ -32,12 +35,12 @@
 #'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
 #' @examples
 #' \dontrun{
-#' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
+#' bdc <- picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, token = my_token)
 #' open <- picsure::connect(platform = picsure::Platform$BDC_OPEN)
 #' }
 #' @export
 connect <- function(platform, token = "", ...) {
-  bad_platform_msg <- "`platform` is required. Call picsure::platforms() to list valid values."
+  bad_platform_msg <- "`platform` is required. Pass a Platform member (e.g. picsure::Platform$BDC_AUTHORIZED) or a full URL string. See ?picsure::Platform."
   if (missing(platform) || is.null(platform)) {
     stop(picsureError(bad_platform_msg))
   }
@@ -61,6 +64,21 @@ connect <- function(platform, token = "", ...) {
   } else if (is.character(platform)) {
     if (length(platform) != 1L || is.na(platform) || !nzchar(platform)) {
       stop(picsureError(bad_platform_msg))
+    }
+    # Only URL strings are valid string platforms. Python's
+    # resolve_platform rejects human-readable labels ("BDC Authorized"),
+    # so catch them here with an R-side message rather than letting the
+    # forwarded call fail deeper with a less specific error.
+    if (!grepl("^https?://", platform, ignore.case = TRUE)) {
+      stop(picsureError(sprintf(
+        paste0(
+          "%s is not a valid platform. Platform labels are not accepted; ",
+          "pass a Platform member (e.g. picsure::Platform$BDC_AUTHORIZED) ",
+          "or a full URL string (e.g. \"https://my-picsure.example.com\"). ",
+          "See ?picsure::Platform."
+        ),
+        encodeString(platform, quote = "\"")
+      )))
     }
   } else if (!inherits(platform, "python.builtin.object")) {
     # Reject logicals like NA, numerics, lists, etc.; accept only strings,

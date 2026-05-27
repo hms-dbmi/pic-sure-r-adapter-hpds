@@ -1,6 +1,6 @@
 test_that("facets() returns a FacetSet handle from the session", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
   fs <- picsure::facets(bdc)
 
@@ -10,7 +10,7 @@ test_that("facets() returns a FacetSet handle from the session", {
 test_that("facets() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$facets <- function() {
     stop(structure(
       list(message = "facets endpoint unavailable"),
@@ -25,7 +25,7 @@ test_that("facets() re-raises Python exceptions as picsureError", {
 
 test_that("addFacet() delegates to fs$add() and returns the FacetSet", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
 
   result <- picsure::addFacet(fs, "study_ids", "phs000007")
@@ -38,7 +38,7 @@ test_that("addFacet() delegates to fs$add() and returns the FacetSet", {
 
 test_that("addFacet() supports vector values by calling fs$add() once per value", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
 
   picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
@@ -50,7 +50,7 @@ test_that("addFacet() supports vector values by calling fs$add() once per value"
 
 test_that("removeFacet() delegates to fs$remove() and returns the FacetSet", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
   picsure::addFacet(fs, "study_ids", "phs000007")
   picsure::addFacet(fs, "study_ids", "phs000200")
@@ -64,7 +64,7 @@ test_that("removeFacet() delegates to fs$remove() and returns the FacetSet", {
 
 test_that("addFacet() re-raises Python exceptions as picsureError", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
   fs$add <- function(key, value) {
     stop(structure(
@@ -83,7 +83,7 @@ test_that("addFacet() re-raises Python exceptions as picsureError", {
 
 test_that("removeFacet() re-raises Python exceptions as picsureError", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "Demo", token = "tok")
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
   fs$remove <- function(key, value) {
     stop(structure(

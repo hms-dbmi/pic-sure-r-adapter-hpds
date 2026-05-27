@@ -30,12 +30,12 @@ library(picsure)
 
 # Connect
 bdc <- picsure::connect(
-  platform = "BDC Authorized",
+  platform = picsure::Platform$BDC_AUTHORIZED,
   token    = Sys.getenv("PICSURE_TOKEN")
 )
 
 # Search
-results <- picsure::search(bdc, "sex")
+results <- picsure::searchDictionary(bdc, "sex")
 
 # Build a query
 sex_filter <- picsure::buildClause(
