@@ -20,9 +20,10 @@
 #' @return An opaque Clause handle.
 #'
 #' @details
-#' To include concept paths in query output without filtering, pass them to
-#' [`buildQuery()`][picsure::buildQuery]'s `includeConcepts` argument — output
-#' columns are no longer a clause type.
+#' Variables you filter on are returned as output columns automatically. To
+#' include *additional* concept paths in query output without filtering, pass
+#' them to [`buildQuery()`][picsure::buildQuery]'s `includeConcepts` argument —
+#' output columns are not a clause type.
 #' @examples
 #' \dontrun{
 #' sex <- picsure::buildClause(
@@ -97,8 +98,10 @@ buildClauseGroup <- function(clauses, operator = "AND") {
 #'   [`buildClause()`][picsure::buildClause] /
 #'   [`buildClauseGroup()`][picsure::buildClauseGroup]) to filter on, or `NULL`
 #'   for an include-only query.
-#' @param includeConcepts Optional character vector of concept paths to include
-#'   as output columns. Order is preserved and duplicates are dropped.
+#' @param includeConcepts Optional character vector of *additional* concept
+#'   paths to include as output columns, beyond the variables already named in
+#'   `phenotypicFilter` (those are returned automatically). Order is preserved
+#'   and duplicates are dropped.
 #' @return An opaque Query handle.
 #' @examples
 #' \dontrun{

@@ -34,9 +34,10 @@ query with [`buildQuery()`][picsure::buildQuery], or running via
 [`runQuery()`][picsure::runQuery].
 }
 \details{
-To include concept paths in query output without filtering, pass them to
-[`buildQuery()`][picsure::buildQuery]'s `includeConcepts` argument — output
-columns are no longer a clause type.
+Variables you filter on are returned as output columns automatically. To
+include *additional* concept paths in query output without filtering, pass
+them to [`buildQuery()`][picsure::buildQuery]'s `includeConcepts` argument —
+output columns are not a clause type.
 }
 \examples{
 \dontrun{
