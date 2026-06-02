@@ -92,9 +92,10 @@ categorical FILTER clauses.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>To include concept paths in query output without filtering, pass them to
-[`buildQuery()`][picsure::buildQuery]'s `includeConcepts` argument — output
-columns are no longer a clause type.</p>
+    <p>Variables you filter on are returned as output columns automatically. To
+include *additional* concept paths in query output without filtering, pass
+them to [`buildQuery()`][picsure::buildQuery]'s `includeConcepts` argument —
+output columns are not a clause type.</p>
     </div>
 
     <div class="section level2">
