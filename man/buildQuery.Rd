@@ -12,8 +12,10 @@ buildQuery(phenotypicFilter = NULL, includeConcepts = NULL)
 [`buildClauseGroup()`][picsure::buildClauseGroup]) to filter on, or `NULL`
 for an include-only query.}
 
-\item{includeConcepts}{Optional character vector of concept paths to include
-as output columns. Order is preserved and duplicates are dropped.}
+\item{includeConcepts}{Optional character vector of *additional* concept
+paths to include as output columns, beyond the variables already named in
+`phenotypicFilter` (those are returned automatically). Order is preserved
+and duplicates are dropped.}
 }
 \value{
 An opaque Query handle.
