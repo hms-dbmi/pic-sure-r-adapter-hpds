@@ -13,13 +13,16 @@ runQueryByID(session, query_id, type = "count")
 
 \item{type}{A `QueryType` member (e.g.
 [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
-string: `"count"` (default), `"participant"`, `"timestamp"`, or
-`"cross_count"`.}
+string: `"count"` (default), `"participant"`, `"timestamp"`,
+`"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
+or `"aggregate_vcf_excerpt"`.}
 }
 \value{
 Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
-  `"count"`, a dict-like mapping for `"cross_count"`, or a
-  `data.frame` for `"participant"` / `"timestamp"`.
+  `"count"`, a dict-like mapping for `"cross_count"`, a `data.frame` for
+  `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
+  `"aggregate_vcf_excerpt"`, an integer for `"variant_count"`, or a
+  character vector for `"variant_list"`.
 }
 \description{
 Fetches a previously-saved query by UUID and runs it. Semantically

@@ -4,7 +4,11 @@
 \alias{buildQuery}
 \title{Assemble a complete query from a filter tree and/or output concepts.}
 \usage{
-buildQuery(phenotypicFilter = NULL, includeConcepts = NULL)
+buildQuery(
+  phenotypicFilter = NULL,
+  includeConcepts = NULL,
+  genomicFilters = NULL
+)
 }
 \arguments{
 \item{phenotypicFilter}{A clause or clause-group handle (from
@@ -16,6 +20,10 @@ for an include-only query.}
 paths to include as output columns, beyond the variables already named in
 `phenotypicFilter` (those are returned automatically). Order is preserved
 and duplicates are dropped.}
+
+\item{genomicFilters}{A GenomicFilter handle (from
+[`buildGenomicFilter()`][picsure::buildGenomicFilter]) or a list of them,
+applied as a flat conjunctive list. `NULL` (default) for no genomic filter.}
 }
 \value{
 An opaque Query handle.

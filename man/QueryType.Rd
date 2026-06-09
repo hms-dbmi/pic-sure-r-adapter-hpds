@@ -15,6 +15,12 @@ A list of `picsure_enum_member` objects:
     timestamps for longitudinal concepts.}
   \item{`CROSS_COUNT`}{Returns a list of `CountResult`s keyed by
     concept path.}
+  \item{`VARIANT_COUNT`}{Returns an integer count of distinct matching
+    variants.}
+  \item{`VARIANT_LIST`}{Returns a character vector of variant spec strings.}
+  \item{`VCF_EXCERPT`}{Returns a data.frame, one row per variant, with
+    per-patient genotype columns.}
+  \item{`AGGREGATE_VCF_EXCERPT`}{Like `VCF_EXCERPT` without patient columns.}
 }
 }
 \usage{

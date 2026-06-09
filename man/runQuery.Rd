@@ -16,8 +16,9 @@ runQuery(session, query, type = "count", ...)
 
 \item{type}{A `QueryType` member (e.g.
 [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
-string: `"count"` (default), `"participant"`, `"timestamp"`, or
-`"cross_count"`.}
+string: `"count"` (default), `"participant"`, `"timestamp"`,
+`"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
+or `"aggregate_vcf_excerpt"`.}
 
 \item{...}{Additional keyword arguments forwarded to the Python
 `Session.runQuery()` call.}
@@ -26,8 +27,10 @@ string: `"count"` (default), `"participant"`, `"timestamp"`, or
 For `type = "count"`, a Python `CountResult` object with
   `$value` (exact count, or `NULL` for obfuscated small cohorts),
   `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
-  mapping concept paths to CountResults. For `"participant"` and
-  `"timestamp"`, a `data.frame`.
+  mapping concept paths to CountResults. For `"participant"`,
+  `"timestamp"`, `"vcf_excerpt"`, and `"aggregate_vcf_excerpt"`, a
+  `data.frame`. For `"variant_count"`, an integer; for `"variant_list"`,
+  a character vector.
 }
 \description{
 Runs a query — a clause/clause-group from
@@ -45,6 +48,10 @@ returns the result in the shape dictated by `type`:
   across all included concepts.
 - `"timestamp"` — data.frame of participant-level timestamps for
   longitudinal concepts.
+- `"variant_count"` — an integer count of distinct matching variants.
+- `"variant_list"` — a character vector of variant spec strings.
+- `"vcf_excerpt"` / `"aggregate_vcf_excerpt"` — a data.frame, one row per
+  variant (the aggregate form omits per-patient columns).
 }
 \examples{
 \dontrun{
