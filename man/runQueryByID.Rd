@@ -19,10 +19,9 @@ or `"aggregate_vcf_excerpt"`.}
 }
 \value{
 Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
-  `"count"`, a dict-like mapping for `"cross_count"`, a `data.frame` for
-  `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
-  `"aggregate_vcf_excerpt"`, an integer for `"variant_count"`, or a
-  character vector for `"variant_list"`.
+  `"count"` or `"variant_count"`, a dict-like mapping for `"cross_count"`,
+  a `data.frame` for `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
+  `"aggregate_vcf_excerpt"`, or a character vector for `"variant_list"`.
 }
 \description{
 Fetches a previously-saved query by UUID and runs it. Semantically

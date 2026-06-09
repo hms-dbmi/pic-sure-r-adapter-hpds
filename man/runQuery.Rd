@@ -24,13 +24,12 @@ or `"aggregate_vcf_excerpt"`.}
 `Session.runQuery()` call.}
 }
 \value{
-For `type = "count"`, a Python `CountResult` object with
-  `$value` (exact count, or `NULL` for obfuscated small cohorts),
-  `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
+For `type = "count"` or `"variant_count"`, a Python `CountResult`
+  object with `$value` (exact count, or `NULL` for obfuscated small
+  cohorts), `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
   mapping concept paths to CountResults. For `"participant"`,
   `"timestamp"`, `"vcf_excerpt"`, and `"aggregate_vcf_excerpt"`, a
-  `data.frame`. For `"variant_count"`, an integer; for `"variant_list"`,
-  a character vector.
+  `data.frame`. For `"variant_list"`, a character vector.
 }
 \description{
 Runs a query — a clause/clause-group from
@@ -48,7 +47,8 @@ returns the result in the shape dictated by `type`:
   across all included concepts.
 - `"timestamp"` — data.frame of participant-level timestamps for
   longitudinal concepts.
-- `"variant_count"` — an integer count of distinct matching variants.
+- `"variant_count"` — a `CountResult` for the number of distinct matching
+  variants (preserving obfuscation, like `"count"`).
 - `"variant_list"` — a character vector of variant spec strings.
 - `"vcf_excerpt"` / `"aggregate_vcf_excerpt"` — a data.frame, one row per
   variant (the aggregate form omits per-patient columns).

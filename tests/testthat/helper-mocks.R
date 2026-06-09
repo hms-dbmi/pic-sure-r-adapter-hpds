@@ -47,7 +47,7 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
             timestamp  = c("2026-01-01", "2026-01-02"),
             stringsAsFactors = FALSE
           ),
-          variant_count = 7L,
+          variant_count = list(value = 7L, margin = 0L, cap = NULL),
           variant_list = c("chr1:1:A:T", "chr2:2:G:C"),
           vcf_excerpt = data.frame(
             CHROM = "1", POSITION = 100L, REF = "A", ALT = "T",
@@ -101,7 +101,7 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
             timestamp  = c("2026-01-01", "2026-01-02"),
             stringsAsFactors = FALSE
           ),
-          variant_count = 7L,
+          variant_count = list(value = 7L, margin = 0L, cap = NULL),
           variant_list = c("chr1:1:A:T", "chr2:2:G:C"),
           vcf_excerpt = data.frame(
             CHROM = "1", POSITION = 100L, REF = "A", ALT = "T",
