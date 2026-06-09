@@ -86,6 +86,57 @@ buildClauseGroup <- function(clauses, operator = "AND") {
   ))
 }
 
+#' Create a single genomic (variant) filter.
+#'
+#' Builds an opaque GenomicFilter handle for the `genomicFilters` argument of
+#' [`buildQuery()`][picsure::buildQuery]. A filter is either *categorical*
+#' (`values`) or a *numeric range* (`min`/`max`), never both.
+#'
+#' @param key The genomic annotation to filter on, e.g. `"Gene_with_variant"`,
+#'   `"Variant_consequence_calculated"`, `"Variant_frequency_as_text"`, a
+#'   numeric frequency key, or a SNP variant spec like `"chr5:148481541:T:A"`.
+#' @param values Categorical value(s): a character vector, or
+#'   [`VariantFrequency`][picsure::VariantFrequency] /
+#'   [`Zygosity`][picsure::Zygosity] members (coerced to their string value).
+#'   Mutually exclusive with `min`/`max`.
+#' @param min,max Numeric bounds for a range filter. Mutually exclusive with
+#'   `values`.
+#' @param ... Additional keyword arguments forwarded to the Python
+#'   `picsure.buildGenomicFilter()` call.
+#' @return An opaque GenomicFilter handle.
+#' @examples
+#' \dontrun{
+#' gene <- picsure::buildGenomicFilter("Gene_with_variant", values = c("BRCA1"))
+#' freq <- picsure::buildGenomicFilter(
+#'   "Variant_frequency_in_gnomAD", min = 0, max = 0.01
+#' )
+#' }
+#' @export
+buildGenomicFilter <- function(key, values = NULL, min = NULL, max = NULL, ...) {
+  if (missing(key) || is.null(key) || !is.character(key) ||
+      length(key) != 1L || is.na(key) || !nzchar(key)) {
+    stop("`key` must be a non-empty character scalar (e.g. \"Gene_with_variant\").")
+  }
+  if (!is.null(values)) {
+    if (inherits(values, "picsure_enum_member")) {
+      values <- list(values)
+    }
+    values <- vapply(values, function(v) {
+      if (inherits(v, "picsure_enum_member")) v$value else as.character(v)
+    }, character(1), USE.NAMES = FALSE)
+  }
+
+  kwargs <- drop_nulls(list(
+    key    = key,
+    values = values,
+    min    = min,
+    max    = max,
+    ...
+  ))
+
+  with_picsure_error(do.call(picsure_py$buildGenomicFilter, kwargs))
+}
+
 #' Assemble a complete query from a filter tree and/or output concepts.
 #'
 #' Bundles a phenotypic filter (a clause or clause-group handle) with the
@@ -102,6 +153,9 @@ buildClauseGroup <- function(clauses, operator = "AND") {
 #'   paths to include as output columns, beyond the variables already named in
 #'   `phenotypicFilter` (those are returned automatically). Order is preserved
 #'   and duplicates are dropped.
+#' @param genomicFilters A GenomicFilter handle (from
+#'   [`buildGenomicFilter()`][picsure::buildGenomicFilter]) or a list of them,
+#'   applied as a flat conjunctive list. `NULL` (default) for no genomic filter.
 #' @return An opaque Query handle.
 #' @examples
 #' \dontrun{
@@ -112,7 +166,7 @@ buildClauseGroup <- function(clauses, operator = "AND") {
 #' )
 #' }
 #' @export
-buildQuery <- function(phenotypicFilter = NULL, includeConcepts = NULL) {
+buildQuery <- function(phenotypicFilter = NULL, includeConcepts = NULL, genomicFilters = NULL) {
   if (!is.null(includeConcepts) &&
       (!is.character(includeConcepts) || any(is.na(includeConcepts)))) {
     stop("`includeConcepts` must be a character vector of concept paths, or NULL.")
@@ -120,7 +174,8 @@ buildQuery <- function(phenotypicFilter = NULL, includeConcepts = NULL) {
 
   kwargs <- drop_nulls(list(
     phenotypicFilter = phenotypicFilter,
-    includeConcepts  = includeConcepts
+    includeConcepts  = includeConcepts,
+    genomicFilters   = genomicFilters
   ))
 
   with_picsure_error(do.call(picsure_py$buildQuery, kwargs))

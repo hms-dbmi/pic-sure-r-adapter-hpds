@@ -14,6 +14,10 @@
 #'   across all included concepts.
 #' - `"timestamp"` — data.frame of participant-level timestamps for
 #'   longitudinal concepts.
+#' - `"variant_count"` — an integer count of distinct matching variants.
+#' - `"variant_list"` — a character vector of variant spec strings.
+#' - `"vcf_excerpt"` / `"aggregate_vcf_excerpt"` — a data.frame, one row per
+#'   variant (the aggregate form omits per-patient columns).
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query A clause/clause-group handle (from
@@ -22,15 +26,18 @@
 #'   [`buildQuery()`][picsure::buildQuery]).
 #' @param type A `QueryType` member (e.g.
 #'   [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
-#'   string: `"count"` (default), `"participant"`, `"timestamp"`, or
-#'   `"cross_count"`.
+#'   string: `"count"` (default), `"participant"`, `"timestamp"`,
+#'   `"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
+#'   or `"aggregate_vcf_excerpt"`.
 #' @param ... Additional keyword arguments forwarded to the Python
 #'   `Session.runQuery()` call.
 #' @return For `type = "count"`, a Python `CountResult` object with
 #'   `$value` (exact count, or `NULL` for obfuscated small cohorts),
 #'   `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
-#'   mapping concept paths to CountResults. For `"participant"` and
-#'   `"timestamp"`, a `data.frame`.
+#'   mapping concept paths to CountResults. For `"participant"`,
+#'   `"timestamp"`, `"vcf_excerpt"`, and `"aggregate_vcf_excerpt"`, a
+#'   `data.frame`. For `"variant_count"`, an integer; for `"variant_list"`,
+#'   a character vector.
 #' @examples
 #' \dontrun{
 #' count <- picsure::runQuery(bdc, full_query, type = "count")
@@ -90,11 +97,14 @@ loadQueryByID <- function(session, query_id) {
 #' @param query_id The UUID string of a previously-saved query.
 #' @param type A `QueryType` member (e.g.
 #'   [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
-#'   string: `"count"` (default), `"participant"`, `"timestamp"`, or
-#'   `"cross_count"`.
+#'   string: `"count"` (default), `"participant"`, `"timestamp"`,
+#'   `"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
+#'   or `"aggregate_vcf_excerpt"`.
 #' @return Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
-#'   `"count"`, a dict-like mapping for `"cross_count"`, or a
-#'   `data.frame` for `"participant"` / `"timestamp"`.
+#'   `"count"`, a dict-like mapping for `"cross_count"`, a `data.frame` for
+#'   `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
+#'   `"aggregate_vcf_excerpt"`, an integer for `"variant_count"`, or a
+#'   character vector for `"variant_list"`.
 #' @examples
 #' \dontrun{
 #' count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
