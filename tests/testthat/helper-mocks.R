@@ -47,6 +47,16 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
             timestamp  = c("2026-01-01", "2026-01-02"),
             stringsAsFactors = FALSE
           ),
+          variant_count = 7L,
+          variant_list = c("chr1:1:A:T", "chr2:2:G:C"),
+          vcf_excerpt = data.frame(
+            CHROM = "1", POSITION = 100L, REF = "A", ALT = "T",
+            stringsAsFactors = FALSE
+          ),
+          aggregate_vcf_excerpt = data.frame(
+            CHROM = "1", POSITION = 100L, REF = "A", ALT = "T",
+            stringsAsFactors = FALSE
+          ),
           stop("fake runQuery: unknown type '", type, "'")
         )
       },
@@ -89,6 +99,16 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
           timestamp = data.frame(
             patient_id = c(1L, 2L),
             timestamp  = c("2026-01-01", "2026-01-02"),
+            stringsAsFactors = FALSE
+          ),
+          variant_count = 7L,
+          variant_list = c("chr1:1:A:T", "chr2:2:G:C"),
+          vcf_excerpt = data.frame(
+            CHROM = "1", POSITION = 100L, REF = "A", ALT = "T",
+            stringsAsFactors = FALSE
+          ),
+          aggregate_vcf_excerpt = data.frame(
+            CHROM = "1", POSITION = 100L, REF = "A", ALT = "T",
             stringsAsFactors = FALSE
           ),
           stop("fake runQueryByID: unknown type '", t, "'")
@@ -149,12 +169,16 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
     buildClauseGroup = function(clauses, operator) {
       list(kind = "group", clauses = clauses, operator = operator)
     },
-    buildQuery = function(phenotypicFilter = NULL, includeConcepts = NULL) {
+    buildQuery = function(phenotypicFilter = NULL, includeConcepts = NULL, genomicFilters = NULL) {
       list(
         kind = "query",
         phenotypicFilter = phenotypicFilter,
-        includeConcepts = includeConcepts
+        includeConcepts = includeConcepts,
+        genomicFilters = genomicFilters
       )
+    },
+    buildGenomicFilter = function(key, values = NULL, min = NULL, max = NULL, ...) {
+      list(kind = "genomic_filter", key = key, values = values, min = min, max = max)
     },
 
     # Enums exposed as named lists so to_py_enum() and tests can look them up
@@ -165,7 +189,14 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
     GroupOperator = list(AND = "AND", OR = "OR"),
     QueryType = list(
       COUNT = "count", PARTICIPANT = "participant",
-      TIMESTAMP = "timestamp", CROSS_COUNT = "cross_count"
+      TIMESTAMP = "timestamp", CROSS_COUNT = "cross_count",
+      VARIANT_COUNT = "variant_count", VARIANT_LIST = "variant_list",
+      VCF_EXCERPT = "vcf_excerpt", AGGREGATE_VCF_EXCERPT = "aggregate_vcf_excerpt"
+    ),
+    VariantFrequency = list(RARE = "Rare", COMMON = "Common", NOVEL = "Novel"),
+    Zygosity = list(
+      HETEROZYGOUS = "0/1", HOMOZYGOUS = "1/1",
+      HETEROZYGOUS_OR_HOMOZYGOUS = "1/1,0/1"
     ),
     Platform = setNames(platform_names, toupper(gsub(" ", "_", platform_names))),
 
