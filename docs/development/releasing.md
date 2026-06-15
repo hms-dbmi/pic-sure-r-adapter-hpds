@@ -6,20 +6,20 @@ This document is for maintainers cutting a new release of `picsure`.
 
 `picsure` follows [SemVer](https://semver.org/). The version lives in
 the [`DESCRIPTION`](../../DESCRIPTION) `Version:` field. The current
-value (`0.0.0.9000`) is a **development version**: by R packaging
-convention, a `*.9000` suffix marks the in-progress development
-track on top of the last released version. After releasing `1.2.3`
-you'd bump development to `1.2.3.9000` until the next release.
+value is `2.0.0` — the first full release of the rewritten adapter.
+By R packaging convention, a `*.9000` suffix marks an in-progress
+development track on top of the last released version; after releasing
+`2.0.0` you'd bump development to `2.0.0.9000` until the next release.
 
-The only tag that has been cut so far is `v1.0.0-alpha`. Confirm the
-next release tag with maintainers before cutting.
+The release tag is `v2.0.0` (cut from the `query_v3` branch); the only
+prior tag was `v1.0.0-alpha`. Confirm the next release tag with
+maintainers before cutting.
 
 ## Pre-release checklist
 
-1. **Changelog.** Neither `NEWS.md` nor `CHANGELOG.md` currently
-   exists in the repo — confirm with maintainers whether they want
-   one started. If yes, R convention is `NEWS.md` at the package
-   root (pkgdown wires it into the navbar automatically).
+1. **Changelog.** Update [`NEWS.md`](../../NEWS.md) at the package
+   root — add a `# picsure X.Y.Z` section describing the release.
+   pkgdown wires it into the navbar automatically.
 2. **Bump `DESCRIPTION` `Version:`** to the release version (drop
    the `.9000` development suffix).
 3. **Documentation is current.** Run `devtools::document()` and
@@ -43,9 +43,9 @@ next release tag with maintainers before cutting.
 
 ## Cutting the release
 
-The only existing tag is `v1.0.0-alpha`. The conventional next form
-would be `vX.Y.Z` (e.g. `v1.0.0`). Confirm the convention with
-maintainers before cutting.
+The current release tag is `v2.0.0` (cut from `query_v3`); the only
+prior tag was `v1.0.0-alpha`. New tags follow `vX.Y.Z`. Confirm the
+convention with maintainers before cutting.
 
 ```bash
 # from a clean working tree on the release commit
