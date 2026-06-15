@@ -8,4 +8,4 @@ provisioned automatically on first use.
 
 ## Author
 
-**Maintainer**: PIC-SURE Team <pic-sure-team@hms.harvard.edu>
+**Maintainer**: PIC-SURE Team <avillach_lab_developers@googlegroups.com>

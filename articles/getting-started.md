@@ -8,7 +8,7 @@ query.
 
 ``` r
 
-remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@query_v3")
+remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@v2.0.0")
 library(picsure)
 ```
 

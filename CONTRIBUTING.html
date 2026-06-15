@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@
     <li><a class="dropdown-item" href="articles/running-and-exporting.html">Running and exporting</a></li>
     <li><a class="dropdown-item" href="articles/migrating-from-v1.html">Migrating from v1</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"></ul></div>
 
 
@@ -40,7 +41,7 @@
 
 <p>Welcome. This document is the entry point for both new contributors onboarding to the codebase and internal maintainers who already know their way around. If you’re looking for end-user documentation, see <a href="README.html"><code>README.md</code></a> and the vignettes in <a href="vignettes/"><code>vignettes/</code></a> instead.</p>
 <blockquote>
-<p><strong>Transient note (remove after the v3 rewrite ships).</strong> The v3 rewrite is currently in flight on the <code>query_v3</code> branch; the v1 adapter on <code>main</code> is frozen until <code>query_v3</code> merges in. Until then, branch from and target <code>query_v3</code> instead of <code>main</code>. Once the merge happens, this note and the <code>query_v3</code> mentions elsewhere in the dev docs should be removed — see <a href="TODO.html"><code>TODO.md</code></a>.</p>
+<p><strong>Note on branches.</strong> The 2.0.0 rewrite lives on the <code>query_v3</code> branch and is released as the <code>v2.0.0</code> tag. The legacy 1.x adapter remains on <code>main</code> during the migration window, so the two coexist; <code>query_v3</code> is <strong>not</strong> being merged into <code>main</code> for now. Branch from and target <code>query_v3</code> for all new work. See <a href="TODO.html"><code>TODO.md</code></a> for the eventual <code>main</code> cutover.</p>
 </blockquote>
 <div class="section level2">
 <h2 id="where-to-go-next">Where to go next<a class="anchor" aria-label="anchor" href="#where-to-go-next"></a></h2>
@@ -76,7 +77,7 @@
 </div>
 <div class="section level2">
 <h2 id="branching-and-pull-requests">Branching and pull requests<a class="anchor" aria-label="anchor" href="#branching-and-pull-requests"></a></h2>
-<p>Branch from <code>main</code> for new work and open a PR against <code>main</code>. (See the transient note at the top while the v3 rewrite is in flight.)</p>
+<p>Branch from <code>query_v3</code> for new work and open a PR against <code>query_v3</code> (see the note on branches at the top). The legacy 1.x adapter on <code>main</code> is not under active development.</p>
 <ul><li>Keep commit messages descriptive — explain why, not just what.</li>
 <li>PRs must pass the <code>R CMD check</code> matrix in CI before merge (see <a href=".github/workflows/check.yml"><code>.github/workflows/check.yml</code></a>).</li>
 <li>If you change exported function signatures, run <code>devtools::document()</code> and commit the regenerated <code>man/</code> and <code>NAMESPACE</code> files.</li>

@@ -1,12 +1,13 @@
 # Migrating from picsure v1
 
-The v3 rewrite is a clean break from v1. Every v1 function is gone;
-there are no deprecation shims. This page maps each v1 call to its v3
-equivalent and walks through three common notebook patterns end-to-end.
+The 2.0.0 rewrite is a clean break from the 1.x adapter. Every v1
+function is gone; there are no deprecation shims. This page maps each v1
+call to its 2.0.0 equivalent and walks through three common notebook
+patterns end-to-end.
 
 ## Function-by-function mapping
 
-| v1 | v3 |
+| v1 | v2 |
 |----|----|
 | `initializeSession(url, token)` | `connect(platform, token)` |
 | `bdc.initializeSession(url, token)` | `connect(platform = Platform$BDC_AUTHORIZED, token)` |
@@ -43,7 +44,7 @@ q <- picsure::bdc.addClause(
 count <- picsure::runQuery(q, "COUNT")
 ```
 
-**v3:**
+**v2:**
 
 ``` r
 
@@ -68,7 +69,7 @@ q <- picsure::bdc.addClause(q, bmi_path, "SELECT")
 rows <- picsure::runQuery(q, "DATA_FRAME")
 ```
 
-**v3:**
+**v2:**
 
 ``` r
 
@@ -79,7 +80,7 @@ rows  <- picsure::runQuery(bdc, query, type = "participant")
 
 ## Worked example 3: nested AND/OR
 
-There’s no v1 equivalent — v1 query construction was flat. In v3:
+There’s no v1 equivalent — v1 query construction was flat. In v2:
 
 ``` r
 
@@ -91,9 +92,9 @@ query   <- picsure::buildClauseGroup(list(sex_filter, lung), operator = "AND")
 
 ## Error handling
 
-v1 emitted raw HTTP / R errors from `httr`. v3 emits `picsureError` with
-Python-crafted, researcher-facing messages. Catch the class if you need
-to:
+v1 emitted raw HTTP / R errors from `httr`. The 2.0.0 adapter emits
+`picsureError` with Python-crafted, researcher-facing messages. Catch
+the class if you need to:
 
 ``` r
 

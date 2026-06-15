@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@
     <li><a class="dropdown-item" href="articles/running-and-exporting.html">Running and exporting</a></li>
     <li><a class="dropdown-item" href="articles/migrating-from-v1.html">Migrating from v1</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"></ul></div>
 
 
@@ -40,24 +41,22 @@
 
 <p>Tracking items that need follow-up. Remove the item from this file once it’s done; delete the file when it’s empty.</p>
 <div class="section level2">
-<h2 id="post-merge-cleanup-query_v3--main">Post-merge cleanup: <code>query_v3</code> → <code>main</code>
-<a class="anchor" aria-label="anchor" href="#post-merge-cleanup-query_v3--main"></a></h2>
-<p>The v3 rewrite is in flight on <code>query_v3</code> with v1 frozen on <code>main</code>. Once <code>query_v3</code> merges into <code>main</code> and the rewrite is live, the following references to <code>query_v3</code> need to be removed or updated. The dev docs were written against the steady state (<code>main</code> as the canonical branch), so most files need no changes — only the items below.</p>
+<h2 id="eventual-cutover-retire-1x-on-main">Eventual cutover: retire 1.x on <code>main</code>
+<a class="anchor" aria-label="anchor" href="#eventual-cutover-retire-1x-on-main"></a></h2>
+<p>The 2.0.0 rewrite lives on <code>query_v3</code> and is released as the <code>v2.0.0</code> tag. The legacy 1.x adapter stays on <code>main</code> during the migration window, so both branches coexist and CI builds both. When the team decides to retire 1.x and make the rewrite the canonical <code>main</code>, the following <code>query_v3</code> references need to be removed or updated.</p>
 <div class="section level3">
 <h3 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a></h3>
-<ul class="task-list"><li><label><input type="checkbox"><code>CONTRIBUTING.md</code> — remove the “Transient note” callout near the top of the file. The “Branching and pull requests” section already targets <code>main</code> and needs no further edit.</label></li>
-<li><label><input type="checkbox"><code>README.md</code> — update the install snippet (currently <code>remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@query_v3")</code>) to drop the <code>@query_v3</code> ref.</label></li>
-<li><label><input type="checkbox"><code>README.md</code> — remove or rewrite the “Migrating from v1” paragraph that says “this rewrite lives on <code>query_v3</code>.”</label></li>
+<ul class="task-list"><li><label><input type="checkbox"><code>README.md</code> — the install snippet and “Migrating from v1” section point at the <code>v2.0.0</code> tag. Revisit if <code>main</code> becomes the rewrite (a bare <code>@main</code> or default install may then suffice).</label></li>
+<li><label><input type="checkbox"><code>vignettes/getting-started.Rmd</code> — same install snippet.</label></li>
+<li><label><input type="checkbox"><code>CONTRIBUTING.md</code> — the “Note on branches” callout and the “Branching and pull requests” section both target <code>query_v3</code>; retarget to <code>main</code> after the cutover.</label></li>
 </ul></div>
 <div class="section level3">
 <h3 id="ci-workflows">CI workflows<a class="anchor" aria-label="anchor" href="#ci-workflows"></a></h3>
-<ul class="task-list"><li><label><input type="checkbox"><code>.github/workflows/check.yml</code> — remove <code>query_v3</code> from the <code>on.pull_request.branches</code> and <code>on.push.branches</code> lists.</label></li>
-<li><label><input type="checkbox"><code>.github/workflows/pkgdown.yml</code> — same as above.</label></li>
-<li><label><input type="checkbox">After updating the workflows, no follow-up edit to <code>docs/development/testing.md</code> is needed (the prose already says “Runs on PRs and pushes to <code>main</code>”).</label></li>
+<ul class="task-list"><li><label><input type="checkbox"><code>.github/workflows/check.yml</code> and <code>.github/workflows/pkgdown.yml</code> — <code>query_v3</code> can be dropped from the <code>branches</code> lists once it is the default branch.</label></li>
 </ul></div>
 <div class="section level3">
 <h3 id="verification">Verification<a class="anchor" aria-label="anchor" href="#verification"></a></h3>
-<ul class="task-list"><li><label><input type="checkbox">After the cleanup commit, run <code>grep -rn "query_v3" .</code> from the repo root and confirm zero matches outside of git history.</label></li>
+<ul class="task-list"><li><label><input type="checkbox">After the cutover, run <code>grep -rn "query_v3" .</code> from the repo root and confirm zero matches outside of git history.</label></li>
 <li><label><input type="checkbox">Delete this file once every item above is checked off.</label></li>
 </ul></div>
 </div>

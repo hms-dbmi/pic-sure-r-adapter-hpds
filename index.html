@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,6 +42,7 @@
     <li><a class="dropdown-item" href="articles/migrating-from-v1.html">Migrating from v1</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav"></ul>
 </div>
@@ -61,7 +62,7 @@
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hms-dbmi/pic-sure-r-adapter-hpds@query_v3"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hms-dbmi/pic-sure-r-adapter-hpds@v2.0.0"</span><span class="op">)</span></span></code></pre></div>
 <p>The package requires R ≥ 4.1 and <code>reticulate</code> ≥ 1.41. On first call, reticulate resolves the Python <code>picsure</code> package into an isolated <code>uv</code>-backed virtualenv; this takes a few seconds the first time only.</p>
 </div>
 <div class="section level2">
@@ -112,7 +113,7 @@
 <div class="section level2">
 <h2 id="migrating-from-v1">Migrating from v1<a class="anchor" aria-label="anchor" href="#migrating-from-v1"></a>
 </h2>
-<p>The v1 adapter on <code>main</code> is unchanged; this rewrite lives on <code>query_v3</code>. See <a href="vignettes/migrating-from-v1.Rmd"><code>vignettes/migrating-from-v1.Rmd</code></a> for a side-by-side mapping of every v1 function to its v3 equivalent.</p>
+<p>This is the 2.0.0 rewrite of the adapter, released as the <code>v2.0.0</code> tag. The legacy 1.x adapter remains on <code>main</code> during the migration window. See <a href="vignettes/migrating-from-v1.Rmd"><code>vignettes/migrating-from-v1.Rmd</code></a> for a side-by-side mapping of every 1.x function to its 2.0.0 equivalent.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
