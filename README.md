@@ -16,7 +16,7 @@ The required Python environment is provisioned automatically on first use.
 
 ```r
 # install.packages("remotes")
-remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@query_v3")
+remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@v2.0.0")
 ```
 
 The package requires R ≥ 4.1 and `reticulate` ≥ 1.41. On first call,
@@ -67,9 +67,10 @@ picsure::exportAsPFB(bdc, query, "~/cohort.pfb")
 
 ## Migrating from v1
 
-The v1 adapter on `main` is unchanged; this rewrite lives on `query_v3`. See
+This is the 2.0.0 rewrite of the adapter, released as the `v2.0.0` tag. The
+legacy 1.x adapter remains on `main` during the migration window. See
 [`vignettes/migrating-from-v1.Rmd`](vignettes/migrating-from-v1.Rmd) for a
-side-by-side mapping of every v1 function to its v3 equivalent.
+side-by-side mapping of every 1.x function to its 2.0.0 equivalent.
 
 ## License
 
