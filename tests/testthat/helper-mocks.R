@@ -17,6 +17,7 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
   calls$loadQueryByID <- list()
   calls$runQueryByID <- list()
   calls$saveQueryByName <- list()
+  calls$searchGenomicValues <- list()
   structure(
     list(
       platform = platform,
@@ -121,6 +122,10 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
         )
         "qid-fake-001"
       },
+      searchGenomicValues = function(...) {
+        calls$searchGenomicValues <- c(calls$searchGenomicValues, list(list(...)))
+        data.frame(value = c("BRCA1", "BRCA2"), stringsAsFactors = FALSE)
+      },
       .calls = calls
     ),
     class = "fake_session"
@@ -179,6 +184,13 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
     },
     buildGenomicFilter = function(key, values = NULL, ...) {
       list(kind = "genomic_filter", key = key, values = values)
+    },
+    genomicConsequences = function() {
+      data.frame(
+        severity = c("High Severity", "Medium Severity"),
+        consequence = c("stop_gained", "missense_variant"),
+        stringsAsFactors = FALSE
+      )
     },
 
     # Enums exposed as named lists so to_py_enum() and tests can look them up

@@ -30,6 +30,10 @@
 #'     \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
 #'       unauthenticated mode (only useful for open resources). Defaults to
 #'       the Python adapter's choice (currently `TRUE`).}
+#'     \item{`supports_genomic`}{Logical. Whether genomic operations
+#'       (`searchGenomicValues()`, genomic-filtered queries) are permitted.
+#'       Defaults to the platform's own flag (`TRUE` only for BDC authorized
+#'       platforms); pass `TRUE` for a custom URL that serves genomic data.}
 #'   }
 #' @return An opaque session object. Pass it as the first argument to
 #'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
@@ -123,4 +127,4 @@ connect <- function(platform, token = "", ...) {
 # Whitelist of optional kwargs forwarded through `...` to picsure_py$connect.
 # Names mirror the Python adapter's snake_case kwargs 1:1 — no R-side
 # translation. To bump: add the new kwarg here and to connect()'s @param block.
-CONNECT_EXTRA_KWARGS <- c("resource_uuid", "include_consents", "requires_auth")
+CONNECT_EXTRA_KWARGS <- c("resource_uuid", "include_consents", "requires_auth", "supports_genomic")
