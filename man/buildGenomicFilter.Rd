@@ -4,20 +4,16 @@
 \alias{buildGenomicFilter}
 \title{Create a single genomic (variant) filter.}
 \usage{
-buildGenomicFilter(key, values = NULL, min = NULL, max = NULL, ...)
+buildGenomicFilter(key, values = NULL, ...)
 }
 \arguments{
 \item{key}{The genomic annotation to filter on, e.g. `"Gene_with_variant"`,
-`"Variant_consequence_calculated"`, `"Variant_frequency_as_text"`, a
-numeric frequency key, or a SNP variant spec like `"chr5:148481541:T:A"`.}
+`"Variant_consequence_calculated"`, `"Variant_frequency_as_text"`, or a
+SNP variant spec like `"chr5,148481541,T,A"`.}
 
 \item{values}{Categorical value(s): a character vector, or
 [`VariantFrequency`][picsure::VariantFrequency] /
-[`Zygosity`][picsure::Zygosity] members (coerced to their string value).
-Mutually exclusive with `min`/`max`.}
-
-\item{min, max}{Numeric bounds for a range filter. Mutually exclusive with
-`values`.}
+[`Zygosity`][picsure::Zygosity] members (coerced to their string value).}
 
 \item{...}{Additional keyword arguments forwarded to the Python
 `picsure.buildGenomicFilter()` call.}
@@ -27,14 +23,14 @@ An opaque GenomicFilter handle.
 }
 \description{
 Builds an opaque GenomicFilter handle for the `genomicFilters` argument of
-[`buildQuery()`][picsure::buildQuery]. A filter is either *categorical*
-(`values`) or a *numeric range* (`min`/`max`), never both.
+[`buildQuery()`][picsure::buildQuery]. A filter is **categorical**: it
+matches when the annotation named by `key` is one of `values`.
 }
 \examples{
 \dontrun{
 gene <- picsure::buildGenomicFilter("Gene_with_variant", values = c("BRCA1"))
-freq <- picsure::buildGenomicFilter(
-  "Variant_frequency_in_gnomAD", min = 0, max = 0.01
+rare <- picsure::buildGenomicFilter(
+  "Variant_frequency_as_text", values = picsure::VariantFrequency$RARE
 )
 }
 }

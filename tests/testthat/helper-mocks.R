@@ -177,8 +177,8 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
         genomicFilters = genomicFilters
       )
     },
-    buildGenomicFilter = function(key, values = NULL, min = NULL, max = NULL, ...) {
-      list(kind = "genomic_filter", key = key, values = values, min = min, max = max)
+    buildGenomicFilter = function(key, values = NULL, ...) {
+      list(kind = "genomic_filter", key = key, values = values)
     },
 
     # Enums exposed as named lists so to_py_enum() and tests can look them up

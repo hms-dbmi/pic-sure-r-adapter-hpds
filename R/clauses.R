@@ -89,30 +89,27 @@ buildClauseGroup <- function(clauses, operator = "AND") {
 #' Create a single genomic (variant) filter.
 #'
 #' Builds an opaque GenomicFilter handle for the `genomicFilters` argument of
-#' [`buildQuery()`][picsure::buildQuery]. A filter is either *categorical*
-#' (`values`) or a *numeric range* (`min`/`max`), never both.
+#' [`buildQuery()`][picsure::buildQuery]. A filter is **categorical**: it
+#' matches when the annotation named by `key` is one of `values`.
 #'
 #' @param key The genomic annotation to filter on, e.g. `"Gene_with_variant"`,
-#'   `"Variant_consequence_calculated"`, `"Variant_frequency_as_text"`, a
-#'   numeric frequency key, or a SNP variant spec like `"chr5:148481541:T:A"`.
+#'   `"Variant_consequence_calculated"`, `"Variant_frequency_as_text"`, or a
+#'   SNP variant spec like `"chr5,148481541,T,A"`.
 #' @param values Categorical value(s): a character vector, or
 #'   [`VariantFrequency`][picsure::VariantFrequency] /
 #'   [`Zygosity`][picsure::Zygosity] members (coerced to their string value).
-#'   Mutually exclusive with `min`/`max`.
-#' @param min,max Numeric bounds for a range filter. Mutually exclusive with
-#'   `values`.
 #' @param ... Additional keyword arguments forwarded to the Python
 #'   `picsure.buildGenomicFilter()` call.
 #' @return An opaque GenomicFilter handle.
 #' @examples
 #' \dontrun{
 #' gene <- picsure::buildGenomicFilter("Gene_with_variant", values = c("BRCA1"))
-#' freq <- picsure::buildGenomicFilter(
-#'   "Variant_frequency_in_gnomAD", min = 0, max = 0.01
+#' rare <- picsure::buildGenomicFilter(
+#'   "Variant_frequency_as_text", values = picsure::VariantFrequency$RARE
 #' )
 #' }
 #' @export
-buildGenomicFilter <- function(key, values = NULL, min = NULL, max = NULL, ...) {
+buildGenomicFilter <- function(key, values = NULL, ...) {
   if (missing(key) || is.null(key) || !is.character(key) ||
       length(key) != 1L || is.na(key) || !nzchar(key)) {
     stop("`key` must be a non-empty character scalar (e.g. \"Gene_with_variant\").")
@@ -129,8 +126,6 @@ buildGenomicFilter <- function(key, values = NULL, min = NULL, max = NULL, ...) 
   kwargs <- drop_nulls(list(
     key    = key,
     values = values,
-    min    = min,
-    max    = max,
     ...
   ))
 
