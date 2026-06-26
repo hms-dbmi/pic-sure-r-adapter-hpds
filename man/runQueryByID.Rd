@@ -21,7 +21,9 @@ or `"aggregate_vcf_excerpt"`.}
 Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
   `"count"` or `"variant_count"`, a dict-like mapping for `"cross_count"`,
   a `data.frame` for `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
-  `"aggregate_vcf_excerpt"`, or a character vector for `"variant_list"`.
+  `"aggregate_vcf_excerpt"` (not served by BDC primary environments yet),
+  or a character vector for `"variant_list"` (not served by BDC primary
+  environments yet).
 }
 \description{
 Fetches a previously-saved query by UUID and runs it. Semantically

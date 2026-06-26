@@ -11,7 +11,7 @@ buildGenomicFilter(key, values = NULL, ...)
 `"Variant_consequence_calculated"`, or `"Variant_frequency_as_text"`.
 Variant-spec (SNP) keys are not supported yet and are rejected.}
 
-\item{values}{Categorical value(s): a character vector, or
+\item{values}{Required. Categorical value(s): a character vector, or
 [`VariantFrequency`][picsure::VariantFrequency] members (coerced to their
 string value).}
 

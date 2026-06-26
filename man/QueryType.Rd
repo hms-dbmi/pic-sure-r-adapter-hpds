@@ -17,10 +17,12 @@ A list of `picsure_enum_member` objects:
     concept path.}
   \item{`VARIANT_COUNT`}{Returns a `CountResult` for the number of distinct
     matching variants (preserving obfuscation, like `COUNT`).}
-  \item{`VARIANT_LIST`}{Returns a character vector of variant spec strings.}
+  \item{`VARIANT_LIST`}{Returns a character vector of variant spec strings
+    (not served by BDC primary environments yet).}
   \item{`VCF_EXCERPT`}{Returns a data.frame, one row per variant, with
-    per-patient genotype columns.}
-  \item{`AGGREGATE_VCF_EXCERPT`}{Like `VCF_EXCERPT` without patient columns.}
+    per-patient genotype columns (not served by BDC primary environments yet).}
+  \item{`AGGREGATE_VCF_EXCERPT`}{Like `VCF_EXCERPT` without patient columns
+    (not served by BDC primary environments yet).}
 }
 }
 \usage{

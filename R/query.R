@@ -16,9 +16,11 @@
 #'   longitudinal concepts.
 #' - `"variant_count"` — a `CountResult` for the number of distinct matching
 #'   variants (preserving obfuscation, like `"count"`).
-#' - `"variant_list"` — a character vector of variant spec strings.
+#' - `"variant_list"` - a character vector of variant spec strings
+#'   (not served by BDC primary environments yet).
 #' - `"vcf_excerpt"` / `"aggregate_vcf_excerpt"` — a data.frame, one row per
-#'   variant (the aggregate form omits per-patient columns).
+#'   variant (the aggregate form omits per-patient columns)
+#'   (not served by BDC primary environments yet).
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query A clause/clause-group handle (from
@@ -103,7 +105,9 @@ loadQueryByID <- function(session, query_id) {
 #' @return Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
 #'   `"count"` or `"variant_count"`, a dict-like mapping for `"cross_count"`,
 #'   a `data.frame` for `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
-#'   `"aggregate_vcf_excerpt"`, or a character vector for `"variant_list"`.
+#'   `"aggregate_vcf_excerpt"` (not served by BDC primary environments yet),
+#'   or a character vector for `"variant_list"` (not served by BDC primary
+#'   environments yet).
 #' @examples
 #' \dontrun{
 #' count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")

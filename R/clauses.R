@@ -95,7 +95,7 @@ buildClauseGroup <- function(clauses, operator = "AND") {
 #' @param key The genomic annotation to filter on, e.g. `"Gene_with_variant"`,
 #'   `"Variant_consequence_calculated"`, or `"Variant_frequency_as_text"`.
 #'   Variant-spec (SNP) keys are not supported yet and are rejected.
-#' @param values Categorical value(s): a character vector, or
+#' @param values Required. Categorical value(s): a character vector, or
 #'   [`VariantFrequency`][picsure::VariantFrequency] members (coerced to their
 #'   string value).
 #' @param ... Additional keyword arguments forwarded to the Python

@@ -49,9 +49,11 @@ returns the result in the shape dictated by `type`:
   longitudinal concepts.
 - `"variant_count"` — a `CountResult` for the number of distinct matching
   variants (preserving obfuscation, like `"count"`).
-- `"variant_list"` — a character vector of variant spec strings.
+- `"variant_list"` - a character vector of variant spec strings
+  (not served by BDC primary environments yet).
 - `"vcf_excerpt"` / `"aggregate_vcf_excerpt"` — a data.frame, one row per
-  variant (the aggregate form omits per-patient columns).
+  variant (the aggregate form omits per-patient columns)
+  (not served by BDC primary environments yet).
 }
 \examples{
 \dontrun{
