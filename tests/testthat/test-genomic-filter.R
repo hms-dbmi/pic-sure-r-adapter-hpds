@@ -18,10 +18,10 @@ test_that("buildGenomicFilter coerces a single enum member to its value", {
 test_that("buildGenomicFilter coerces a list of mixed members and strings", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
   gf <- picsure::buildGenomicFilter(
-    "chr5,148481541,T,A",
-    values = list(picsure::Zygosity$HETEROZYGOUS, "1/1")
+    "Variant_frequency_as_text",
+    values = list(picsure::VariantFrequency$RARE, "Common")
   )
-  expect_equal(gf$values, c("0/1", "1/1"))
+  expect_equal(gf$values, c("Rare", "Common"))
 })
 
 test_that("buildGenomicFilter does not accept numeric range (min/max) args", {

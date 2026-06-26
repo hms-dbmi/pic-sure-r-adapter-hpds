@@ -159,32 +159,6 @@ VariantFrequency <- list(
   NOVEL  = .enum_member("NOVEL",  "Novel",  enum_name = "VariantFrequency", subclass = "picsure_variant_frequency")
 )
 
-#' Genotype codes for SNP / variant-spec genomic filters.
-#'
-#' Pass a member to [`buildGenomicFilter()`][picsure::buildGenomicFilter]'s
-#' `values` argument for a SNP variant-spec key. Mirrors Python's
-#' `picsure.Zygosity`.
-#'
-#' @format A list of `picsure_enum_member` objects:
-#' \describe{
-#'   \item{`HETEROZYGOUS`}{Heterozygous (`0/1`).}
-#'   \item{`HOMOZYGOUS`}{Homozygous (`1/1`).}
-#'   \item{`HETEROZYGOUS_OR_HOMOZYGOUS`}{Either (`1/1,0/1`).}
-#' }
-#' @examples
-#' \dontrun{
-#' picsure::buildGenomicFilter(
-#'   "chr5:148481541:T:A",
-#'   values = picsure::Zygosity$HETEROZYGOUS
-#' )
-#' }
-#' @export
-Zygosity <- list(
-  HETEROZYGOUS               = .enum_member("HETEROZYGOUS",               "0/1",     enum_name = "Zygosity", subclass = "picsure_zygosity"),
-  HOMOZYGOUS                 = .enum_member("HOMOZYGOUS",                 "1/1",     enum_name = "Zygosity", subclass = "picsure_zygosity"),
-  HETEROZYGOUS_OR_HOMOZYGOUS = .enum_member("HETEROZYGOUS_OR_HOMOZYGOUS", "1/1,0/1", enum_name = "Zygosity", subclass = "picsure_zygosity")
-)
-
 #' Known PIC-SURE deployment platforms.
 #'
 #' Pass a member to [`connect()`][picsure::connect]'s `platform`

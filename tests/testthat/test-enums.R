@@ -221,11 +221,12 @@ test_that("QueryType exposes variant result-type members", {
   expect_equal(picsure::QueryType$AGGREGATE_VCF_EXCERPT$value, "aggregate_vcf_excerpt")
 })
 
-test_that("VariantFrequency and Zygosity enums mirror Python values", {
+test_that("VariantFrequency enum mirrors Python values", {
   expect_equal(picsure::VariantFrequency$RARE$value, "Rare")
   expect_equal(picsure::VariantFrequency$COMMON$value, "Common")
   expect_equal(picsure::VariantFrequency$NOVEL$value, "Novel")
-  expect_equal(picsure::Zygosity$HETEROZYGOUS$value, "0/1")
-  expect_equal(picsure::Zygosity$HOMOZYGOUS$value, "1/1")
-  expect_equal(picsure::Zygosity$HETEROZYGOUS_OR_HOMOZYGOUS$value, "1/1,0/1")
+})
+
+test_that("Zygosity enum was removed (SNP filtering not supported yet)", {
+  expect_false("Zygosity" %in% getNamespaceExports("picsure"))
 })

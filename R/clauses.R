@@ -93,11 +93,11 @@ buildClauseGroup <- function(clauses, operator = "AND") {
 #' matches when the annotation named by `key` is one of `values`.
 #'
 #' @param key The genomic annotation to filter on, e.g. `"Gene_with_variant"`,
-#'   `"Variant_consequence_calculated"`, `"Variant_frequency_as_text"`, or a
-#'   SNP variant spec like `"chr5,148481541,T,A"`.
+#'   `"Variant_consequence_calculated"`, or `"Variant_frequency_as_text"`.
+#'   Variant-spec (SNP) keys are not supported yet and are rejected.
 #' @param values Categorical value(s): a character vector, or
-#'   [`VariantFrequency`][picsure::VariantFrequency] /
-#'   [`Zygosity`][picsure::Zygosity] members (coerced to their string value).
+#'   [`VariantFrequency`][picsure::VariantFrequency] members (coerced to their
+#'   string value).
 #' @param ... Additional keyword arguments forwarded to the Python
 #'   `picsure.buildGenomicFilter()` call.
 #' @return An opaque GenomicFilter handle.

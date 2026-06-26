@@ -206,10 +206,6 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
       VCF_EXCERPT = "vcf_excerpt", AGGREGATE_VCF_EXCERPT = "aggregate_vcf_excerpt"
     ),
     VariantFrequency = list(RARE = "Rare", COMMON = "Common", NOVEL = "Novel"),
-    Zygosity = list(
-      HETEROZYGOUS = "0/1", HOMOZYGOUS = "1/1",
-      HETEROZYGOUS_OR_HOMOZYGOUS = "1/1,0/1"
-    ),
     Platform = setNames(platform_names, toupper(gsub(" ", "_", platform_names))),
 
     # Call recorder

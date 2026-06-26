@@ -107,10 +107,10 @@ _picsure_enum_names = sorted([
   py_enums <- reticulate::py$`_picsure_enum_names`
   r_enums <- c(
     "PhenotypicFilterType", "GroupOperator", "Platform", "QueryType",
-    "VariantFrequency", "Zygosity"
+    "VariantFrequency"
   )
-  if (!all(c("VariantFrequency", "Zygosity") %in% py_enums)) {
-    skip("Pinned Python adapter lacks VariantFrequency/Zygosity enums; pending its update on main.")
+  if (!("VariantFrequency" %in% py_enums)) {
+    skip("Pinned Python adapter lacks VariantFrequency enum; pending its update on main.")
   }
   expect_setequal(py_enums, r_enums)
 })
@@ -128,15 +128,3 @@ test_that("VariantFrequency matches Python", {
   }
 })
 
-test_that("Zygosity matches Python", {
-  skip_if_no_picsure_py()
-  if (!py_has_attr("Zygosity")) {
-    skip("Pinned Python adapter lacks Zygosity; pending its update on main.")
-  }
-  py <- py_members(picsure:::picsure_py$Zygosity)
-  expect_setequal(names(picsure::Zygosity), names(py))
-  for (n in names(picsure::Zygosity)) {
-    expect_equal(picsure::Zygosity[[n]]$name,  py[[n]]$name,  info = n)
-    expect_equal(picsure::Zygosity[[n]]$value, py[[n]]$value, info = n)
-  }
-})
