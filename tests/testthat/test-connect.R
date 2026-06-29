@@ -171,3 +171,22 @@ test_that("connect() rejects a human-readable label string before calling Python
   # Python is never reached for a rejected label.
   expect_length(fake$.calls$connect, 0L)
 })
+
+test_that("connect() defaults client_type to R_ADAPTER", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  picsure::connect(platform = "https://picsure.test", token = "abc")
+  recorded <- fake$.calls$connect[[1]]
+  expect_equal(recorded$client_type, "R_ADAPTER")
+})
+
+test_that("connect() lets the caller override client_type", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  picsure::connect(
+    platform = "https://picsure.test", token = "abc",
+    client_type = "PYTHON_ADAPTER"
+  )
+  recorded <- fake$.calls$connect[[1]]
+  expect_equal(recorded$client_type, "PYTHON_ADAPTER")
+})

@@ -34,6 +34,9 @@
 #'       (`searchGenomicValues()`, genomic-filtered queries) are permitted.
 #'       Defaults to the platform's own flag (`TRUE` only for BDC authorized
 #'       platforms); pass `TRUE` for a custom URL that serves genomic data.}
+#'     \item{`client_type`}{Identifier sent to the backend audit log as the
+#'       `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
+#'       normally need to override it.}
 #'   }
 #' @return An opaque session object. Pass it as the first argument to
 #'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
@@ -116,6 +119,10 @@ connect <- function(platform, token = "", ...) {
     )))
   }
 
+  # Identify this adapter to the backend audit log. Python's connect()
+  # defaults to "PYTHON_ADAPTER"; override it here unless the caller set it.
+  if (is.null(extras$client_type)) extras$client_type <- "R_ADAPTER"
+
   kwargs <- drop_nulls(c(
     list(platform = platform, token = token),
     extras
@@ -127,4 +134,7 @@ connect <- function(platform, token = "", ...) {
 # Whitelist of optional kwargs forwarded through `...` to picsure_py$connect.
 # Names mirror the Python adapter's snake_case kwargs 1:1 — no R-side
 # translation. To bump: add the new kwarg here and to connect()'s @param block.
-CONNECT_EXTRA_KWARGS <- c("resource_uuid", "include_consents", "requires_auth", "supports_genomic")
+CONNECT_EXTRA_KWARGS <- c(
+  "resource_uuid", "include_consents", "requires_auth", "supports_genomic",
+  "client_type"
+)
