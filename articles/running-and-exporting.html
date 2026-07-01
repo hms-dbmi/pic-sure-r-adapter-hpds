@@ -123,11 +123,32 @@ keyed by concept path, each value a <code>CountResult</code>.</p>
 <code class="sourceCode R"><span><span class="va">timeseries</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, type <span class="op">=</span> <span class="st">"timestamp"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="variant-query-types">Variant query types<a class="anchor" aria-label="anchor" href="#variant-query-types"></a>
+</h2>
+<p>Queries built with <code><a href="../reference/buildGenomicFilter.html">buildGenomicFilter()</a></code> define four
+additional result types in <code>QueryType</code> that answer questions
+about the matching variants rather than the participants:
+<code>"variant_count"</code> (a <code>CountResult</code>),
+<code>"variant_list"</code> (a character vector of variant spec
+strings), and <code>"vcf_excerpt"</code> /
+<code>"aggregate_vcf_excerpt"</code> (data frames). These are not served
+by BDC primary environments yet. The adapter raises a clear error on an
+empty or 5xx response until a deployment serves them. The genomic filter
+itself works today with <code>"count"</code> and
+<code>"participant"</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Not served by BDC primary environments yet; shown for the API shape.</span></span>
+<span><span class="va">vc</span>       <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">genomic_query</span>, type <span class="op">=</span> <span class="st">"variant_count"</span><span class="op">)</span></span>
+<span><span class="va">variants</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">genomic_query</span>, type <span class="op">=</span> <span class="st">"variant_list"</span><span class="op">)</span></span>
+<span><span class="va">vcf</span>      <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">genomic_query</span>, type <span class="op">=</span> <span class="st">"vcf_excerpt"</span><span class="op">)</span></span>
+<span><span class="va">agg_vcf</span>  <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">genomic_query</span>, type <span class="op">=</span> <span class="st">"aggregate_vcf_excerpt"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="export-to-disk">Export to disk<a class="anchor" aria-label="anchor" href="#export-to-disk"></a>
 </h2>
 <p><code><a href="../reference/exportAsPFB.html">exportAsPFB()</a></code> runs the query and writes the PFB file in
 a single call:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/exportAsPFB.html">exportAsPFB</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, <span class="st">"~/cohort.pfb"</span><span class="op">)</span></span></code></pre></div>
 <p>PFB export requires the Python <code>picsure[pfb]</code> optional
 dependency. If the Python env was provisioned without it,
@@ -136,13 +157,13 @@ you at the install hint.</p>
 <p><code><a href="../reference/exportCSV.html">exportCSV()</a></code> and <code><a href="../reference/exportTSV.html">exportTSV()</a></code> serialize an R
 <code>data.frame</code> — the typical flow is to run the query first and
 then write the result:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, type <span class="op">=</span> <span class="st">"participant"</span><span class="op">)</span></span>
 <span><span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/exportCSV.html">exportCSV</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">df</span>, <span class="st">"~/cohort.csv"</span><span class="op">)</span></span>
 <span><span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/exportTSV.html">exportTSV</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">df</span>, <span class="st">"~/cohort.tsv"</span><span class="op">)</span></span></code></pre></div>
 <p>All three export functions return the path invisibly, so you can
 chain:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pfb_path</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/exportAsPFB.html">exportAsPFB</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".pfb"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -152,17 +173,17 @@ chain:</p>
 query to the user’s profile under a display name. It submits the query
 to PIC-SURE and associates the name with it server-side, returning the
 PIC-SURE query ID:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qid</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/saveQueryByName.html">saveQueryByName</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, <span class="st">"Cohort 2026-Q2"</span><span class="op">)</span></span></code></pre></div>
 <p>The returned UUID is the same one you’d pass to
 <code><a href="../reference/loadQueryByID.html">loadQueryByID()</a></code> or <code><a href="../reference/runQueryByID.html">runQueryByID()</a></code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">restored</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/loadQueryByID.html">loadQueryByID</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">qid</span><span class="op">)</span></span>
 <span><span class="va">df</span>       <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQueryByID.html">runQueryByID</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">qid</span>, type <span class="op">=</span> <span class="st">"participant"</span><span class="op">)</span></span></code></pre></div>
 <p>By default, saving a second time under the same name is rejected. To
 repoint the existing record at a freshly-built query, pass
 <code>overwrite = TRUE</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qid</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/saveQueryByName.html">saveQueryByName</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">refined</span>, <span class="st">"Cohort 2026-Q2"</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><code>name</code> must be a non-empty character scalar; allowed
 characters are letters, digits, spaces, and
@@ -178,7 +199,7 @@ principal.</p>
 <code><a href="../reference/loadQueryByID.html">loadQueryByID()</a></code> fetches the saved body from the backend and
 rebuilds it as a Clause / ClauseGroup that drops straight back into
 <code><a href="../reference/runQuery.html">runQuery()</a></code> or any of the export functions:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">previous</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/loadQueryByID.html">loadQueryByID</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"11111111-2222-3333-4444-555555555555"</span><span class="op">)</span></span>
 <span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">previous</span>, type <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span></span></code></pre></div>
 <p>The loaded handle is a clause/clause-group (or a Query, when the

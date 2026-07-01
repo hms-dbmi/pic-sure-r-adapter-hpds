@@ -173,6 +173,53 @@ paths to return as output columns:</p>
 <span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">filters</span>, type <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="genomic-filters">Genomic filters<a class="anchor" aria-label="anchor" href="#genomic-filters"></a>
+</h2>
+<p>Genomic filters narrow a query to participants who carry variants
+matching specific annotation values. They are available on authorized
+platforms (BDC authorized, NHANES authorized) and are AND-combined with
+any phenotypic filter.</p>
+<p>Build a genomic filter with
+<code>buildGenomicFilter(key, values)</code>. <code>key</code> is the
+annotation name (e.g. <code>"Gene_with_variant"</code>,
+<code>"Variant_consequence_calculated"</code>,
+<code>"Variant_frequency_as_text"</code>). <code>values</code> is
+required - a character vector or <code>VariantFrequency</code> enum
+members.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Filter to BRCA1 or BRCA2 variants</span></span>
+<span><span class="va">gene_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildGenomicFilter.html">buildGenomicFilter</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Gene_with_variant"</span>,</span>
+<span>  values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BRCA1"</span>, <span class="st">"BRCA2"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Filter to rare variants using the VariantFrequency enum</span></span>
+<span><span class="va">rare_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildGenomicFilter.html">buildGenomicFilter</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Variant_frequency_as_text"</span>,</span>
+<span>  values <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="../reference/VariantFrequency.html">VariantFrequency</a></span><span class="op">$</span><span class="va">RARE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Pass a list of genomic filters to
+<code>buildQuery(genomicFilters = ...)</code> - they are AND-combined.
+Genomic-only queries (no phenotypic filter) are allowed:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Genomic-only query: count participants carrying matching variants</span></span>
+<span><span class="va">genomic_query</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildQuery.html">buildQuery</a></span><span class="op">(</span></span>
+<span>  genomicFilters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">gene_filter</span>, <span class="va">rare_filter</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">genomic_query</span>, type <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Combined phenotypic + genomic query</span></span>
+<span><span class="va">combined_query</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildQuery.html">buildQuery</a></span><span class="op">(</span></span>
+<span>  phenotypicFilter <span class="op">=</span> <span class="va">sex_filter</span>,</span>
+<span>  genomicFilters   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">gene_filter</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><code>VariantFrequency</code> members (<code>RARE</code>,
+<code>COMMON</code>, <code>NOVEL</code>) are coerced to their string
+value before the request is sent, so they are equivalent to passing the
+string <code>"Rare"</code>, <code>"Common"</code>, or
+<code>"Novel"</code> directly.</p>
+</div>
+<div class="section level2">
 <h2 id="editing-an-existing-query">Editing an existing query<a class="anchor" aria-label="anchor" href="#editing-an-existing-query"></a>
 </h2>
 <p><code><a href="../reference/removeSubQuery.html">removeSubQuery()</a></code> and <code><a href="../reference/replaceClause.html">replaceClause()</a></code> let
@@ -182,7 +229,7 @@ structural: any nested clause or clause-group that is equal by value to
 <code>target</code> is matched. They accept a clause/clause-group or a
 Query (for a Query, the edit applies to its phenotypic filter and the
 included concepts are preserved).</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Drop the copd_or_asthma sub-tree:</span></span>
 <span><span class="va">without_lung</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/removeSubQuery.html">removeSubQuery</a></span><span class="op">(</span><span class="va">full_query</span>, <span class="va">copd_or_asthma</span><span class="op">)</span></span>
 <span></span>
@@ -205,7 +252,7 @@ instead in that case.</p>
 a display name with <code><a href="../reference/saveQueryByName.html">saveQueryByName()</a></code>. It returns the
 PIC-SURE query ID, which you can later pass to
 <code><a href="../reference/loadQueryByID.html">loadQueryByID()</a></code> or <code><a href="../reference/runQueryByID.html">runQueryByID()</a></code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qid</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/saveQueryByName.html">saveQueryByName</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">full_query</span>, <span class="st">"Cohort 2026-Q2"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Re-point an existing name at a refined query:</span></span>

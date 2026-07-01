@@ -90,6 +90,12 @@ list of valid keys. Supported keys:</p><dl><dt>`resource_uuid`</dt>
     unauthenticated mode (only useful for open resources). Defaults to
     the Python adapter's choice (currently `TRUE`).</p></dd>
 
+  <dt>`supports_genomic`</dt>
+<dd><p>Logical. Whether genomic operations
+    (`searchGenomicValues()`, genomic-filtered queries) are permitted.
+    Defaults to the platform's own flag (`TRUE` only for BDC authorized
+    platforms); pass `TRUE` for a custom URL that serves genomic data.</p></dd>
+
 
 </dl></dd>
 

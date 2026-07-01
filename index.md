@@ -52,6 +52,18 @@ query <- picsure::buildClauseGroup(list(sex_filter, age_filter), operator = "AND
 count        <- picsure::runQuery(bdc, query, type = "count")
 participants <- picsure::runQuery(bdc, query, type = "participant")
 
+# Genomic filters (authorized platforms)
+gene_filter <- picsure::buildGenomicFilter("Gene_with_variant", values = c("BRCA1", "BRCA2"))
+rare_filter <- picsure::buildGenomicFilter(
+  "Variant_frequency_as_text", values = picsure::VariantFrequency$RARE
+)
+genomic_query <- picsure::buildQuery(genomicFilters = list(gene_filter, rare_filter))
+genomic_count <- picsure::runQuery(bdc, genomic_query, type = "count")
+
+# Discover valid genomic values (paginated)
+picsure::searchGenomicValues(bdc, "Gene_with_variant", query = "BRCA")
+picsure::genomicConsequences()  # offline; returns severity/consequence table
+
 # Export
 picsure::exportAsPFB(bdc, query, "~/cohort.pfb")
 ```
@@ -61,9 +73,11 @@ picsure::exportAsPFB(bdc, query, "~/cohort.pfb")
 - [Getting
   started](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/vignettes/getting-started.Rmd)
 - [Search and
-  facets](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/vignettes/search-and-facets.Rmd)
+  facets](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/vignettes/search-and-facets.Rmd) -
+  includes genomic value discovery
 - [Building
-  queries](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/vignettes/building-queries.Rmd)
+  queries](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/vignettes/building-queries.Rmd) -
+  includes genomic filters
 - [Running and
   exporting](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/vignettes/running-and-exporting.Rmd)
 - [Migrating from

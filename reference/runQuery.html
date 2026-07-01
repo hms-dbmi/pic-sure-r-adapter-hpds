@@ -77,8 +77,9 @@ returns the result in the shape dictated by `type`:</p>
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>A `QueryType` member (e.g.
 [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
-string: `"count"` (default), `"participant"`, `"timestamp"`, or
-`"cross_count"`.</p></dd>
+string: `"count"` (default), `"participant"`, `"timestamp"`,
+`"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
+or `"aggregate_vcf_excerpt"`.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -88,11 +89,12 @@ string: `"count"` (default), `"participant"`, `"timestamp"`, or
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>For `type = "count"`, a Python `CountResult` object with
-  `$value` (exact count, or `NULL` for obfuscated small cohorts),
-  `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
-  mapping concept paths to CountResults. For `"participant"` and
-  `"timestamp"`, a `data.frame`.</p>
+    <p>For `type = "count"` or `"variant_count"`, a Python `CountResult`
+  object with `$value` (exact count, or `NULL` for obfuscated small
+  cohorts), `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
+  mapping concept paths to CountResults. For `"participant"`,
+  `"timestamp"`, `"vcf_excerpt"`, and `"aggregate_vcf_excerpt"`, a
+  `data.frame`. For `"variant_list"`, a character vector.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -103,7 +105,14 @@ string: `"count"` (default), `"participant"`, `"timestamp"`, or
 - `"participant"` — data.frame with one row per matching participant
   across all included concepts.
 - `"timestamp"` — data.frame of participant-level timestamps for
-  longitudinal concepts.</p>
+  longitudinal concepts.
+- `"variant_count"` — a `CountResult` for the number of distinct matching
+  variants (preserving obfuscation, like `"count"`).
+- `"variant_list"` - a character vector of variant spec strings
+  (not served by BDC primary environments yet).
+- `"vcf_excerpt"` / `"aggregate_vcf_excerpt"` — a data.frame, one row per
+  variant (the aggregate form omits per-patient columns)
+  (not served by BDC primary environments yet).</p>
     </div>
 
     <div class="section level2">

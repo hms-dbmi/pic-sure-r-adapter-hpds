@@ -17,10 +17,12 @@
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/PhenotypicFilterType.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/Platform.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/QueryType.html</loc></url>
+<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/VariantFrequency.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/addFacet.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/as_enum_string.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClause.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.html</loc></url>
+<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildGenomicFilter.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/connect.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/drop_nulls.html</loc></url>
@@ -28,6 +30,7 @@
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportCSV.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportTSV.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/facets.html</loc></url>
+<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/genomicConsequences.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/index.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/loadQueryByID.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/picsure-package.html</loc></url>
@@ -40,6 +43,7 @@
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQueryByID.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/saveQueryByName.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchDictionary.html</loc></url>
+<url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchGenomicValues.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/to_py_enum.html</loc></url>
 <url><loc>https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/with_picsure_error.html</loc></url>
 </urlset>

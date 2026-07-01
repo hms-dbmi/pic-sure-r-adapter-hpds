@@ -68,6 +68,22 @@ Mirrors Python's `picsure.QueryType`.</p>
 <dd><p>Returns a list of `CountResult`s keyed by
     concept path.</p></dd>
 
+  <dt>`VARIANT_COUNT`</dt>
+<dd><p>Returns a `CountResult` for the number of distinct
+    matching variants (preserving obfuscation, like `COUNT`).</p></dd>
+
+  <dt>`VARIANT_LIST`</dt>
+<dd><p>Returns a character vector of variant spec strings
+    (not served by BDC primary environments yet).</p></dd>
+
+  <dt>`VCF_EXCERPT`</dt>
+<dd><p>Returns a data.frame, one row per variant, with
+    per-patient genotype columns (not served by BDC primary environments yet).</p></dd>
+
+  <dt>`AGGREGATE_VCF_EXCERPT`</dt>
+<dd><p>Like `VCF_EXCERPT` without patient columns
+    (not served by BDC primary environments yet).</p></dd>
+
 
 </dl></div>
 

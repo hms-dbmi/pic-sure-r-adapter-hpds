@@ -52,6 +52,13 @@ connect(platform, token = "", ...)
       mode (only useful for open resources). Defaults to the Python
       adapter's choice (currently \`TRUE\`).
 
+  \`supports_genomic\`
+
+  :   Logical. Whether genomic operations (\`searchGenomicValues()\`,
+      genomic-filtered queries) are permitted. Defaults to the
+      platform's own flag (\`TRUE\` only for BDC authorized platforms);
+      pass \`TRUE\` for a custom URL that serves genomic data.
+
 ## Value
 
 An opaque session object. Pass it as the first argument to

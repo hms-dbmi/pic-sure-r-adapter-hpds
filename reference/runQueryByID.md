@@ -26,14 +26,18 @@ runQueryByID(session, query_id, type = "count")
 
   A \`QueryType\` member (e.g.
   \[\`QueryType\$COUNT\`\]\[picsure::QueryType\]) or a case-insensitive
-  string: \`"count"\` (default), \`"participant"\`, \`"timestamp"\`, or
-  \`"cross_count"\`.
+  string: \`"count"\` (default), \`"participant"\`, \`"timestamp"\`,
+  \`"cross_count"\`, \`"variant_count"\`, \`"variant_list"\`,
+  \`"vcf_excerpt"\`, or \`"aggregate_vcf_excerpt"\`.
 
 ## Value
 
 Same as \[\`runQuery()\`\]\[picsure::runQuery\]: a \`CountResult\` for
-\`"count"\`, a dict-like mapping for \`"cross_count"\`, or a
-\`data.frame\` for \`"participant"\` / \`"timestamp"\`.
+\`"count"\` or \`"variant_count"\`, a dict-like mapping for
+\`"cross_count"\`, a \`data.frame\` for \`"participant"\` /
+\`"timestamp"\` / \`"vcf_excerpt"\` / \`"aggregate_vcf_excerpt"\` (not
+served by BDC primary environments yet), or a character vector for
+\`"variant_list"\` (not served by BDC primary environments yet).
 
 ## Examples
 

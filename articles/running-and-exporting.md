@@ -65,6 +65,28 @@ head(participants)
 timeseries <- picsure::runQuery(bdc, full_query, type = "timestamp")
 ```
 
+## Variant query types
+
+Queries built with
+[`buildGenomicFilter()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildGenomicFilter.md)
+define four additional result types in `QueryType` that answer questions
+about the matching variants rather than the participants:
+`"variant_count"` (a `CountResult`), `"variant_list"` (a character
+vector of variant spec strings), and `"vcf_excerpt"` /
+`"aggregate_vcf_excerpt"` (data frames). These are not served by BDC
+primary environments yet. The adapter raises a clear error on an empty
+or 5xx response until a deployment serves them. The genomic filter
+itself works today with `"count"` and `"participant"`.
+
+``` r
+
+# Not served by BDC primary environments yet; shown for the API shape.
+vc       <- picsure::runQuery(bdc, genomic_query, type = "variant_count")
+variants <- picsure::runQuery(bdc, genomic_query, type = "variant_list")
+vcf      <- picsure::runQuery(bdc, genomic_query, type = "vcf_excerpt")
+agg_vcf  <- picsure::runQuery(bdc, genomic_query, type = "aggregate_vcf_excerpt")
+```
+
 ## Export to disk
 
 [`exportAsPFB()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportAsPFB.md)

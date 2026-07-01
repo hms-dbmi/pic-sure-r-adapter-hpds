@@ -56,7 +56,11 @@ can be passed to [`runQuery()`][picsure::runQuery],
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">buildQuery</span><span class="op">(</span>phenotypicFilter <span class="op">=</span> <span class="cn">NULL</span>, includeConcepts <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">buildQuery</span><span class="op">(</span></span>
+<span>  phenotypicFilter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  includeConcepts <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  genomicFilters <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -75,6 +79,12 @@ for an include-only query.</p></dd>
 paths to include as output columns, beyond the variables already named in
 `phenotypicFilter` (those are returned automatically). Order is preserved
 and duplicates are dropped.</p></dd>
+
+
+<dt id="arg-genomicfilters">genomicFilters<a class="anchor" aria-label="anchor" href="#arg-genomicfilters"></a></dt>
+<dd><p>A GenomicFilter handle (from
+[`buildGenomicFilter()`][picsure::buildGenomicFilter]) or a list of them,
+applied as a flat conjunctive list. `NULL` (default) for no genomic filter.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -57,3 +57,33 @@ picsure::searchDictionary(bdc, "age", include_values = FALSE)
 The search term is always matched server-side; you receive every
 matching row. There is no `limit` or `offset` — narrow with a more
 specific term or a facet filter if a search returns too many results.
+
+## Genomic value discovery
+
+On authorized platforms,
+[`searchGenomicValues()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchGenomicValues.md)
+returns valid values for a given genomic annotation key (e.g. gene
+names, consequence labels). Results are paginated via `page` and `size`
+arguments.
+
+``` r
+
+# Find gene names starting with "BRCA"
+picsure::searchGenomicValues(bdc, "Gene_with_variant", query = "BRCA")
+
+# Page through consequence values
+picsure::searchGenomicValues(bdc, "Variant_consequence_calculated", page = 1, size = 50)
+```
+
+Both calls return a `data.frame`. Use the values in
+[`buildGenomicFilter()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildGenomicFilter.md).
+
+[`genomicConsequences()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/genomicConsequences.md)
+requires no session - it returns the full list of known variant
+consequences with their severity ranking offline:
+
+``` r
+
+consequences <- picsure::genomicConsequences()
+head(consequences)
+```

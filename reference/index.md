@@ -17,6 +17,11 @@
   : Add an entry to a FacetSet.
 - [`removeFacet()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/removeFacet.md)
   : Remove an entry from a FacetSet.
+- [`searchGenomicValues()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchGenomicValues.md)
+  : Look up valid values for a genomic annotation key (authorized
+  platforms).
+- [`genomicConsequences()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/genomicConsequences.md)
+  : Variant-consequence vocabulary (offline reference data).
 
 ## Query construction
 
@@ -24,6 +29,8 @@
   : Create a single query clause.
 - [`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md)
   : Combine clauses (and nested groups) under an AND or OR operator.
+- [`buildGenomicFilter()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildGenomicFilter.md)
+  : Create a single genomic (variant) filter.
 - [`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md)
   : Assemble a complete query from a filter tree and/or output concepts.
 
@@ -72,5 +79,7 @@ parity with the Python API.
   : Logical operators for combining clauses in a group.
 - [`QueryType`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/QueryType.md)
   : Query result types for \`runQuery()\`.
+- [`VariantFrequency`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/VariantFrequency.md)
+  : Variant population-frequency buckets.
 - [`Platform`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/Platform.md)
   : Known PIC-SURE deployment platforms.

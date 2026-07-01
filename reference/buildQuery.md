@@ -9,7 +9,11 @@ that can be passed to \[\`runQuery()\`\]\[picsure::runQuery\],
 ## Usage
 
 ``` r
-buildQuery(phenotypicFilter = NULL, includeConcepts = NULL)
+buildQuery(
+  phenotypicFilter = NULL,
+  includeConcepts = NULL,
+  genomicFilters = NULL
+)
 ```
 
 ## Arguments
@@ -27,6 +31,13 @@ buildQuery(phenotypicFilter = NULL, includeConcepts = NULL)
   as output columns, beyond the variables already named in
   \`phenotypicFilter\` (those are returned automatically). Order is
   preserved and duplicates are dropped.
+
+- genomicFilters:
+
+  A GenomicFilter handle (from
+  \[\`buildGenomicFilter()\`\]\[picsure::buildGenomicFilter\]) or a list
+  of them, applied as a flat conjunctive list. \`NULL\` (default) for no
+  genomic filter.
 
 ## Value
 
