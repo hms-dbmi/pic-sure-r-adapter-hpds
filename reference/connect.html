@@ -96,6 +96,11 @@ list of valid keys. Supported keys:</p><dl><dt>`resource_uuid`</dt>
     Defaults to the platform's own flag (`TRUE` only for BDC authorized
     platforms); pass `TRUE` for a custom URL that serves genomic data.</p></dd>
 
+  <dt>`client_type`</dt>
+<dd><p>Identifier sent to the backend audit log as the
+    `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
+    normally need to override it.</p></dd>
+
 
 </dl></dd>
 

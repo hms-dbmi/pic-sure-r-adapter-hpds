@@ -59,6 +59,12 @@ connect(platform, token = "", ...)
       platform's own flag (\`TRUE\` only for BDC authorized platforms);
       pass \`TRUE\` for a custom URL that serves genomic data.
 
+  \`client_type\`
+
+  :   Identifier sent to the backend audit log as the \`X-Client-Type\`
+      header. Defaults to \`"R_ADAPTER"\`; you should not normally need
+      to override it.
+
 ## Value
 
 An opaque session object. Pass it as the first argument to
