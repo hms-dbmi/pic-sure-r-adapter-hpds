@@ -111,9 +111,14 @@ test_that("GroupOperator members are picsure_group_operator", {
 
 # QueryType
 
-test_that("QueryType has 4 members with expected names and lowercase values", {
-  expect_setequal(names(picsure::QueryType),
-                  c("COUNT", "PARTICIPANT", "TIMESTAMP", "CROSS_COUNT"))
+test_that("QueryType has expected members with lowercase values", {
+  expect_setequal(
+    names(picsure::QueryType),
+    c(
+      "COUNT", "PARTICIPANT", "TIMESTAMP", "CROSS_COUNT",
+      "VARIANT_COUNT", "VARIANT_LIST", "VCF_EXCERPT", "AGGREGATE_VCF_EXCERPT"
+    )
+  )
   expect_equal(picsure::QueryType$COUNT$name,         "COUNT")
   expect_equal(picsure::QueryType$COUNT$value,        "count")
   expect_equal(picsure::QueryType$PARTICIPANT$name,   "PARTICIPANT")
@@ -206,4 +211,22 @@ test_that("print.picsure_platform shows attached fields", {
   expect_match(joined, "https://picsure.biodatacatalyst.nhlbi.nih.gov", fixed = TRUE)
   expect_match(joined, "ac004461-1b47-4832-80e2-22a4aecabe39", fixed = TRUE)
   expect_match(joined, "BDC Open", fixed = TRUE)
+})
+
+
+test_that("QueryType exposes variant result-type members", {
+  expect_equal(picsure::QueryType$VARIANT_COUNT$value, "variant_count")
+  expect_equal(picsure::QueryType$VARIANT_LIST$value, "variant_list")
+  expect_equal(picsure::QueryType$VCF_EXCERPT$value, "vcf_excerpt")
+  expect_equal(picsure::QueryType$AGGREGATE_VCF_EXCERPT$value, "aggregate_vcf_excerpt")
+})
+
+test_that("VariantFrequency enum mirrors Python values", {
+  expect_equal(picsure::VariantFrequency$RARE$value, "Rare")
+  expect_equal(picsure::VariantFrequency$COMMON$value, "Common")
+  expect_equal(picsure::VariantFrequency$NOVEL$value, "Novel")
+})
+
+test_that("Zygosity enum was removed (SNP filtering not supported yet)", {
+  expect_false("Zygosity" %in% getNamespaceExports("picsure"))
 })

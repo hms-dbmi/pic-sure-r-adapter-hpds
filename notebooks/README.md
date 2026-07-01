@@ -11,7 +11,7 @@ directly when you're debugging the reticulate bridge.
 
 ## The numbered tour
 
-The numbered notebooks (`0_*` through `9_*`) walk through the package's
+The numbered notebooks (`0_*` through `10_*`) walk through the package's
 main surface area in order — each one runs standalone if you already
 know that step, but together they're the recommended on-ramp:
 
@@ -27,8 +27,9 @@ know that step, but together they're the recommended on-ramp:
 | `7_Export_Query_As_PFB.ipynb`               | `exportAsPFB()` — write a cohort to disk as Avro/PFB.                   |
 | `8_Remove_and_Replace_Query_Functions.ipynb`| `replaceClause()` / `removeSubQuery()` — edit a query in place.         |
 | `9_Save_Query_By_Name.ipynb`                | `saveQueryByName()` — persist a query under a name on an auth platform. |
+| `10_Genomic_Filtering.ipynb`                | `buildGenomicFilter()` — gene / consequence / frequency variant filters, alone or with phenotypic filters. |
 
-All ten notebooks read your PIC-SURE access token from `notebooks/token.txt`
+All eleven notebooks read your PIC-SURE access token from `notebooks/token.txt`
 (one line, no trailing newline required). The file is gitignored by
 the repo-wide `*.token` / `token.txt` rules — don't commit it.
 

@@ -31,6 +31,10 @@ list of valid keys. Supported keys:
   \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
     unauthenticated mode (only useful for open resources). Defaults to
     the Python adapter's choice (currently `TRUE`).}
+  \item{`supports_genomic`}{Logical. Whether genomic operations
+    (`searchGenomicValues()`, genomic-filtered queries) are permitted.
+    Defaults to the platform's own flag (`TRUE` only for BDC authorized
+    platforms); pass `TRUE` for a custom URL that serves genomic data.}
 }}
 }
 \value{

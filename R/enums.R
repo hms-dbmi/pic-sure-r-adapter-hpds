@@ -110,6 +110,14 @@ GroupOperator <- list(
 #'     timestamps for longitudinal concepts.}
 #'   \item{`CROSS_COUNT`}{Returns a list of `CountResult`s keyed by
 #'     concept path.}
+#'   \item{`VARIANT_COUNT`}{Returns a `CountResult` for the number of distinct
+#'     matching variants (preserving obfuscation, like `COUNT`).}
+#'   \item{`VARIANT_LIST`}{Returns a character vector of variant spec strings
+#'     (not served by BDC primary environments yet).}
+#'   \item{`VCF_EXCERPT`}{Returns a data.frame, one row per variant, with
+#'     per-patient genotype columns (not served by BDC primary environments yet).}
+#'   \item{`AGGREGATE_VCF_EXCERPT`}{Like `VCF_EXCERPT` without patient columns
+#'     (not served by BDC primary environments yet).}
 #' }
 #' @examples
 #' \dontrun{
@@ -117,10 +125,40 @@ GroupOperator <- list(
 #' }
 #' @export
 QueryType <- list(
-  COUNT       = .enum_member("COUNT",       "count",       enum_name = "QueryType", subclass = "picsure_query_type"),
-  PARTICIPANT = .enum_member("PARTICIPANT", "participant", enum_name = "QueryType", subclass = "picsure_query_type"),
-  TIMESTAMP   = .enum_member("TIMESTAMP",   "timestamp",   enum_name = "QueryType", subclass = "picsure_query_type"),
-  CROSS_COUNT = .enum_member("CROSS_COUNT", "cross_count", enum_name = "QueryType", subclass = "picsure_query_type")
+  COUNT                 = .enum_member("COUNT",                 "count",                 enum_name = "QueryType", subclass = "picsure_query_type"),
+  PARTICIPANT           = .enum_member("PARTICIPANT",           "participant",           enum_name = "QueryType", subclass = "picsure_query_type"),
+  TIMESTAMP             = .enum_member("TIMESTAMP",             "timestamp",             enum_name = "QueryType", subclass = "picsure_query_type"),
+  CROSS_COUNT           = .enum_member("CROSS_COUNT",           "cross_count",           enum_name = "QueryType", subclass = "picsure_query_type"),
+  VARIANT_COUNT         = .enum_member("VARIANT_COUNT",         "variant_count",         enum_name = "QueryType", subclass = "picsure_query_type"),
+  VARIANT_LIST          = .enum_member("VARIANT_LIST",          "variant_list",          enum_name = "QueryType", subclass = "picsure_query_type"),
+  VCF_EXCERPT           = .enum_member("VCF_EXCERPT",           "vcf_excerpt",           enum_name = "QueryType", subclass = "picsure_query_type"),
+  AGGREGATE_VCF_EXCERPT = .enum_member("AGGREGATE_VCF_EXCERPT", "aggregate_vcf_excerpt", enum_name = "QueryType", subclass = "picsure_query_type")
+)
+
+#' Variant population-frequency buckets.
+#'
+#' Pass a member to [`buildGenomicFilter()`][picsure::buildGenomicFilter]'s
+#' `values` argument for the `"Variant_frequency_as_text"` key. Mirrors
+#' Python's `picsure.VariantFrequency`.
+#'
+#' @format A list of `picsure_enum_member` objects:
+#' \describe{
+#'   \item{`RARE`}{Rare variants.}
+#'   \item{`COMMON`}{Common variants.}
+#'   \item{`NOVEL`}{Novel variants.}
+#' }
+#' @examples
+#' \dontrun{
+#' picsure::buildGenomicFilter(
+#'   "Variant_frequency_as_text",
+#'   values = picsure::VariantFrequency$RARE
+#' )
+#' }
+#' @export
+VariantFrequency <- list(
+  RARE   = .enum_member("RARE",   "Rare",   enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
+  COMMON = .enum_member("COMMON", "Common", enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
+  NOVEL  = .enum_member("NOVEL",  "Novel",  enum_name = "VariantFrequency", subclass = "picsure_variant_frequency")
 )
 
 #' Known PIC-SURE deployment platforms.
