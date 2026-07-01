@@ -18,11 +18,16 @@ py_has_attr <- function(name) {
 }
 
 py_members <- function(py_enum) {
-  # __members__ returns a mappingproxy; dict() converts it to an R list keyed
-  # by member name with each element being the enum member Python object.
-  builtins <- reticulate::import_builtins()
-  members <- builtins$dict(py_enum$`__members__`)
-  lapply(members, function(m) list(name = m$name, value = m$value))
+  # Read each member's .name/.value on the Python side and return a plain
+  # dict of strings. Enums whose members subclass a scalar (e.g.
+  # `class X(str, Enum)`) are auto-converted by reticulate to atomic R
+  # vectors, so accessing `m$name` after conversion fails with
+  # "$ operator is invalid for atomic vectors". Building the mapping in
+  # Python avoids that: the members are real enum objects there.
+  reticulate::py_run_string(
+    "def _picsure_enum_members(enum_cls):\n    return {m.name: {'name': m.name, 'value': m.value} for m in enum_cls}\n"
+  )
+  reticulate::py$`_picsure_enum_members`(py_enum)
 }
 
 test_that("PhenotypicFilterType matches Python", {
@@ -81,13 +86,14 @@ test_that("Platform matches Python", {
     py_field_names <- names(builtins$dict(py_cfg$`__dataclass_fields__`))
     expect_setequal(
       py_field_names,
-      c("url", "resource_uuid", "label", "include_consents", "requires_auth")
+      c("url", "resource_uuid", "label", "include_consents", "requires_auth", "supports_genomic")
     )
     expect_equal(r_cfg$url,              py_cfg$url,              info = n)
     expect_equal(r_cfg$resource_uuid,    py_cfg$resource_uuid,    info = n)
     expect_equal(r_cfg$label,            py_cfg$label,            info = n)
     expect_equal(r_cfg$include_consents, py_cfg$include_consents, info = n)
     expect_equal(r_cfg$requires_auth,    py_cfg$requires_auth,    info = n)
+    expect_equal(r_cfg$supports_genomic, py_cfg$supports_genomic, info = n)
   }
 })
 

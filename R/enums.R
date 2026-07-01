@@ -189,7 +189,7 @@ Platform <- local({
   # flat fields mirror Python's @property accessors. Both shapes are
   # exposed so R users can read either way and Python docs translate
   # 1:1.
-  mk <- function(name, url, resource_uuid, label, include_consents, requires_auth) {
+  mk <- function(name, url, resource_uuid, label, include_consents, requires_auth, supports_genomic) {
     .enum_member(
       name             = name,
       value            = list(
@@ -197,26 +197,28 @@ Platform <- local({
         resource_uuid    = resource_uuid,
         label            = label,
         include_consents = include_consents,
-        requires_auth    = requires_auth
+        requires_auth    = requires_auth,
+        supports_genomic = supports_genomic
       ),
       url              = url,
       resource_uuid    = resource_uuid,
       label            = label,
       include_consents = include_consents,
       requires_auth    = requires_auth,
+      supports_genomic = supports_genomic,
       enum_name        = "Platform",
       subclass         = "picsure_platform"
     )
   }
   list(
-    BDC_AUTHORIZED        = mk("BDC_AUTHORIZED",        "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE),
-    BDC_OPEN              = mk("BDC_OPEN",              "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE),
-    BDC_DEV_AUTHORIZED    = mk("BDC_DEV_AUTHORIZED",    "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE),
-    BDC_DEV_OPEN          = mk("BDC_DEV_OPEN",          "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE),
-    BDC_PREDEV_AUTHORIZED = mk("BDC_PREDEV_AUTHORIZED", "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE),
-    BDC_PREDEV_OPEN       = mk("BDC_PREDEV_OPEN",       "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE),
-    NHANES_AUTHORIZED     = mk("NHANES_AUTHORIZED",     "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Authorized", FALSE, TRUE),
-    NHANES_OPEN           = mk("NHANES_OPEN",           "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Open",       FALSE, FALSE)
+    BDC_AUTHORIZED        = mk("BDC_AUTHORIZED",        "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE,  TRUE),
+    BDC_OPEN              = mk("BDC_OPEN",              "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE, FALSE),
+    BDC_DEV_AUTHORIZED    = mk("BDC_DEV_AUTHORIZED",    "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE,  TRUE),
+    BDC_DEV_OPEN          = mk("BDC_DEV_OPEN",          "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE, FALSE),
+    BDC_PREDEV_AUTHORIZED = mk("BDC_PREDEV_AUTHORIZED", "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE,  TRUE),
+    BDC_PREDEV_OPEN       = mk("BDC_PREDEV_OPEN",       "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE, FALSE),
+    NHANES_AUTHORIZED     = mk("NHANES_AUTHORIZED",     "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Authorized", FALSE, TRUE,  TRUE),
+    NHANES_OPEN           = mk("NHANES_OPEN",           "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Open",       FALSE, FALSE, FALSE)
   )
 })
 
@@ -228,5 +230,6 @@ print.picsure_platform <- function(x, ...) {
   cat("  label:            ", x$label,            "\n", sep = "")
   cat("  include_consents: ", x$include_consents, "\n", sep = "")
   cat("  requires_auth:    ", x$requires_auth,    "\n", sep = "")
+  cat("  supports_genomic: ", x$supports_genomic, "\n", sep = "")
   invisible(x)
 }

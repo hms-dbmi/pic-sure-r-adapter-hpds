@@ -35,6 +35,9 @@ list of valid keys. Supported keys:
     (`searchGenomicValues()`, genomic-filtered queries) are permitted.
     Defaults to the platform's own flag (`TRUE` only for BDC authorized
     platforms); pass `TRUE` for a custom URL that serves genomic data.}
+  \item{`client_type`}{Identifier sent to the backend audit log as the
+    `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
+    normally need to override it.}
 }}
 }
 \value{
