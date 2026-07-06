@@ -44,3 +44,41 @@ test_that("buildQuery forwards genomicFilters", {
   q <- picsure::buildQuery(genomicFilters = gf)
   expect_equal(q$genomicFilters$key, "Gene_with_variant")
 })
+
+test_that("buildGenomicFilter coerces a GenomicFilterKey member to its wire string", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
+  gf <- picsure::buildGenomicFilter(
+    picsure::GenomicFilterKey$GENE_WITH_VARIANT,
+    values = "BRCA1"
+  )
+  expect_equal(gf$key, "Gene_with_variant")
+})
+
+test_that("buildGenomicFilter forwards a plain string key unchanged", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
+  gf <- picsure::buildGenomicFilter("Variant_class", values = "SNV")
+  expect_equal(gf$key, "Variant_class")
+})
+
+test_that("buildGenomicFilter rejects a wrong-subclass enum member as key", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
+  expect_error(
+    picsure::buildGenomicFilter(picsure::VariantFrequency$RARE, values = "x"),
+    "GenomicFilterKey"
+  )
+})
+
+test_that("buildGenomicFilter coerces VariantSeverity member values to labels", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
+  gf <- picsure::buildGenomicFilter(
+    picsure::GenomicFilterKey$VARIANT_SEVERITY,
+    values = picsure::VariantSeverity$HIGH
+  )
+  expect_equal(gf$key, "Variant_severity")
+  expect_equal(gf$values, "High Severity")
+})
+
+test_that("buildGenomicFilter with no key gives the friendly message", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
+  expect_error(picsure::buildGenomicFilter(values = "x"), "non-empty character scalar")
+})
