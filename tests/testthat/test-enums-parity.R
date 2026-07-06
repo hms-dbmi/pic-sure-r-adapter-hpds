@@ -107,10 +107,12 @@ _picsure_enum_names = sorted([
   py_enums <- reticulate::py$`_picsure_enum_names`
   r_enums <- c(
     "PhenotypicFilterType", "GroupOperator", "Platform", "QueryType",
-    "VariantFrequency"
+    "VariantFrequency", "GenomicFilterKey", "VariantSeverity"
   )
-  if (!("VariantFrequency" %in% py_enums)) {
-    skip("Pinned Python adapter lacks VariantFrequency enum; pending its update on main.")
+  # Transitional guards: skip while the pinned Python @ main lacks any of the
+  # newer enums. TODO: remove once all three are on main.
+  if (!all(c("VariantFrequency", "GenomicFilterKey", "VariantSeverity") %in% py_enums)) {
+    skip("Pinned Python adapter lacks one of VariantFrequency/GenomicFilterKey/VariantSeverity; pending its update on main.")
   }
   expect_setequal(py_enums, r_enums)
 })
@@ -125,6 +127,37 @@ test_that("VariantFrequency matches Python", {
   for (n in names(picsure::VariantFrequency)) {
     expect_equal(picsure::VariantFrequency[[n]]$name,  py[[n]]$name,  info = n)
     expect_equal(picsure::VariantFrequency[[n]]$value, py[[n]]$value, info = n)
+  }
+})
+
+test_that("GenomicFilterKey matches Python", {
+  skip_if_no_picsure_py()
+  # Transitional guard: R adds GenomicFilterKey ahead of the pinned Python
+  # adapter (.PICSURE_PY_SPEC @ main). Skip until the Python enum lands on main.
+  # TODO: remove this guard after the Python change is merged.
+  if (!py_has_attr("GenomicFilterKey")) {
+    skip("Pinned Python adapter lacks GenomicFilterKey; pending its update on main.")
+  }
+  py <- py_members(picsure:::picsure_py$GenomicFilterKey)
+  expect_setequal(names(picsure::GenomicFilterKey), names(py))
+  for (n in names(picsure::GenomicFilterKey)) {
+    expect_equal(picsure::GenomicFilterKey[[n]]$name,  py[[n]]$name,  info = n)
+    expect_equal(picsure::GenomicFilterKey[[n]]$value, py[[n]]$value, info = n)
+  }
+})
+
+test_that("VariantSeverity matches Python", {
+  skip_if_no_picsure_py()
+  # Transitional guard: see GenomicFilterKey above.
+  # TODO: remove this guard after the Python change is merged.
+  if (!py_has_attr("VariantSeverity")) {
+    skip("Pinned Python adapter lacks VariantSeverity; pending its update on main.")
+  }
+  py <- py_members(picsure:::picsure_py$VariantSeverity)
+  expect_setequal(names(picsure::VariantSeverity), names(py))
+  for (n in names(picsure::VariantSeverity)) {
+    expect_equal(picsure::VariantSeverity[[n]]$name,  py[[n]]$name,  info = n)
+    expect_equal(picsure::VariantSeverity[[n]]$value, py[[n]]$value, info = n)
   }
 })
 
