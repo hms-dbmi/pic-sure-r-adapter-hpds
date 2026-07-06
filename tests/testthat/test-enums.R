@@ -230,3 +230,19 @@ test_that("VariantFrequency enum mirrors Python values", {
 test_that("Zygosity enum was removed (SNP filtering not supported yet)", {
   expect_false("Zygosity" %in% getNamespaceExports("picsure"))
 })
+
+test_that("GenomicFilterKey members expose wire-string values", {
+  expect_equal(picsure::GenomicFilterKey$GENE_WITH_VARIANT$value, "Gene_with_variant")
+  expect_equal(picsure::GenomicFilterKey$VARIANT_CONSEQUENCE_CALCULATED$value, "Variant_consequence_calculated")
+  expect_equal(picsure::GenomicFilterKey$VARIANT_FREQUENCY_AS_TEXT$value, "Variant_frequency_as_text")
+  expect_equal(picsure::GenomicFilterKey$VARIANT_CLASS$value, "Variant_class")
+  expect_equal(picsure::GenomicFilterKey$VARIANT_SEVERITY$value, "Variant_severity")
+  expect_s3_class(picsure::GenomicFilterKey$GENE_WITH_VARIANT, "picsure_genomic_filter_key")
+})
+
+test_that("VariantSeverity members expose label values", {
+  expect_equal(picsure::VariantSeverity$HIGH$value, "High Severity")
+  expect_equal(picsure::VariantSeverity$MEDIUM$value, "Medium Severity")
+  expect_equal(picsure::VariantSeverity$LOW$value, "Low Severity")
+  expect_s3_class(picsure::VariantSeverity$HIGH, "picsure_variant_severity")
+})

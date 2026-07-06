@@ -161,6 +161,70 @@ VariantFrequency <- list(
   NOVEL  = .enum_member("NOVEL",  "Novel",  enum_name = "VariantFrequency", subclass = "picsure_variant_frequency")
 )
 
+#' Genomic annotation keys for `buildGenomicFilter()`.
+#'
+#' Pass a member to [`buildGenomicFilter()`][picsure::buildGenomicFilter]'s
+#' `key` argument, or the equivalent string (validated by the Python adapter).
+#' Mirrors Python's `picsure.GenomicFilterKey`.
+#'
+#' `VARIANT_SEVERITY` is a virtual key: the builder expands a
+#' [`VariantSeverity`][picsure::VariantSeverity] bucket into the matching
+#' `Variant_consequence_calculated` values.
+#'
+#' @format A list of `picsure_enum_member` objects:
+#' \describe{
+#'   \item{`GENE_WITH_VARIANT`}{Gene affected by a variant.}
+#'   \item{`VARIANT_CONSEQUENCE_CALCULATED`}{Calculated variant consequence.}
+#'   \item{`VARIANT_FREQUENCY_AS_TEXT`}{Population-frequency bucket (see
+#'     [`VariantFrequency`][picsure::VariantFrequency]).}
+#'   \item{`VARIANT_CLASS`}{Variant class.}
+#'   \item{`VARIANT_SEVERITY`}{Virtual severity key (see
+#'     [`VariantSeverity`][picsure::VariantSeverity]).}
+#' }
+#' @examples
+#' \dontrun{
+#' picsure::buildGenomicFilter(
+#'   picsure::GenomicFilterKey$GENE_WITH_VARIANT,
+#'   values = c("BRCA1")
+#' )
+#' }
+#' @export
+GenomicFilterKey <- list(
+  GENE_WITH_VARIANT              = .enum_member("GENE_WITH_VARIANT",              "Gene_with_variant",              enum_name = "GenomicFilterKey", subclass = "picsure_genomic_filter_key"),
+  VARIANT_CONSEQUENCE_CALCULATED = .enum_member("VARIANT_CONSEQUENCE_CALCULATED", "Variant_consequence_calculated", enum_name = "GenomicFilterKey", subclass = "picsure_genomic_filter_key"),
+  VARIANT_FREQUENCY_AS_TEXT      = .enum_member("VARIANT_FREQUENCY_AS_TEXT",      "Variant_frequency_as_text",      enum_name = "GenomicFilterKey", subclass = "picsure_genomic_filter_key"),
+  VARIANT_CLASS                  = .enum_member("VARIANT_CLASS",                  "Variant_class",                  enum_name = "GenomicFilterKey", subclass = "picsure_genomic_filter_key"),
+  VARIANT_SEVERITY               = .enum_member("VARIANT_SEVERITY",               "Variant_severity",               enum_name = "GenomicFilterKey", subclass = "picsure_genomic_filter_key")
+)
+
+#' Variant severity buckets for the virtual `Variant_severity` key.
+#'
+#' Pass a member to [`buildGenomicFilter()`][picsure::buildGenomicFilter]'s
+#' `values` argument together with
+#' [`GenomicFilterKey$VARIANT_SEVERITY`][picsure::GenomicFilterKey]. The builder
+#' expands each bucket to the matching `Variant_consequence_calculated` values.
+#' Mirrors Python's `picsure.VariantSeverity`.
+#'
+#' @format A list of `picsure_enum_member` objects:
+#' \describe{
+#'   \item{`HIGH`}{High-severity consequences.}
+#'   \item{`MEDIUM`}{Medium-severity consequences.}
+#'   \item{`LOW`}{Low-severity consequences.}
+#' }
+#' @examples
+#' \dontrun{
+#' picsure::buildGenomicFilter(
+#'   picsure::GenomicFilterKey$VARIANT_SEVERITY,
+#'   values = picsure::VariantSeverity$HIGH
+#' )
+#' }
+#' @export
+VariantSeverity <- list(
+  HIGH   = .enum_member("HIGH",   "High Severity",   enum_name = "VariantSeverity", subclass = "picsure_variant_severity"),
+  MEDIUM = .enum_member("MEDIUM", "Medium Severity", enum_name = "VariantSeverity", subclass = "picsure_variant_severity"),
+  LOW    = .enum_member("LOW",    "Low Severity",    enum_name = "VariantSeverity", subclass = "picsure_variant_severity")
+)
+
 #' Known PIC-SURE deployment platforms.
 #'
 #' Pass a member to [`connect()`][picsure::connect]'s `platform`

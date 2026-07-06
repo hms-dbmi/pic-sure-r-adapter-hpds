@@ -206,6 +206,16 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
       VCF_EXCERPT = "vcf_excerpt", AGGREGATE_VCF_EXCERPT = "aggregate_vcf_excerpt"
     ),
     VariantFrequency = list(RARE = "Rare", COMMON = "Common", NOVEL = "Novel"),
+    GenomicFilterKey = list(
+      GENE_WITH_VARIANT = "Gene_with_variant",
+      VARIANT_CONSEQUENCE_CALCULATED = "Variant_consequence_calculated",
+      VARIANT_FREQUENCY_AS_TEXT = "Variant_frequency_as_text",
+      VARIANT_CLASS = "Variant_class",
+      VARIANT_SEVERITY = "Variant_severity"
+    ),
+    VariantSeverity = list(
+      HIGH = "High Severity", MEDIUM = "Medium Severity", LOW = "Low Severity"
+    ),
     Platform = setNames(platform_names, toupper(gsub(" ", "_", platform_names))),
 
     # Call recorder
