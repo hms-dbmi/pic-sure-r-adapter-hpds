@@ -23,8 +23,10 @@ authenticated platforms. Defaults to `""`.}
 `picsure.connect()` call. Unknown keys raise a `picsureError` with the
 list of valid keys. Supported keys:
 \describe{
-  \item{`resource_uuid`}{UUID of a specific PIC-SURE resource to connect
-    to; overrides the platform default.}
+  \item{`resource_uuid`}{Deprecated and no longer used for routing.
+    The gateway selects the HPDS backend by URL path (`/hpds/auth`
+    vs `/hpds/open`), derived from the platform, so this UUID no
+    longer chooses a backend. Accepted for backwards compatibility.}
   \item{`include_consents`}{Logical. When `TRUE`, the session retrieves
     the user's consent metadata from the auth service. Defaults to the
     Python adapter's choice (currently `TRUE`).}
