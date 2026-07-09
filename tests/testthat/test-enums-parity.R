@@ -65,9 +65,9 @@ test_that("Platform matches Python", {
     py_cfg <- py_enum[[n]]$value
     r_cfg  <- picsure::Platform[[n]]
     py_field_names <- names(builtins$dict(py_cfg$`__dataclass_fields__`))
-    # supports_genomic is a Python-only PlatformConfig field: R forwards it
-    # through connect()'s `supports_genomic` kwarg rather than carrying it on
-    # Platform members, so it is checked for presence here but not by value.
+    # supports_genomic mirrors Python's PlatformConfig field: R Platform
+    # members carry it (TRUE for *_AUTHORIZED, FALSE for *_OPEN), so it is
+    # checked both for presence in the field set and by value below.
     expect_setequal(
       py_field_names,
       c("url", "resource_uuid", "label", "include_consents", "requires_auth", "supports_genomic")
@@ -77,6 +77,7 @@ test_that("Platform matches Python", {
     expect_equal(r_cfg$label,            py_cfg$label,            info = n)
     expect_equal(r_cfg$include_consents, py_cfg$include_consents, info = n)
     expect_equal(r_cfg$requires_auth,    py_cfg$requires_auth,    info = n)
+    expect_equal(r_cfg$supports_genomic, py_cfg$supports_genomic, info = n)
   }
 })
 
