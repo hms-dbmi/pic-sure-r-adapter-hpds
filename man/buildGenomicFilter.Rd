@@ -7,9 +7,13 @@
 buildGenomicFilter(key, values = NULL, ...)
 }
 \arguments{
-\item{key}{The genomic annotation to filter on, e.g. `"Gene_with_variant"`,
-`"Variant_consequence_calculated"`, or `"Variant_frequency_as_text"`.
-Variant-spec (SNP) keys are not supported yet and are rejected.}
+\item{key}{The genomic annotation to filter on: a
+[`GenomicFilterKey`][picsure::GenomicFilterKey] member (preferred) or the
+equivalent string (validated Python-side). `GenomicFilterKey$VARIANT_SEVERITY`
+is a virtual key — the Python adapter expands the requested
+[`VariantSeverity`][picsure::VariantSeverity] buckets into
+`Variant_consequence_calculated` values. Variant-spec (SNP) keys are
+rejected.}
 
 \item{values}{Required. Categorical value(s): a character vector, or
 [`VariantFrequency`][picsure::VariantFrequency] members (coerced to their

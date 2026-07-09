@@ -54,9 +54,15 @@ count        <- picsure::runQuery(bdc, query, type = "count")
 participants <- picsure::runQuery(bdc, query, type = "participant")
 
 # Genomic filters (authorized platforms)
-gene_filter <- picsure::buildGenomicFilter("Gene_with_variant", values = c("BRCA1", "BRCA2"))
+gene_filter <- picsure::buildGenomicFilter(
+  picsure::GenomicFilterKey$GENE_WITH_VARIANT, values = c("BRCA1", "BRCA2")
+)
 rare_filter <- picsure::buildGenomicFilter(
-  "Variant_frequency_as_text", values = picsure::VariantFrequency$RARE
+  picsure::GenomicFilterKey$VARIANT_FREQUENCY_AS_TEXT,
+  values = picsure::VariantFrequency$RARE
+)
+severe_filter <- picsure::buildGenomicFilter(
+  picsure::GenomicFilterKey$VARIANT_SEVERITY, values = picsure::VariantSeverity$HIGH
 )
 genomic_query <- picsure::buildQuery(genomicFilters = list(gene_filter, rare_filter))
 genomic_count <- picsure::runQuery(bdc, genomic_query, type = "count")

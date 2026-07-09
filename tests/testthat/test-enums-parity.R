@@ -8,39 +8,26 @@ skip_if_no_picsure_py <- function() {
   }
 }
 
-# Transitional guard: the R adapter added genomic-filtering enums/members
-# ahead of the pinned Python adapter (.PICSURE_PY_SPEC @ main). While the
-# installed Python lacks them, skip rather than fail; strict checking
-# auto-resumes once the Python genomic-filtering change lands on main.
-# TODO: remove these guards after the Python change is merged.
-py_has_attr <- function(name) {
-  reticulate::py_has_attr(picsure:::picsure_py, name)
-}
-
 py_members <- function(py_enum) {
-  # Read each member's .name/.value on the Python side and return a plain
-  # dict of strings. Enums whose members subclass a scalar (e.g.
-  # `class X(str, Enum)`) are auto-converted by reticulate to atomic R
-  # vectors, so accessing `m$name` after conversion fails with
-  # "$ operator is invalid for atomic vectors". Building the mapping in
-  # Python avoids that: the members are real enum objects there.
+  # __members__ maps member name -> member object. Reticulate coerces the
+  # members of a string-based enum (class Foo(str, Enum)) to atomic R
+  # characters on conversion, which breaks `m$name` / `m$value`. Compute the
+  # name -> value mapping inside Python so only plain strings cross the
+  # boundary, then reshape to the list(name=, value=) shape the tests use.
   reticulate::py_run_string(
-    "def _picsure_enum_members(enum_cls):\n    return {m.name: {'name': m.name, 'value': m.value} for m in enum_cls}\n"
+    "def _picsure_parity_members(e):\n    return {name: member.value for name, member in e.__members__.items()}"
   )
-  reticulate::py$`_picsure_enum_members`(py_enum)
+  extractor <- reticulate::py_eval("_picsure_parity_members", convert = FALSE)
+  vals <- reticulate::py_to_r(extractor(py_enum))
+  stats::setNames(
+    lapply(names(vals), function(n) list(name = n, value = vals[[n]])),
+    names(vals)
+  )
 }
 
 test_that("PhenotypicFilterType matches Python", {
   skip_if_no_picsure_py()
   py <- py_members(picsure:::picsure_py$PhenotypicFilterType)
-  # Transitional guard: the R adapter dropped SELECT ahead of the pinned
-  # Python adapter (.PICSURE_PY_SPEC @ main). While the installed Python
-  # still exposes SELECT, skip rather than fail; this auto-resumes strict
-  # checking once the Python SELECT removal lands on main.
-  # TODO: remove this guard after the Python change is merged.
-  if ("SELECT" %in% names(py)) {
-    skip("Pinned Python adapter still exposes PhenotypicFilterType.SELECT; pending its removal on main.")
-  }
   expect_setequal(names(picsure::PhenotypicFilterType), names(py))
   for (n in names(picsure::PhenotypicFilterType)) {
     expect_equal(picsure::PhenotypicFilterType[[n]]$name,  py[[n]]$name,  info = n)
@@ -61,12 +48,6 @@ test_that("GroupOperator matches Python", {
 test_that("QueryType matches Python", {
   skip_if_no_picsure_py()
   py <- py_members(picsure:::picsure_py$QueryType)
-  new_members <- c(
-    "VARIANT_COUNT", "VARIANT_LIST", "VCF_EXCERPT", "AGGREGATE_VCF_EXCERPT"
-  )
-  if (!all(new_members %in% names(py))) {
-    skip("Pinned Python adapter lacks the variant QueryType members; pending its update on main.")
-  }
   expect_setequal(names(picsure::QueryType), names(py))
   for (n in names(picsure::QueryType)) {
     expect_equal(picsure::QueryType[[n]]$name,  py[[n]]$name,  info = n)
@@ -84,15 +65,11 @@ test_that("Platform matches Python", {
     py_cfg <- py_enum[[n]]$value
     r_cfg  <- picsure::Platform[[n]]
     py_field_names <- names(builtins$dict(py_cfg$`__dataclass_fields__`))
-    # Transitional guard: the R adapter dropped the platform resource_uuid
-    # ahead of the pinned Python adapter (.PICSURE_PY_SPEC @ main), which
-    # still carries it. While the installed Python exposes resource_uuid,
-    # skip rather than fail; strict checking auto-resumes once the Python
-    # resource-UUID removal lands on main.
-    # TODO: remove this guard after the Python change is merged.
-    if ("resource_uuid" %in% py_field_names) {
-      skip("Pinned Python adapter still exposes Platform.resource_uuid; pending its removal on main.")
-    }
+    # supports_genomic mirrors Python's PlatformConfig field: R Platform
+    # members carry it (TRUE for *_AUTHORIZED, FALSE for *_OPEN), so it is
+    # checked both for presence in the field set and by value below.
+    # (The pinned Python adapter now drops resource_uuid from PlatformConfig,
+    # matching R, so strict parity checking runs unconditionally.)
     expect_setequal(
       py_field_names,
       c("url", "label", "include_consents", "requires_auth", "supports_genomic")
@@ -121,24 +98,38 @@ _picsure_enum_names = sorted([
   py_enums <- reticulate::py$`_picsure_enum_names`
   r_enums <- c(
     "PhenotypicFilterType", "GroupOperator", "Platform", "QueryType",
-    "VariantFrequency"
+    "VariantFrequency", "GenomicFilterKey", "VariantSeverity"
   )
-  if (!("VariantFrequency" %in% py_enums)) {
-    skip("Pinned Python adapter lacks VariantFrequency enum; pending its update on main.")
-  }
   expect_setequal(py_enums, r_enums)
 })
 
 test_that("VariantFrequency matches Python", {
   skip_if_no_picsure_py()
-  if (!py_has_attr("VariantFrequency")) {
-    skip("Pinned Python adapter lacks VariantFrequency; pending its update on main.")
-  }
   py <- py_members(picsure:::picsure_py$VariantFrequency)
   expect_setequal(names(picsure::VariantFrequency), names(py))
   for (n in names(picsure::VariantFrequency)) {
     expect_equal(picsure::VariantFrequency[[n]]$name,  py[[n]]$name,  info = n)
     expect_equal(picsure::VariantFrequency[[n]]$value, py[[n]]$value, info = n)
+  }
+})
+
+test_that("GenomicFilterKey matches Python", {
+  skip_if_no_picsure_py()
+  py <- py_members(picsure:::picsure_py$GenomicFilterKey)
+  expect_setequal(names(picsure::GenomicFilterKey), names(py))
+  for (n in names(picsure::GenomicFilterKey)) {
+    expect_equal(picsure::GenomicFilterKey[[n]]$name,  py[[n]]$name,  info = n)
+    expect_equal(picsure::GenomicFilterKey[[n]]$value, py[[n]]$value, info = n)
+  }
+})
+
+test_that("VariantSeverity matches Python", {
+  skip_if_no_picsure_py()
+  py <- py_members(picsure:::picsure_py$VariantSeverity)
+  expect_setequal(names(picsure::VariantSeverity), names(py))
+  for (n in names(picsure::VariantSeverity)) {
+    expect_equal(picsure::VariantSeverity[[n]]$name,  py[[n]]$name,  info = n)
+    expect_equal(picsure::VariantSeverity[[n]]$value, py[[n]]$value, info = n)
   }
 })
 
