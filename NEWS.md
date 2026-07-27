@@ -1,3 +1,11 @@
+# picsure (development version)
+
+- `connect()` now sources the user's consent list from the auth service's
+  `/user/me/consents` endpoint instead of the query template. This is a
+  change in the pinned Python adapter; the R API is unchanged, including
+  the `include_consents` argument. Connecting with `include_consents =
+  TRUE` requires a backend that serves `/user/me/consents`.
+
 # picsure 2.0.0
 
 First release of the rewritten R adapter. This is a clean break from the
