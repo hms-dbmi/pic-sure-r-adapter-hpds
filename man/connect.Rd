@@ -40,6 +40,13 @@ list of valid keys. Supported keys:
   \item{`client_type`}{Identifier sent to the backend audit log as the
     `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
     normally need to override it.}
+  \item{`dev_mode`}{Logical. Enables the Python adapter's developer-mode
+    instrumentation (per-call event capture). Defaults to the
+    `PICSURE_DEV_MODE` environment variable.}
+  \item{`verify`}{TLS certificate verification. `TRUE` (default) verifies;
+    `FALSE` disables it (self-signed / local-dev deployments only); a
+    string is treated as a path to a CA bundle. Also settable via the
+    `PICSURE_SSL_VERIFY` environment variable.}
 }}
 }
 \value{

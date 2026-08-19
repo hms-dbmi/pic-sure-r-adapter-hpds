@@ -39,6 +39,13 @@
 #'     \item{`client_type`}{Identifier sent to the backend audit log as the
 #'       `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
 #'       normally need to override it.}
+#'     \item{`dev_mode`}{Logical. Enables the Python adapter's developer-mode
+#'       instrumentation (per-call event capture). Defaults to the
+#'       `PICSURE_DEV_MODE` environment variable.}
+#'     \item{`verify`}{TLS certificate verification. `TRUE` (default) verifies;
+#'       `FALSE` disables it (self-signed / local-dev deployments only); a
+#'       string is treated as a path to a CA bundle. Also settable via the
+#'       `PICSURE_SSL_VERIFY` environment variable.}
 #'   }
 #' @return An opaque session object. Pass it as the first argument to
 #'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
@@ -138,5 +145,5 @@ connect <- function(platform, token = "", ...) {
 # translation. To bump: add the new kwarg here and to connect()'s @param block.
 CONNECT_EXTRA_KWARGS <- c(
   "resource_uuid", "include_consents", "requires_auth", "supports_genomic",
-  "client_type"
+  "client_type", "dev_mode", "verify"
 )
