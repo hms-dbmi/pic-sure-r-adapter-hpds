@@ -29,6 +29,32 @@ picsureError <- function(message, py_cause = NULL) {
   )
 }
 
+.picsure_python_error_type <- function(py_cause) {
+  tryCatch(py_cause$error_type, error = function(e) NULL)
+}
+
+.picsure_error_from_python <- function(py_cause) {
+  error <- picsureError(conditionMessage(py_cause), py_cause = py_cause)
+  error_type <- .picsure_python_error_type(py_cause)
+
+  if (is.null(error_type)) {
+    return(error)
+  }
+
+  specialized_class <- switch(
+    error_type,
+    consent_denied = "picsureConsentDeniedError",
+    consent_lookup_failed = "picsureConsentLookupError",
+    NULL
+  )
+
+  if (!is.null(specialized_class)) {
+    class(error) <- c(specialized_class, class(error))
+  }
+
+  error
+}
+
 #' Wrap a Python call so Python exceptions surface as picsureErrors.
 #'
 #' Any condition of class `python.builtin.Exception` thrown inside `expr` is
@@ -44,7 +70,7 @@ with_picsure_error <- function(expr) {
   tryCatch(
     expr,
     python.builtin.Exception = function(e) {
-      stop(picsureError(conditionMessage(e), py_cause = e))
+      stop(.picsure_error_from_python(e))
     }
   )
 }
