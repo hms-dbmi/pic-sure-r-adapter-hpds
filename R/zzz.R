@@ -35,7 +35,7 @@ picsure_py <- NULL
 #   1. Re-running the full integration suite under VPN against a backend
 #      that ships the matching server protocol.
 #   2. Updating any wrapper signatures whose Python kwargs changed.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@e52a78e17c4fe2e575f0004483c647184b761115"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@a023f3678254ede43c9fee966f20070d3372ee11"
 
 .onLoad <- function(libname, pkgname) {
   reticulate::py_require(.PICSURE_PY_SPEC)
