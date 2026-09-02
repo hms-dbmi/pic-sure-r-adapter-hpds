@@ -22,8 +22,10 @@
 #'   `picsure.connect()` call. Unknown keys raise a `picsureError` with the
 #'   list of valid keys. Supported keys:
 #'   \describe{
-#'     \item{`resource_uuid`}{UUID of a specific PIC-SURE resource to connect
-#'       to; overrides the platform default.}
+#'     \item{`resource_uuid`}{Deprecated and no longer used for routing.
+#'       The gateway selects the HPDS backend by URL path (`/hpds/auth`
+#'       vs `/hpds/open`), derived from the platform, so this UUID no
+#'       longer chooses a backend. Accepted for backwards compatibility.}
 #'     \item{`include_consents`}{Logical. When `TRUE`, the session retrieves
 #'       the user's consent metadata from the auth service. Defaults to the
 #'       Python adapter's choice (currently `TRUE`).}
@@ -37,6 +39,13 @@
 #'     \item{`client_type`}{Identifier sent to the backend audit log as the
 #'       `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
 #'       normally need to override it.}
+#'     \item{`dev_mode`}{Logical. Enables the Python adapter's developer-mode
+#'       instrumentation (per-call event capture). Defaults to the
+#'       `PICSURE_DEV_MODE` environment variable.}
+#'     \item{`verify`}{TLS certificate verification. `TRUE` (default) verifies;
+#'       `FALSE` disables it (self-signed / local-dev deployments only); a
+#'       string is treated as a path to a CA bundle. Also settable via the
+#'       `PICSURE_SSL_VERIFY` environment variable.}
 #'   }
 #' @return An opaque session object. Pass it as the first argument to
 #'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
@@ -64,9 +73,9 @@ connect <- function(platform, token = "", ...) {
     }
     # Convert the R-side member to the Python Platform enum member by
     # name. Going through the proxy avoids the URL/label ambiguity:
-    # BDC_AUTHORIZED and BDC_OPEN share a URL (distinguished only by
-    # resource_uuid); BDC_AUTHORIZED and BDC_DEV_AUTHORIZED share a
-    # label.
+    # BDC_AUTHORIZED and BDC_OPEN share a URL (distinguished by the
+    # /hpds/auth vs /hpds/open backend path); BDC_AUTHORIZED and
+    # BDC_DEV_AUTHORIZED share a label.
     platform <- picsure_py$Platform[[platform$name]]
   } else if (is.character(platform)) {
     if (length(platform) != 1L || is.na(platform) || !nzchar(platform)) {
@@ -136,5 +145,5 @@ connect <- function(platform, token = "", ...) {
 # translation. To bump: add the new kwarg here and to connect()'s @param block.
 CONNECT_EXTRA_KWARGS <- c(
   "resource_uuid", "include_consents", "requires_auth", "supports_genomic",
-  "client_type"
+  "client_type", "dev_mode", "verify"
 )

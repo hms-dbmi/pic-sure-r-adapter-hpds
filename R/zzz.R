@@ -15,18 +15,27 @@ picsure_py <- NULL
 
 # Pinned Python dependency.
 #
-# Installed directly from the upstream GitHub repository's `main` branch via
-# PEP 508 direct-reference syntax (resolved by uv under `reticulate::py_require`).
-# `pic-sure-python-adapter-hpds` is not yet on PyPI; the only correctly
-# versioned 0.1.0 lives on `main`, which includes QueryType (merged
-# 2026-04-29). Once the Python package is published, swap this back to a
-# version-pinned spec (e.g. "picsure>=1.0,<2" after it reaches 1.0).
+# Installed directly from the upstream GitHub repository via PEP 508
+# direct-reference syntax (resolved by uv under `reticulate::py_require`).
+# `pic-sure-python-adapter-hpds` is not yet on PyPI.
+#
+# This R rewrite branch REQUIRES the Python rewrite line: the R adapter has no
+# HTTP code of its own, so backend compatibility is whatever this ref resolves
+# to. `@main` is pre-rewrite (discovers resources via /picsure/info/resources
+# and 404s at connect() on the rewrite gateway) — it MUST NOT be used here.
+# This tracks the Python branch carrying the corrected rewrite gateway paths
+# (the /picsure prefix, /picsure/dictionary/*, versioned open queries, etc.).
+#
+# Pinned to an immutable commit SHA, not a branch: a moving branch is how the
+# earlier drift (R silently pinned at pre-rewrite @main) went unnoticed. This
+# SHA is the head of the Python `pic_sure_api_rewrite` branch carrying the
+# corrected gateway paths.
 #
 # Bumping the pinned ref requires:
 #   1. Re-running the full integration suite under VPN against a backend
 #      that ships the matching server protocol.
 #   2. Updating any wrapper signatures whose Python kwargs changed.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@main"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@a023f3678254ede43c9fee966f20070d3372ee11"
 
 .onLoad <- function(libname, pkgname) {
   reticulate::py_require(.PICSURE_PY_SPEC)

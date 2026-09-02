@@ -68,12 +68,13 @@ test_that("Platform matches Python", {
     # supports_genomic mirrors Python's PlatformConfig field: R Platform
     # members carry it (TRUE for *_AUTHORIZED, FALSE for *_OPEN), so it is
     # checked both for presence in the field set and by value below.
+    # (The pinned Python adapter now drops resource_uuid from PlatformConfig,
+    # matching R, so strict parity checking runs unconditionally.)
     expect_setequal(
       py_field_names,
-      c("url", "resource_uuid", "label", "include_consents", "requires_auth", "supports_genomic")
+      c("url", "label", "include_consents", "requires_auth", "supports_genomic")
     )
     expect_equal(r_cfg$url,              py_cfg$url,              info = n)
-    expect_equal(r_cfg$resource_uuid,    py_cfg$resource_uuid,    info = n)
     expect_equal(r_cfg$label,            py_cfg$label,            info = n)
     expect_equal(r_cfg$include_consents, py_cfg$include_consents, info = n)
     expect_equal(r_cfg$requires_auth,    py_cfg$requires_auth,    info = n)
