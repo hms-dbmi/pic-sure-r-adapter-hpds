@@ -16,7 +16,10 @@ character scalar or character vector, e.g.
 `"REQUIRE"`, `"ANYRECORD"`) or a `PhenotypicFilterType` member (e.g.
 [`PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]).}
 
-\item{min, max}{Optional numeric bounds for continuous FILTER clauses.}
+\item{min, max}{Optional numeric bounds for continuous FILTER clauses. Each
+must be a single finite number when supplied; `NA`, `Inf`, a string, and
+a vector raise a `picsureError`. The value's own numeric type is
+preserved, so an R integer still reaches Python as an `int`.}
 
 \item{categories}{Optional vector or list of accepted category values for
 categorical FILTER clauses.}

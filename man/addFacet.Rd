@@ -9,9 +9,14 @@ addFacet(facet_set, key, value)
 \arguments{
 \item{facet_set}{A FacetSet from [`facets()`][picsure::facets].}
 
-\item{key}{Facet key, e.g. `"study_ids"`.}
+\item{key}{Facet category name, e.g. `"dataset_id"` or `"data_type"`.
+Exactly one category — a facet entry selects values inside a single
+category, so a vector of keys raises a `picsureError`. The valid
+category names come from the server, not from this package; a name the
+deployment does not publish raises a `picsureError` listing the ones it
+does.}
 
-\item{value}{Facet value (scalar or vector).}
+\item{value}{Facet value, or a vector of values under the same `key`.}
 }
 \value{
 The same FacetSet, invisibly, for chaining.
@@ -24,7 +29,7 @@ chaining. If `value` is a vector of length > 1, adds one entry per value
 \examples{
 \dontrun{
 fs <- picsure::facets(bdc)
-fs <- picsure::addFacet(fs, "study_ids", "phs000007")
-fs <- picsure::addFacet(fs, "study_ids", c("phs000200", "phs000286"))
+fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
+fs <- picsure::addFacet(fs, "dataset_id", c("phs000200", "phs000286"))
 }
 }

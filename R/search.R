@@ -12,7 +12,13 @@
 #'   the response. Set FALSE to omit them for a lighter payload.
 #' @param ... Additional keyword arguments forwarded to the Python
 #'   `Session.searchDictionary()` call.
-#' @return A `data.frame` of matching dictionary entries.
+#' @return A `data.frame` of matching dictionary entries, with column types
+#'   fixed by the dictionary schema whether or not the search matched
+#'   anything: `conceptPath`, `name`, `display`, `description`, `dataType`,
+#'   `studyId`, and `studyAcronym` are character, `min` and `max` numeric,
+#'   `allowFiltering` logical, and `values` and `meta` list columns. A search
+#'   that matched nothing returns a zero-row frame with those same types, so
+#'   arithmetic on `min` / `max` behaves the same either way.
 #' @examples
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
@@ -21,8 +27,11 @@
 #' }
 #' @export
 searchDictionary <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
-  if (is.null(term) || length(term) != 1L || is.na(term) || !is.character(term)) {
-    stop("`term` must be a single string (empty string is OK to fetch all).")
+  if (is.null(term) || length(term) != 1L || !is.character(term) || is.na(term)) {
+    stop(.picsure_invalid_argument(sprintf(
+      "`term` must be a single string (empty string is OK to fetch all); got %s.",
+      describe_argument_value(term)
+    )))
   }
 
   kwargs <- drop_nulls(list(
@@ -32,7 +41,10 @@ searchDictionary <- function(session, term = "", facets = NULL, include_values =
     ...
   ))
 
-  with_picsure_error(do.call(session$searchDictionary, kwargs))
+  apply_result_schema(
+    with_picsure_error(do.call(session$searchDictionary, kwargs)),
+    .DICTIONARY_RESULT_SCHEMA
+  )
 }
 
 #' Look up valid values for a genomic annotation key (authorized platforms).
@@ -46,27 +58,32 @@ searchDictionary <- function(session, term = "", facets = NULL, include_values =
 #' @param genomicConceptPath The genomic key, e.g. `"Gene_with_variant"` or
 #'   `"Variant_consequence_calculated"`.
 #' @param query Optional search term to narrow results (e.g. `"BRCA"`).
-#' @param page 1-based page number.
-#' @param size Page size (values per call).
+#' @param page 1-based page number. A single positive whole number; a
+#'   fractional or non-numeric value raises a `picsureError` rather than
+#'   being silently truncated or turned into `NA`.
+#' @param size Page size (values per call). Same validation as `page`.
 #' @param ... Additional keyword arguments forwarded to the Python call.
-#' @return A data.frame with a single `value` column. (The Python adapter's
-#'   pagination metadata lives on the DataFrame's `.attrs` and does not survive
-#'   reticulate conversion; paginate via `page`/`size`.)
+#' @return A data.frame with a single character `value` column. (The Python
+#'   adapter's pagination metadata lives on the DataFrame's `.attrs` and does
+#'   not survive reticulate conversion; paginate via `page`/`size`.)
 #' @export
 searchGenomicValues <- function(session, genomicConceptPath, query = "", page = 1, size = 100, ...) {
-  if (missing(genomicConceptPath) || is.null(genomicConceptPath) ||
-      length(genomicConceptPath) != 1L || is.na(genomicConceptPath) ||
-      !is.character(genomicConceptPath) || !nzchar(genomicConceptPath)) {
-    stop("`genomicConceptPath` must be a non-empty character scalar (e.g. \"Gene_with_variant\").")
-  }
+  if (missing(genomicConceptPath)) genomicConceptPath <- NULL
+  as_single_string(
+    genomicConceptPath, "genomicConceptPath",
+    hint = "For example \"Gene_with_variant\"."
+  )
   kwargs <- drop_nulls(list(
     genomicConceptPath = genomicConceptPath,
     query              = query,
-    page               = as.integer(page),
-    size               = as.integer(size),
+    page               = as_positive_whole_number(page, "page"),
+    size               = as_positive_whole_number(size, "size"),
     ...
   ))
-  with_picsure_error(do.call(session$searchGenomicValues, kwargs))
+  apply_result_schema(
+    with_picsure_error(do.call(session$searchGenomicValues, kwargs)),
+    .GENOMIC_VALUES_RESULT_SCHEMA
+  )
 }
 
 #' Variant-consequence vocabulary (offline reference data).
@@ -75,8 +92,11 @@ searchGenomicValues <- function(session, genomicConceptPath, query = "", page = 
 #' adapter as a data.frame (`severity`, `consequence`). No session or network
 #' required.
 #'
-#' @return A data.frame with columns `severity` and `consequence`.
+#' @return A data.frame with character columns `severity` and `consequence`.
 #' @export
 genomicConsequences <- function() {
-  with_picsure_error(picsure_py$genomicConsequences())
+  apply_result_schema(
+    with_picsure_error(picsure_py$genomicConsequences()),
+    .CONSEQUENCES_RESULT_SCHEMA
+  )
 }

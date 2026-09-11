@@ -158,7 +158,7 @@ new_fake_picsure_py <- function() {
   )
 }
 
-fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authorized")) {
+fake_picsure_py <- function() {
   calls <- new.env(parent = emptyenv())
   calls$connect <- list()
 
@@ -182,8 +182,12 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
         genomicFilters = genomicFilters
       )
     },
+    # `extra` holds whatever arrived through `...`, the way the fake
+    # `buildClause` does. Without it the fake silently swallowed unknown
+    # kwargs, so a test could not tell "the wrapper forwarded min/max as
+    # unknown kwargs" from "the wrapper absorbed them".
     buildGenomicFilter = function(key, values = NULL, ...) {
-      list(kind = "genomic_filter", key = key, values = values)
+      list(kind = "genomic_filter", key = key, values = values, extra = list(...))
     },
     genomicConsequences = function() {
       data.frame(
@@ -216,32 +220,58 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
     VariantSeverity = list(
       HIGH = "High Severity", MEDIUM = "Medium Severity", LOW = "Low Severity"
     ),
-    Platform = setNames(platform_names, toupper(gsub(" ", "_", platform_names))),
+    # `Platform` exists here only as connect()'s name -> label lookup table,
+    # for `picsure_py$Platform[[member$name]]`. It is deliberately NOT a
+    # stand-in for the real enum, and platforms() must never be tested
+    # against it: the real `picsure.Platform` is a Python Enum class whose
+    # `__members__` crosses the reticulate boundary as an unconverted
+    # `mappingproxy`, and this character vector takes a different branch of
+    # platforms() entirely. That is how a conversion bug that broke every
+    # real call shipped green. platforms() is exercised against a genuine
+    # Python enum in test-platforms-reticulate.R.
+    #
+    # Derived from the R-side enum so every member name resolves and the two
+    # cannot drift apart.
+    Platform = vapply(picsure::Platform, function(m) m$label, character(1)),
 
     # Call recorder
     .calls = calls
   )
 }
 
-# Fake FacetSet: a mutable Python-like object that records add/remove calls.
-# Mirrors the minimal surface R wrappers touch: members `$add(key, value)`
-# and `$remove(key, value)` that mutate internal state.
-new_fake_facet_set <- function() {
+# Fake FacetSet: a mutable Python-like object recording the calls R wrappers
+# make. Its surface is exactly the Python FacetSet's, `$add(category, values)`,
+# `$view()`, `$clear(category)`, and deliberately nothing more. An earlier
+# version of this fake carried a `$remove()` member that Python has never had,
+# which let a broken `removeFacet()` pass its tests. Only add a member here
+# after checking it against `_models/facet.py` in the Python adapter.
+new_fake_facet_set <- function(categories = c("study_ids", "data_source")) {
   state <- new.env(parent = emptyenv())
   state$entries <- list()  # list of list(key = ..., value = ...)
+
+  values_for <- function(category) {
+    matching <- Filter(function(e) identical(e$key, category), state$entries)
+    vapply(matching, function(e) e$value, character(1))
+  }
 
   fs <- structure(
     list(
       add = function(key, value) {
-        state$entries <- c(state$entries, list(list(key = key, value = value)))
+        for (v in as.character(unlist(value, use.names = FALSE))) {
+          state$entries <- c(state$entries, list(list(key = key, value = v)))
+        }
         invisible(NULL)
       },
-      remove = function(key, value) {
-        keep <- vapply(
-          state$entries,
-          function(e) !(identical(e$key, key) && identical(e$value, value)),
-          logical(1)
-        )
+      view = function() {
+        seen <- unique(c(categories, vapply(state$entries, function(e) e$key, character(1))))
+        stats::setNames(lapply(seen, values_for), seen)
+      },
+      clear = function(category = NULL) {
+        if (is.null(category)) {
+          state$entries <- list()
+          return(invisible(NULL))
+        }
+        keep <- vapply(state$entries, function(e) !identical(e$key, category), logical(1))
         state$entries <- state$entries[keep]
         invisible(NULL)
       },

@@ -2,9 +2,14 @@ name: R CMD check
 
 on:
   pull_request:
-    branches: [main, query_v3]
   push:
-    branches: [main, query_v3]
+    branches-ignore:
+      - gh-pages
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   R-CMD-check:

@@ -19,7 +19,8 @@ or `"aggregate_vcf_excerpt"`.}
 }
 \value{
 Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
-  `"count"` or `"variant_count"`, a dict-like mapping for `"cross_count"`,
+  `"count"` or `"variant_count"`, a named list of `CountResult`s keyed by
+  concept path for `"cross_count"`,
   a `data.frame` for `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
   `"aggregate_vcf_excerpt"` (not served by BDC primary environments yet),
   or a character vector for `"variant_list"` (not served by BDC primary

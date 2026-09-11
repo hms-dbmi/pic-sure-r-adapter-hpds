@@ -2,9 +2,9 @@ name: pkgdown
 
 on:
   pull_request:
-    branches: [main, query_v3]
   push:
-    branches: [main, query_v3]
+    branches-ignore:
+      - gh-pages
   release:
     types: [published]
   workflow_dispatch:
@@ -37,7 +37,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Deploy to GitHub Pages
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'release' || (github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch)
         uses: JamesIves/github-pages-deploy-action@v4.5.0
         with:
           clean: false

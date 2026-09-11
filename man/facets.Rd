@@ -18,10 +18,18 @@ Returns an opaque `FacetSet` handle tied to this session. Add entries with
 [`removeFacet()`][picsure::removeFacet]. Pass the final FacetSet to
 [`searchDictionary()`][picsure::searchDictionary] via the `facets` argument.
 }
+\details{
+The handle is created from the categories the *deployment* publishes, so
+the valid category names come from the server rather than from this
+package. Current PIC-SURE deployments serve two: `"dataset_id"` (the study
+or dataset, e.g. a dbGaP accession) and `"data_type"` (`"categorical"` or
+`"continuous"`). A category the server did not publish raises a
+`picsureError` listing the ones it did.
+}
 \examples{
 \dontrun{
 fs <- picsure::facets(bdc)
-fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
 picsure::searchDictionary(bdc, "sex", facets = fs)
 }
 }
