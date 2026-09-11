@@ -12,8 +12,8 @@ knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
 ```
 
 `picsure::searchDictionary()` returns matching dictionary entries as a data frame.
-`picsure::facets()` narrows a search to a subset — by study, by consent
-group, etc.
+`picsure::facets()` narrows a search to a subset — by dataset, by variable
+type.
 
 ## Plain search
 
@@ -27,15 +27,22 @@ head(results)
 
 ## Build a FacetSet
 
+The category names are published by the deployment you are connected to, not
+fixed by this package. Current PIC-SURE deployments serve two:
+`"dataset_id"` (the study or dataset, e.g. a dbGaP accession) and
+`"data_type"` (`"categorical"` or `"continuous"`). Passing a name the server
+does not publish raises a `picsureError` that lists the ones it does.
+
 ```{r}
 fs <- picsure::facets(bdc)
-fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
+fs <- picsure::addFacet(fs, "data_type", "continuous")
 ```
 
 `addFacet()` accepts a vector of values to add several at once:
 
 ```{r}
-fs <- picsure::addFacet(fs, "study_ids", c("phs000200", "phs000286"))
+fs <- picsure::addFacet(fs, "dataset_id", c("phs000200", "phs000286"))
 ```
 
 Remove with `removeFacet(fs, key, value)`. Both functions mutate the

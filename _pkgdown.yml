@@ -52,5 +52,7 @@ reference:
       - PhenotypicFilterType
       - GroupOperator
       - QueryType
+      - GenomicFilterKey
       - VariantFrequency
+      - VariantSeverity
       - Platform
