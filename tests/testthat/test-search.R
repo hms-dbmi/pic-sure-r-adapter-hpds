@@ -70,3 +70,37 @@ test_that("searchDictionary() forwards a FacetSet as the facets kwarg", {
   call <- bdc$.calls$searchDictionary[[1]]
   expect_identical(call$facets, fs)
 })
+
+# RL-12 / RL-10: argument rejection and result typing
+
+test_that("searchDictionary() rejects a non-string term as a picsureValidationError", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  for (term in list(NULL, NA_character_, 42, c("a", "b"), character(0), list("a"))) {
+    err <- tryCatch(picsure::searchDictionary(bdc, term), condition = function(e) e)
+    expect_s3_class(err, "picsureValidationError")
+    expect_s3_class(err, "picsureError")
+    expect_match(conditionMessage(err), "`term`", fixed = TRUE)
+  }
+  expect_length(bdc$.calls$searchDictionary, 0L)
+})
+
+test_that("searchDictionary() types the columns it knows and leaves the rest", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  bdc$searchDictionary <- function(...) {
+    data.frame(
+      conceptPath = "\\phs1\\bmi\\", min = "12.5", max = "61", allowFiltering = "TRUE",
+      unknownField = "left alone", stringsAsFactors = FALSE
+    )
+  }
+
+  result <- picsure::searchDictionary(bdc, "bmi")
+
+  expect_type(result$min, "double")
+  expect_type(result$max, "double")
+  expect_type(result$allowFiltering, "logical")
+  expect_type(result$unknownField, "character")
+  expect_identical(names(result), c("conceptPath", "min", "max", "allowFiltering", "unknownField"))
+})

@@ -16,11 +16,12 @@
 #' @export
 exportAsPFB <- function(session, query, path) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required. Build one with picsure::buildQuery().")
+    stop(.picsure_invalid_argument(
+      "`query` is required. Build one with picsure::buildQuery."
+    ))
   }
-  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
-    stop("`path` is required. Provide a writable file path as a string.")
-  }
+  if (missing(path)) path <- NULL
+  as_single_string(path, "path", hint = "Provide a writable file path.")
 
   with_picsure_error(session$exportAsPFB(query, path))
   invisible(path)
@@ -47,11 +48,12 @@ exportAsPFB <- function(session, query, path) {
 #' @export
 exportCSV <- function(session, data, path) {
   if (missing(data) || is.null(data) || !is.data.frame(data)) {
-    stop("`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result.")
+    stop(.picsure_invalid_argument(
+      "`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result."
+    ))
   }
-  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
-    stop("`path` is required. Provide a writable file path as a string.")
-  }
+  if (missing(path)) path <- NULL
+  as_single_string(path, "path", hint = "Provide a writable file path.")
 
   with_picsure_error(session$exportCSV(data, path))
   invisible(path)
@@ -72,11 +74,12 @@ exportCSV <- function(session, data, path) {
 #' @export
 exportTSV <- function(session, data, path) {
   if (missing(data) || is.null(data) || !is.data.frame(data)) {
-    stop("`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result.")
+    stop(.picsure_invalid_argument(
+      "`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result."
+    ))
   }
-  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
-    stop("`path` is required. Provide a writable file path as a string.")
-  }
+  if (missing(path)) path <- NULL
+  as_single_string(path, "path", hint = "Provide a writable file path.")
 
   with_picsure_error(session$exportTSV(data, path))
   invisible(path)

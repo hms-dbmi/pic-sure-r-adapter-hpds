@@ -7,7 +7,7 @@
 genomicConsequences()
 }
 \value{
-A data.frame with columns `severity` and `consequence`.
+A data.frame with character columns `severity` and `consequence`.
 }
 \description{
 Returns the High/Medium/Low severity consequence vocabulary bundled with the
