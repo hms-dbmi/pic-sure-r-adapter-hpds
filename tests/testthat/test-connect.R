@@ -101,13 +101,29 @@ test_that("connect() rejects unknown extra kwargs with a helpful message", {
   expect_s3_class(err, "picsureError")
   msg <- conditionMessage(err)
   expect_match(msg, "resourceUuid", fixed = TRUE)
-  expect_match(msg, "resource_uuid", fixed = TRUE)
   expect_match(msg, "include_consents", fixed = TRUE)
   expect_match(msg, "requires_auth", fixed = TRUE)
+  expect_match(msg, "supports_genomic", fixed = TRUE)
+})
+
+# The pinned Python connect() still accepts resource_uuid for backwards
+# compatibility: it stores it on the session and never routes by it. This
+# wrapper refuses it rather than forwarding a value that cannot affect the
+# result.
+test_that("connect() rejects resource_uuid, which no longer routes anything", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  err <- tryCatch(
+    picsure::connect(
+      platform = "https://picsure.test", token = "tok", resource_uuid = "x"
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "Unknown argument", fixed = TRUE)
 })
 
 test_that("connect() forwards each whitelisted extra kwarg", {
-  for (key in c("resource_uuid", "include_consents", "requires_auth")) {
+  for (key in c("include_consents", "requires_auth", "supports_genomic")) {
     fake <- fake_picsure_py()
     testthat::local_mocked_bindings(picsure_py = fake)
     args <- list(platform = "https://picsure.test", token = "tok")
@@ -189,4 +205,109 @@ test_that("connect() lets the caller override client_type", {
   )
   recorded <- fake$.calls$connect[[1]]
   expect_equal(recorded$client_type, "PYTHON_ADAPTER")
+})
+
+# RL-18: R options for the two settings Python also reads from the environment
+
+test_that("connect() forwards options(picsure.ssl_verify) as the verify kwarg", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = FALSE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$verify, FALSE)
+})
+
+test_that("connect() forwards a CA-bundle path from options(picsure.ssl_verify)", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = "/etc/ssl/my-ca.pem"), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$verify, "/etc/ssl/my-ca.pem")
+})
+
+test_that("connect() forwards options(picsure.dev_mode) as the dev_mode kwarg", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.dev_mode = TRUE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$dev_mode, TRUE)
+})
+
+test_that("an explicit verify / dev_mode argument beats the option", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = FALSE, picsure.dev_mode = TRUE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok",
+                     verify = TRUE, dev_mode = FALSE)
+  })
+
+  recorded <- fake$.calls$connect[[1]]
+  expect_identical(recorded$verify, TRUE)
+  expect_identical(recorded$dev_mode, FALSE)
+})
+
+test_that("neither kwarg is sent when the option is unset, so Python's default stands", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = NULL, picsure.dev_mode = NULL), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  recorded <- fake$.calls$connect[[1]]
+  expect_false("verify" %in% names(recorded))
+  expect_false("dev_mode" %in% names(recorded))
+})
+
+test_that("the options are read on every call, not cached", {
+  # The reason these exist: Python snapshots os.environ when the interpreter
+  # starts, so Sys.setenv() after the first call is invisible to it. An option
+  # read per call is not.
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = FALSE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+  with_picsure_options(list(picsure.ssl_verify = TRUE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$verify, FALSE)
+  expect_identical(fake$.calls$connect[[2]]$verify, TRUE)
+})
+
+test_that("an unusable option value is a picsureError naming the option", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+
+  bad_verify <- list(NA, "", 1, c(TRUE, FALSE), c("a", "b"), list(TRUE))
+  for (value in bad_verify) {
+    err <- with_picsure_options(
+      list(picsure.ssl_verify = value),
+      tryCatch(picsure::connect(platform = "https://picsure.test", token = "tok"),
+               condition = function(e) e)
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "picsure.ssl_verify", fixed = TRUE)
+  }
+
+  for (value in list(NA, "TRUE", 1, c(TRUE, FALSE))) {
+    err <- with_picsure_options(
+      list(picsure.dev_mode = value),
+      tryCatch(picsure::connect(platform = "https://picsure.test", token = "tok"),
+               condition = function(e) e)
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "picsure.dev_mode", fixed = TRUE)
+  }
 })
