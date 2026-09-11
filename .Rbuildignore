@@ -17,3 +17,5 @@
 ^\.devcontainer$
 ^notebooks$
 ^docker-dev-container-prompt\.md$
+^CONTRIBUTING\.md$
+^TODO\.md$
