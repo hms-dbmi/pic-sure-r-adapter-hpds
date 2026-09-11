@@ -1,12 +1,33 @@
 # Drift test — verifies R-side enum definitions match the Python adapter.
-# Skips when picsure_py is the testthat fake or hasn't been initialized.
+#
+# Parity can only be checked against a live interpreter, and a missing
+# interpreter used to be indistinguishable from genuinely disagreeing enums:
+# the old guard trusted `inherits(picsure_py, "python.builtin.module")`, which
+# the `delay_load = TRUE` proxy satisfies before Python exists, so all eight
+# comparisons ran and all eight died with an opaque "Installation of Python
+# not found".
+#
+# The environment is now asserted once, loudly, by the first test below. A
+# missing interpreter is a failure — not a silent skip — because an
+# environment without Python must not look like a clean run. The comparisons
+# themselves skip, so that failure arrives once and says what it means. See
+# helper-python.R for the probe.
 
-skip_if_no_picsure_py <- function() {
-  if (is.null(picsure:::picsure_py) ||
-      !inherits(picsure:::picsure_py, "python.builtin.module")) {
-    testthat::skip("picsure_py not initialized as a real Python module")
+test_that("a Python picsure adapter is available to verify enum parity against", {
+  status <- python_status()
+
+  if (!isTRUE(status$available)) {
+    testthat::fail(python_unavailable_message(status))
+    return(invisible(NULL))
   }
-}
+  if (!isTRUE(status$module)) {
+    testthat::fail(python_module_unavailable_message(status))
+    return(invisible(NULL))
+  }
+
+  expect_true(status$available)
+  expect_true(status$module)
+})
 
 py_members <- function(py_enum) {
   # __members__ maps member name -> member object. Reticulate coerces the
@@ -26,7 +47,7 @@ py_members <- function(py_enum) {
 }
 
 test_that("PhenotypicFilterType matches Python", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   py <- py_members(picsure:::picsure_py$PhenotypicFilterType)
   expect_setequal(names(picsure::PhenotypicFilterType), names(py))
   for (n in names(picsure::PhenotypicFilterType)) {
@@ -36,7 +57,7 @@ test_that("PhenotypicFilterType matches Python", {
 })
 
 test_that("GroupOperator matches Python", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   py <- py_members(picsure:::picsure_py$GroupOperator)
   expect_setequal(names(picsure::GroupOperator), names(py))
   for (n in names(picsure::GroupOperator)) {
@@ -46,7 +67,7 @@ test_that("GroupOperator matches Python", {
 })
 
 test_that("QueryType matches Python", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   py <- py_members(picsure:::picsure_py$QueryType)
   expect_setequal(names(picsure::QueryType), names(py))
   for (n in names(picsure::QueryType)) {
@@ -56,7 +77,7 @@ test_that("QueryType matches Python", {
 })
 
 test_that("Platform matches Python", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   builtins <- reticulate::import_builtins()
   py_enum <- picsure:::picsure_py$Platform
   py_names <- names(builtins$dict(py_enum$`__members__`))
@@ -83,7 +104,7 @@ test_that("Platform matches Python", {
 })
 
 test_that("All Python picsure enums are mirrored in R", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   reticulate::py_run_string(
     "import enum, picsure
 _picsure_enum_names = sorted([
@@ -104,7 +125,7 @@ _picsure_enum_names = sorted([
 })
 
 test_that("VariantFrequency matches Python", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   py <- py_members(picsure:::picsure_py$VariantFrequency)
   expect_setequal(names(picsure::VariantFrequency), names(py))
   for (n in names(picsure::VariantFrequency)) {
@@ -114,7 +135,7 @@ test_that("VariantFrequency matches Python", {
 })
 
 test_that("GenomicFilterKey matches Python", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   py <- py_members(picsure:::picsure_py$GenomicFilterKey)
   expect_setequal(names(picsure::GenomicFilterKey), names(py))
   for (n in names(picsure::GenomicFilterKey)) {
@@ -124,7 +145,7 @@ test_that("GenomicFilterKey matches Python", {
 })
 
 test_that("VariantSeverity matches Python", {
-  skip_if_no_picsure_py()
+  skip_unless_python_parity()
   py <- py_members(picsure:::picsure_py$VariantSeverity)
   expect_setequal(names(picsure::VariantSeverity), names(py))
   for (n in names(picsure::VariantSeverity)) {

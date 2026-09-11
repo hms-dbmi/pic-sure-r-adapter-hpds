@@ -26,10 +26,20 @@ or `"aggregate_vcf_excerpt"`.}
 \value{
 For `type = "count"` or `"variant_count"`, a Python `CountResult`
   object with `$value` (exact count, or `NULL` for obfuscated small
-  cohorts), `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
-  mapping concept paths to CountResults. For `"participant"`,
+  cohorts), `$margin`, and `$cap`. For `type = "cross_count"`, a named
+  list of `CountResult`s keyed by concept path. For `"participant"`,
   `"timestamp"`, `"vcf_excerpt"`, and `"aggregate_vcf_excerpt"`, a
   `data.frame`. For `"variant_list"`, a character vector.
+
+  A `"timestamp"` result is typed from the fixed timeseries schema HPDS
+  declares — `PATIENT_NUM` integer, `CONCEPT_PATH` character, `NVAL_NUM`
+  numeric, `TVAL_CHAR` character, `TIMESTAMP` character — rather than
+  inferred from the rows. HPDS fills exactly one of `NVAL_NUM` /
+  `TVAL_CHAR` per row, so a query over numeric concepts alone leaves
+  `TVAL_CHAR` empty in every row, and inference used to hand that column
+  back as numeric. `"participant"` and the VCF-excerpt results have a
+  server-driven column set (one per concept), so their columns are left as
+  they arrive.
 }
 \description{
 Runs a query — a clause/clause-group from
@@ -41,8 +51,9 @@ returns the result in the shape dictated by `type`:
 \details{
 - `"count"` — a `CountResult` object with `$value` (exact count, or
   `NULL` for obfuscated small cohorts), `$margin`, and `$cap`.
-- `"cross_count"` — a dict-like mapping of concept paths to
-  `CountResult` objects.
+- `"cross_count"` — a named list of `CountResult` objects keyed by
+  concept path (reticulate converts the Python `dict`; the values stay
+  Python objects).
 - `"participant"` — data.frame with one row per matching participant
   across all included concepts.
 - `"timestamp"` — data.frame of participant-level timestamps for

@@ -337,3 +337,106 @@ test_that("saveQueryByName validates name and overwrite", {
   expect_error(picsure::saveQueryByName(session, "Q", "Cohort", overwrite = NA),
                "single logical")
 })
+
+# RL-11: a timestamp result is typed from the timeseries schema
+
+test_that("runQuery(type = 'timestamp') applies the timeseries schema", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  bdc$runQuery <- function(...) {
+    # What read_csv() produces for a query over numeric concepts only: every
+    # TVAL_CHAR is empty, so the column is inferred as numeric.
+    data.frame(
+      PATIENT_NUM  = c("1", "2"),
+      CONCEPT_PATH = c("\\phs1\\age\\", "\\phs1\\age\\"),
+      NVAL_NUM     = c(42, 51),
+      TVAL_CHAR    = c(NA_real_, NA_real_),
+      TIMESTAMP    = c("2020-01-01", "2020-01-02"),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  result <- picsure::runQuery(bdc, list(kind = "clause"), type = "timestamp")
+
+  expect_type(result$PATIENT_NUM, "integer")
+  expect_type(result$CONCEPT_PATH, "character")
+  expect_type(result$NVAL_NUM, "double")
+  expect_type(result$TVAL_CHAR, "character")
+  expect_type(result$TIMESTAMP, "character")
+})
+
+test_that("a non-timestamp result keeps its server-driven column types", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  participant <- picsure::runQuery(bdc, list(kind = "clause"), type = "participant")
+
+  expect_type(participant$patient_id, "integer")
+  expect_type(participant$value, "character")
+})
+
+test_that("runQueryByID(type = 'timestamp') applies the same schema", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  bdc$runQueryByID <- function(query_id, type = "count") {
+    data.frame(
+      PATIENT_NUM = "1", NVAL_NUM = 42, TVAL_CHAR = NA_real_,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  result <- picsure::runQueryByID(bdc, "an-id", type = picsure::QueryType$TIMESTAMP)
+
+  expect_type(result$PATIENT_NUM, "integer")
+  expect_type(result$TVAL_CHAR, "character")
+})
+
+test_that("a count result is not mistaken for a data frame to retype", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  count <- picsure::runQuery(bdc, list(kind = "clause"), type = "count")
+
+  expect_equal(count$value, 42L)
+})
+
+# RL-12: query-editing and query-running arguments raise picsureErrors
+
+test_that("query wrappers reject their arguments as picsureValidationErrors", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  rejections <- list(
+    function() picsure::runQuery(bdc),
+    function() picsure::runQuery(bdc, NULL),
+    function() picsure::loadQueryByID(bdc),
+    function() picsure::loadQueryByID(bdc, c("a", "b")),
+    function() picsure::runQueryByID(bdc, NA_character_),
+    function() picsure::removeSubQuery(),
+    function() picsure::removeSubQuery(query = "Q"),
+    function() picsure::replaceClause(query = "Q", target = "T"),
+    function() picsure::saveQueryByName(bdc, "Q", NA_character_),
+    function() picsure::saveQueryByName(bdc, "Q", "n", overwrite = "yes")
+  )
+
+  for (i in seq_along(rejections)) {
+    err <- tryCatch(rejections[[i]](), condition = function(e) e)
+    expect_s3_class(err, "picsureValidationError")
+    expect_s3_class(err, "picsureError")
+    expect_false(inherits(err, "simpleError"), info = paste("rejection", i))
+  }
+})
+
+test_that("an unknown query type is a picsureError naming the enum", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  err <- tryCatch(
+    picsure::runQuery(bdc, list(kind = "clause"), type = "histogram"),
+    condition = function(e) e
+  )
+
+  expect_s3_class(err, "picsureValidationError")
+  expect_match(conditionMessage(err), "QueryType", fixed = TRUE)
+  expect_match(conditionMessage(err), "histogram", fixed = TRUE)
+})
