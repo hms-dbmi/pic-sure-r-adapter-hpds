@@ -21,32 +21,42 @@ authenticated platforms. Defaults to `""`.}
 
 \item{...}{Optional keyword arguments forwarded to the Python
 `picsure.connect()` call. Unknown keys raise a `picsureError` with the
-list of valid keys. Supported keys:
+list of valid keys. Every one of them defaults to the *platform's* own
+setting rather than to a fixed value, and a `Platform` member and a URL
+string resolve differently — see the "Defaults" section below.
+Supported keys:
 \describe{
-  \item{`resource_uuid`}{Deprecated and no longer used for routing.
-    The gateway selects the HPDS backend by URL path (`/hpds/auth`
-    vs `/hpds/open`), derived from the platform, so this UUID no
-    longer chooses a backend. Accepted for backwards compatibility.}
-  \item{`include_consents`}{Logical. When `TRUE`, the session retrieves
-    the user's consent metadata from the auth service. Defaults to the
-    Python adapter's choice (currently `TRUE`).}
+  \item{`include_consents`}{Logical. When `TRUE`, `connect()` fetches the
+    user's approved consent identifiers from PSAMA and the session sends
+    them on every dictionary call, which is what scopes search results to
+    the studies the user may see. `TRUE` for the BDC authorized
+    `Platform` members, `FALSE` for every other member **and for a
+    custom URL string**.}
   \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
-    unauthenticated mode (only useful for open resources). Defaults to
-    the Python adapter's choice (currently `TRUE`).}
+    unauthenticated mode against the open HPDS backend (no token
+    needed). `TRUE` for the `_AUTHORIZED` members and for a custom URL
+    string, `FALSE` for the `_OPEN` members.}
   \item{`supports_genomic`}{Logical. Whether genomic operations
     (`searchGenomicValues()`, genomic-filtered queries) are permitted.
-    Defaults to the platform's own flag (`TRUE` only for BDC authorized
-    platforms); pass `TRUE` for a custom URL that serves genomic data.}
+    `TRUE` for `Platform$BDC_AUTHORIZED`, `Platform$BDC_DEV_AUTHORIZED`,
+    `Platform$BDC_PREDEV_AUTHORIZED`, and
+    `Platform$NHANES_AUTHORIZED`; `FALSE` for the `_OPEN` members and
+    for a custom URL string. Pass `TRUE` for a custom URL that serves
+    genomic data.}
   \item{`client_type`}{Identifier sent to the backend audit log as the
-    `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
-    normally need to override it.}
+    `X-Client-Type` header. Defaults to `"R_ADAPTER"` (this wrapper sets
+    it; the Python adapter's own default is `"PYTHON_ADAPTER"`). You
+    should not normally need to override it.}
   \item{`dev_mode`}{Logical. Enables the Python adapter's developer-mode
-    instrumentation (per-call event capture). Defaults to the
-    `PICSURE_DEV_MODE` environment variable.}
-  \item{`verify`}{TLS certificate verification. `TRUE` (default) verifies;
-    `FALSE` disables it (self-signed / local-dev deployments only); a
-    string is treated as a path to a CA bundle. Also settable via the
-    `PICSURE_SSL_VERIFY` environment variable.}
+    instrumentation (per-call event capture). Defaults to
+    `getOption("picsure.dev_mode")`, then to the `PICSURE_DEV_MODE`
+    environment variable read Python-side, then to off.}
+  \item{`verify`}{TLS certificate verification. `TRUE` verifies (the
+    Python adapter's default); `FALSE` disables it (self-signed /
+    local-dev deployments only); a string is treated as a path to a CA
+    bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
+    `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
+    verifying.}
 }}
 }
 \value{
@@ -63,6 +73,55 @@ On the first call of the R session, reticulate provisions an isolated
 Python environment containing the `picsure` Python package. This may take
 a few seconds the first time; subsequent calls reuse the cached env.
 }
+\section{Defaults}{
+
+`include_consents`, `requires_auth`, and `supports_genomic` are all
+`NULL` here and resolved Python-side by `resolve_platform()`. There is no
+single default value for any of them:
+
+- For a `Platform` member, each one defaults to that member's own flag.
+  `Platform$BDC_AUTHORIZED` is consent-scoped, auth-required, and
+  genomic-capable; `Platform$NHANES_AUTHORIZED` is auth-required and
+  genomic-capable but **not** consent-scoped; the `_OPEN` members are none
+  of the three.
+- For a **custom URL string**, `requires_auth` defaults to `TRUE` while
+  `include_consents` and `supports_genomic` default to `FALSE`.
+
+The URL case is the one that bites. A consent-gated deployment reached by
+URL connects with an **empty consent list**, and because the consent list
+is what scopes dictionary results, `searchDictionary()` then returns every
+concept in the index rather than the ones your consents cover. Pass
+`include_consents = TRUE` explicitly when connecting to a consent-gated
+deployment by URL:
+
+\preformatted{
+session <- picsure::connect(
+  platform         = "https://my-picsure.example.com",
+  token            = my_token,
+  include_consents = TRUE
+)
+}
+}
+
+\section{Settings from an R session}{
+
+`PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE` are read out of Python's
+`os.environ`, which CPython snapshots when the interpreter starts.
+Reticulate runs that interpreter inside the R process, so
+`Sys.setenv(PICSURE_SSL_VERIFY = "false")` is picked up only while Python
+has not started yet — after the first call that provisions it, the change
+is invisible to Python. Use the R options instead, which are read on every
+`connect()` call:
+
+\preformatted{
+options(picsure.ssl_verify = FALSE)   # or a path to a CA bundle
+options(picsure.dev_mode  = TRUE)
+}
+
+An explicit `verify =` / `dev_mode =` argument to `connect()` always wins
+over the option.
+}
+
 \examples{
 \dontrun{
 bdc <- picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, token = my_token)
