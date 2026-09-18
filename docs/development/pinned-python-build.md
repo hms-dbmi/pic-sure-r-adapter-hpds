@@ -121,7 +121,11 @@ all of it goes stale silently.
 **Guard:** `test-search-reticulate.R` checks `.DICTIONARY_RESULT_SCHEMA`
 against `_COLUMNS_WITH_VALUES` in `picsure._services.search`, and
 `.CONSEQUENCES_RESULT_SCHEMA` against what `genomicConsequences()` actually
-returns.
+returns. `picsure._services.search` is a private subpackage, so the
+dictionary check **fails** rather than skipping when it stops importing: a
+build that renames it takes the schema's only live guard with it, and until
+the test is re-anchored the schema has to be read against the Python source
+by hand, like the rows in the table below.
 
 **No guard** on the other three, because each mirrors an inline Python
 literal with no importable name:

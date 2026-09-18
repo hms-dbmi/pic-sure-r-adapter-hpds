@@ -120,11 +120,18 @@ skip_unless_python_interpreter <- function() {
 
 skip_unless_python_module <- function(module = "picsure") {
   skip_unless_python_interpreter()
-  importable <- isTRUE(tryCatch(
+  if (!python_module_importable(module)) {
+    testthat::skip(paste0("Python module '", module, "' is not importable."))
+  }
+}
+
+# Answers whether one Python module imports, without skipping on the answer.
+# A test that reads a private module of the adapter asserts on this instead,
+# because skipping on a module the adapter is free to rename turns the test
+# off silently and leaves the run green.
+python_module_importable <- function(module) {
+  isTRUE(tryCatch(
     reticulate::py_module_available(module),
     error = function(e) FALSE
   ))
-  if (!importable) {
-    testthat::skip(paste0("Python module '", module, "' is not importable."))
-  }
 }
