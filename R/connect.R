@@ -65,27 +65,21 @@
 #'       bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
 #'       `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
 #'       verifying.}
-#'     \item{`timeout`}{**The currently pinned Python adapter does not accept
-#'       this argument.** Passing it fails with an unexpected-keyword error
-#'       until the pin moves. Once the pin moves, it is a number: the
-#'       per-request deadline in seconds for the data operations the session
-#'       performs, counts, participant downloads, and export polls. It will
-#'       default to the Python adapter's ten minutes, because a large dataset
-#'       can take minutes to assemble server-side, and the connect-time
-#'       validation request will keep its own short deadline.}
-#'     \item{`validate`}{**The currently pinned Python adapter does not accept
-#'       this argument.** Passing it fails with an unexpected-keyword error
-#'       until the pin moves. Once the pin moves, it is a logical: `TRUE`,
-#'       the Python adapter's default, will make `connect()` check the
-#'       token's shape and expiry locally and then send one request to
-#'       confirm the deployment is reachable and accepts the token, and
-#'       `FALSE` will skip both for offline or mocked use, so that nothing is
-#'       sent or checked and the returned session may not work.}
 #'   }
-#'   `timeout` and `validate` are accepted here ahead of the pin bump that
-#'   makes them usable. Until then either one reaches Python and comes back
-#'   as a `picsureError` reporting an unexpected keyword argument, not as a
-#'   `picsureValidationError`.
+#'   `timeout` and `validate` are **not accepted by this wrapper yet**. The
+#'   pinned Python adapter has no such parameters, so either one is rejected
+#'   up front like any other unknown key, with a `picsureValidationError`
+#'   naming it. Both arrive when the pin moves to a build that takes them.
+#'   `timeout` will be a number, the per-request deadline in seconds for the
+#'   data operations the session performs, counts, participant downloads, and
+#'   export polls, defaulting to the Python adapter's ten minutes, because a
+#'   large dataset can take minutes to assemble server-side; the connect-time
+#'   validation request will keep its own short deadline. `validate` will be
+#'   a logical: `TRUE`, the Python adapter's default, will make `connect()`
+#'   check the token's shape and expiry locally and then send one request to
+#'   confirm the deployment is reachable and accepts the token, and `FALSE`
+#'   will skip both for offline or mocked use, so that nothing is sent or
+#'   checked and the returned session may not work.
 #'
 #' @section Defaults:
 #' `include_consents`, `requires_auth`, and `supports_genomic` are all
@@ -357,9 +351,14 @@ connect <- function(platform, token = "", ...) {
 }
 
 # Whitelist of optional kwargs forwarded through `...` to picsure_py$connect.
-# Names mirror the Python adapter's snake_case kwargs 1:1 — no R-side
-# translation. To bump: add the new kwarg here and to connect()'s @param block.
+# Names mirror the Python adapter's snake_case kwargs 1:1, no R-side
+# translation. Every name here must be one the pinned `picsure.connect()`
+# accepts: the list is what `connect()` prints as "Valid extras", and a name
+# Python refuses turns a clean R-side refusal into a Python unexpected-keyword
+# error. `test-connect-reticulate.R` reads the pinned signature and checks
+# both directions. To bump: add the new kwarg here and to connect()'s @param
+# block.
 CONNECT_EXTRA_KWARGS <- c(
   "include_consents", "requires_auth", "supports_genomic",
-  "client_type", "dev_mode", "verify", "timeout", "validate"
+  "client_type", "dev_mode", "verify"
 )

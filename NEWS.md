@@ -73,16 +73,16 @@
   interpreter's *start* is the boundary, not `import picsure`.) An option
   read on every `connect()` has no such window.
 
-- `connect()` takes two arguments the currently pinned Python adapter does
-  not accept. Passing either `timeout` or `validate` reaches Python and comes
-  back as a `picsureError` reporting an unexpected keyword argument; they are
-  in the whitelist ahead of the pin bump that makes them usable. Once that
-  bump lands, `timeout` will be the per-request deadline in seconds for the
-  data operations the session performs, counts, participant downloads, and
-  export polls, defaulting to the Python adapter's ten minutes, and
-  `validate = FALSE` will skip both the local token check and the one request
-  that confirms the deployment is reachable and accepts the token, for
-  offline or mocked use.
+- `connect()` does not accept `timeout` or `validate` yet. The currently
+  pinned Python adapter has no such parameters, so either one is rejected up
+  front like any other unknown key, with a `picsureValidationError` naming
+  the argument and listing the extras that are valid. Both arrive when the
+  pin moves to a build that takes them: `timeout` will be the per-request
+  deadline in seconds for the data operations the session performs, counts,
+  participant downloads, and export polls, defaulting to the Python adapter's
+  ten minutes, and `validate = FALSE` will skip both the local token check
+  and the one request that confirms the deployment is reachable and accepts
+  the token, for offline or mocked use.
 
 - A missing token on an auth-required platform now raises
   `picsureValidationError` rather than `picsureAuthenticationError`, matching

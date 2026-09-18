@@ -31,35 +31,61 @@ def _picsure_connect_parameters():
   reticulate::py$`_picsure_connect_parameters`()
 }
 
-test_that("every whitelisted connect() extra is accepted by the pinned build or pending a pin bump", {
+test_that("every whitelisted connect() extra is accepted by the pinned build", {
   skip_unless_python_module()
 
-  pending_pin_bump <- c("timeout", "validate")
   accepted <- connect_parameter_names()
   expect_true("platform" %in% accepted)
 
-  unsupported <- setdiff(picsure:::CONNECT_EXTRA_KWARGS, c(accepted, pending_pin_bump))
+  unsupported <- setdiff(picsure:::CONNECT_EXTRA_KWARGS, accepted)
   expect_equal(
     unsupported, character(0),
     info = paste0(
       "CONNECT_EXTRA_KWARGS forwards ", paste(unsupported, collapse = ", "),
-      ", which the pinned picsure.connect() does not accept and which this ",
-      "test does not list as pending a pin bump. Passing one of these raises ",
-      "a bare picsureError about an unexpected keyword argument. Either drop ",
-      "the name from CONNECT_EXTRA_KWARGS, or document it in R/connect.R as ",
-      "unavailable until the pin moves and add it to `pending_pin_bump` here."
+      ", which the pinned picsure.connect() does not accept. The whitelist ",
+      "is what connect() prints as \"Valid extras\", so a name in it that ",
+      "Python refuses is worse than no whitelist at all: the call proceeds, ",
+      "Python raises an unexpected-keyword TypeError, and the researcher ",
+      "gets a bare picsureError with a Python-shaped message instead of a ",
+      "picsureValidationError raised before anything left R. Drop the name ",
+      "from CONNECT_EXTRA_KWARGS and describe it in connect()'s @param block ",
+      "as not accepted until the pin moves."
+    )
+  )
+})
+
+test_that("the connect() extras pending a pin bump are listed exactly when the pin allows", {
+  skip_unless_python_module()
+
+  pending_pin_bump <- c("timeout", "validate")
+  accepted <- connect_parameter_names()
+
+  listed_early <- intersect(setdiff(pending_pin_bump, accepted),
+                            picsure:::CONNECT_EXTRA_KWARGS)
+  expect_equal(
+    listed_early, character(0),
+    info = paste0(
+      "CONNECT_EXTRA_KWARGS lists ", paste(listed_early, collapse = ", "),
+      ", which the pinned picsure.connect() still does not accept. A key ",
+      "the pinned build rejects must stay out of the whitelist so connect() ",
+      "refuses it in R with a picsureValidationError naming it, rather than ",
+      "forwarding it and letting Python raise an unexpected-keyword error. ",
+      "Remove it until the pin moves."
     )
   )
 
-  landed <- intersect(pending_pin_bump, accepted)
+  missing_now <- setdiff(intersect(pending_pin_bump, accepted),
+                         picsure:::CONNECT_EXTRA_KWARGS)
   expect_equal(
-    landed, character(0),
+    missing_now, character(0),
     info = paste0(
-      "The pinned picsure.connect() now accepts ", paste(landed, collapse = ", "),
-      ", which this package still documents as rejected. Drop the name from ",
-      "`pending_pin_bump` here and rewrite its entry in connect()'s @param ",
-      "block to describe what the argument does rather than that it is ",
-      "unavailable."
+      "The pinned picsure.connect() now accepts ",
+      paste(missing_now, collapse = ", "),
+      ", which this package still refuses. Add the name back to ",
+      "CONNECT_EXTRA_KWARGS in R/connect.R, move its description out of the ",
+      "\"not accepted yet\" paragraph and into the Supported keys list in ",
+      "connect()'s @param block, update the matching NEWS.md bullet, and ",
+      "add it to the forwarding loop in test-connect.R."
     )
   )
 })
