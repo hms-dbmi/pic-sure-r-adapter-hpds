@@ -23,8 +23,17 @@ drop_nulls <- function(x) {
 #' number" is followed by the value that failed rather than leaving the
 #' caller to guess which of several arguments was wrong.
 #'
-#' @param value The rejected value.
-#' @return A character scalar describing `value`.
+#' Returns one string for any value, atomic or not. A one-column data frame
+#' and a function both arrive here with length 1, and each breaks a scalar
+#' result if treated as atomic: `is.na()` on a data frame returns one row per
+#' row of the frame, and `format()` on a function returns one string per
+#' deparsed line. Either way the rejection escapes as a base R
+#' condition-length error, or as a condition whose message is a vector, and
+#' the argument that was actually wrong goes unnamed.
+#'
+#' @param value The rejected value, of any type.
+#' @return A character scalar describing `value`, including for a non-atomic
+#'   value such as a data frame, a list, or a function.
 #' @keywords internal
 describe_argument_value <- function(value) {
   if (is.null(value)) {
@@ -44,10 +53,10 @@ describe_argument_value <- function(value) {
   if (is.character(value)) {
     return(sprintf("the string %s", encodeString(value, quote = "\"")))
   }
-  if (is.na(value)) {
+  if (is.atomic(value) && is.na(value)) {
     return(sprintf("%s NA", class(value)[[1L]]))
   }
-  sprintf("%s (%s)", format(value), class(value)[[1L]])
+  sprintf("%s (%s)", paste(format(value), collapse = " "), class(value)[[1L]])
 }
 
 #' Validate a single positive whole number.

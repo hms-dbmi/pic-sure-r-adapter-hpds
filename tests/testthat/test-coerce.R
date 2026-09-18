@@ -182,6 +182,41 @@ test_that("describe_argument_value says what actually arrived", {
   expect_match(picsure:::describe_argument_value(1.5), "1.5", fixed = TRUE)
 })
 
+test_that("describe_argument_value describes a non-atomic value as one string", {
+  frame <- data.frame(a = c(1, 2, 3))
+  expect_type(picsure:::describe_argument_value(frame), "character")
+  expect_length(picsure:::describe_argument_value(frame), 1L)
+
+  expect_silent(described_closure <- picsure:::describe_argument_value(tempfile))
+  expect_type(described_closure, "character")
+  expect_length(described_closure, 1L)
+
+  expect_type(picsure:::describe_argument_value(list(1, 2)), "character")
+  expect_length(picsure:::describe_argument_value(list(1, 2)), 1L)
+})
+
+test_that("a wrapper handed a one-column data frame names the argument it rejected", {
+  frame <- data.frame(a = c(1, 2, 3))
+
+  query_err <- tryCatch(picsure::loadQueryByID(NULL, frame), error = function(e) e)
+  expect_s3_class(query_err, "picsureValidationError")
+  expect_match(conditionMessage(query_err), "`query_id`", fixed = TRUE)
+
+  facet_err <- tryCatch(picsure::addFacet(NULL, frame, "phs000007"), error = function(e) e)
+  expect_s3_class(facet_err, "picsureValidationError")
+  expect_match(conditionMessage(facet_err), "`key`", fixed = TRUE)
+})
+
+test_that("a wrapper handed a closure raises a condition with a scalar message", {
+  err <- tryCatch(
+    picsure::exportCSV(NULL, data.frame(a = 1), path = tempfile),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_length(conditionMessage(err), 1L)
+  expect_match(conditionMessage(err), "`path`", fixed = TRUE)
+})
+
 test_that("to_py_enum reports a case-insensitive tie instead of guessing", {
   tied <- list(Rare = "a", RARE = "b")
   err <- tryCatch(
