@@ -90,10 +90,10 @@
   in that case. `supports_genomic` is also `TRUE` for
   `Platform$NHANES_AUTHORIZED`, not only for the BDC authorized platforms.
 
-- Facet documentation and error messages named `study_ids` and
-  `data_source`, neither of which any current deployment publishes. The
-  category names come from the server's facets endpoint; today it serves
-  `dataset_id` and `data_type`. Examples and messages now use those.
+- Facet documentation, examples, and error messages now agree with the
+  category names the pinned Python adapter's `FacetSet` documents. The names
+  themselves come from the server's facets endpoint, and passing one it does
+  not publish raises an error listing the ones it does.
 
 - `platforms()` works against a real interpreter. It read the Python
   `Platform` enum's `__members__`, which crosses the reticulate boundary as a
@@ -155,9 +155,12 @@
   the pin whenever `reticulate` attaches to it, and nothing reported the
   substitution, so whole test runs could pass against an unpinned build. The
   version installed is now read through `importlib.metadata` and checked
-  against the pinned commit, naming both on disagreement. It is a
-  `packageStartupMessage`, not an error: a deliberate local override stays a
-  supported workflow.
+  against the pinned commit. A build naming a different commit or release
+  raises a warning naming both, not an error, so a deliberate local override
+  stays a supported workflow. A build that cannot be compared, because it
+  has no distribution metadata or its version carries no commit suffix and
+  no tag to check against, emits a startup message saying the pin could not
+  be confirmed. A build made at the tagged pinned commit counts as a match.
 
 # picsure 2.0.0
 
