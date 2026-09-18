@@ -46,8 +46,13 @@
   ```
 
   An explicit `verify =` / `dev_mode =` argument to `connect()` wins over the
-  option, and an unusable value raises a `picsureValidationError` naming the
-  option rather than failing later inside Python.
+  option, and both go through the same checks: `dev_mode` must be `TRUE` or
+  `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a path to a CA bundle. An
+  unusable value, such as the string `"false"`, raises a
+  `picsureValidationError` naming the argument or option and the logical to
+  pass, rather than failing later inside Python. When verification is off,
+  `connect()` prints a message naming the argument or option that turned it
+  off.
 
   They exist because the environment variables that used to be the only way
   in, `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE`, work only if they are
@@ -59,6 +64,18 @@
   (The Python adapter reads the variables per call, not at import; the
   interpreter's *start* is the boundary, not `import picsure`.) An option
   read on every `connect()` has no such window.
+
+- `connect()` forwards two new arguments to the Python adapter. `timeout` is
+  the per-request deadline in seconds for count, participant, and export
+  requests; the adapter's default is ten minutes. `validate = FALSE` skips
+  the connect-time reachability and token check, for offline or mocked use.
+  Both need a pinned Python adapter that accepts them; the current pin
+  rejects them as unexpected keywords until the pin moves.
+
+- A missing token on an auth-required platform now raises
+  `picsureValidationError` rather than `picsureAuthenticationError`, matching
+  the Python adapter, and `requires_auth = FALSE` on an `_AUTHORIZED`
+  `Platform` member no longer demands a token.
 
 - `connect()`'s documentation of `include_consents`, `requires_auth`, and
   `supports_genomic` was wrong: it described each as having one fixed
