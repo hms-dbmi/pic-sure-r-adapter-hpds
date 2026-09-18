@@ -28,11 +28,11 @@ test_that("addFacet() delegates to fs$add() and returns the FacetSet", {
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
 
-  result <- picsure::addFacet(fs, "study_ids", "phs000007")
+  result <- picsure::addFacet(fs, "dataset_id", "phs000007")
 
   expect_identical(result, fs)
   expect_length(fs$.state$entries, 1L)
-  expect_equal(fs$.state$entries[[1]]$key,   "study_ids")
+  expect_equal(fs$.state$entries[[1]]$key,   "dataset_id")
   expect_equal(fs$.state$entries[[1]]$value, "phs000007")
 })
 
@@ -41,7 +41,7 @@ test_that("addFacet() supports vector values by calling fs$add() once per value"
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
 
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200"))
 
   expect_length(fs$.state$entries, 2L)
   expect_equal(fs$.state$entries[[1]]$value, "phs000007")
@@ -52,10 +52,10 @@ test_that("removeFacet() rewrites the category without the value", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
-  picsure::addFacet(fs, "study_ids", "phs000007")
-  picsure::addFacet(fs, "study_ids", "phs000200")
+  picsure::addFacet(fs, "dataset_id", "phs000007")
+  picsure::addFacet(fs, "dataset_id", "phs000200")
 
-  result <- picsure::removeFacet(fs, "study_ids", "phs000007")
+  result <- picsure::removeFacet(fs, "dataset_id", "phs000007")
 
   expect_identical(result, fs)
   expect_length(fs$.state$entries, 1L)
@@ -66,12 +66,12 @@ test_that("removeFacet() leaves other categories alone", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
-  picsure::addFacet(fs, "study_ids", "phs000007")
+  picsure::addFacet(fs, "dataset_id", "phs000007")
   picsure::addFacet(fs, "data_source", "topmed")
 
-  picsure::removeFacet(fs, "study_ids", "phs000007")
+  picsure::removeFacet(fs, "dataset_id", "phs000007")
 
-  expect_equal(fs$view()[["study_ids"]], character(0))
+  expect_equal(fs$view()[["dataset_id"]], character(0))
   expect_equal(fs$view()[["data_source"]], "topmed")
 })
 
@@ -79,11 +79,11 @@ test_that("removeFacet() is a no-op for a value that was never added", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200"))
 
-  picsure::removeFacet(fs, "study_ids", "phs999999")
+  picsure::removeFacet(fs, "dataset_id", "phs999999")
 
-  expect_equal(fs$view()[["study_ids"]], c("phs000007", "phs000200"))
+  expect_equal(fs$view()[["dataset_id"]], c("phs000007", "phs000200"))
 })
 
 test_that("addFacet() re-raises Python exceptions as picsureError", {
@@ -130,7 +130,7 @@ test_that("addFacet() rejects multiple keys with a package error", {
   fs <- picsure::facets(bdc)
 
   err <- tryCatch(
-    picsure::addFacet(fs, c("study_ids", "data_source"), "phs000007"),
+    picsure::addFacet(fs, c("dataset_id", "data_source"), "phs000007"),
     condition = function(e) e
   )
 
@@ -147,16 +147,16 @@ test_that("removeFacet() rejects multiple keys before touching the FacetSet", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
-  picsure::addFacet(fs, "study_ids", "phs000007")
+  picsure::addFacet(fs, "dataset_id", "phs000007")
 
   err <- tryCatch(
-    picsure::removeFacet(fs, c("study_ids", "data_source"), "phs000007"),
+    picsure::removeFacet(fs, c("dataset_id", "data_source"), "phs000007"),
     condition = function(e) e
   )
 
   expect_s3_class(err, "picsureValidationError")
   expect_match(conditionMessage(err), "`key`", fixed = TRUE)
-  expect_equal(fs$view()[["study_ids"]], "phs000007")
+  expect_equal(fs$view()[["dataset_id"]], "phs000007")
 })
 
 test_that("both facet wrappers reject every non-scalar-string key", {
@@ -165,7 +165,7 @@ test_that("both facet wrappers reject every non-scalar-string key", {
   fs <- picsure::facets(bdc)
 
   for (key in list(NULL, NA_character_, NA, "", character(0), 42,
-                   c("study_ids", "data_source"), list("study_ids"))) {
+                   c("dataset_id", "data_source"), list("dataset_id"))) {
     for (call in list(picsure::addFacet, picsure::removeFacet)) {
       err <- tryCatch(call(fs, key, "v"), condition = function(e) e)
       expect_s3_class(err, "picsureValidationError")
@@ -179,11 +179,11 @@ test_that("both facet wrappers accept a vector of values under one key", {
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
 
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200", "phs000286"))
-  expect_equal(fs$view()[["study_ids"]], c("phs000007", "phs000200", "phs000286"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200", "phs000286"))
+  expect_equal(fs$view()[["dataset_id"]], c("phs000007", "phs000200", "phs000286"))
 
-  picsure::removeFacet(fs, "study_ids", c("phs000007", "phs000286"))
-  expect_equal(fs$view()[["study_ids"]], "phs000200")
+  picsure::removeFacet(fs, "dataset_id", c("phs000007", "phs000286"))
+  expect_equal(fs$view()[["dataset_id"]], "phs000200")
 })
 
 test_that("a missing or empty value is a package error", {
@@ -193,11 +193,11 @@ test_that("a missing or empty value is a package error", {
 
   for (call in list(picsure::addFacet, picsure::removeFacet)) {
     for (value in list(NULL, character(0))) {
-      err <- tryCatch(call(fs, "study_ids", value), condition = function(e) e)
+      err <- tryCatch(call(fs, "dataset_id", value), condition = function(e) e)
       expect_s3_class(err, "picsureValidationError")
       expect_match(conditionMessage(err), "`value`", fixed = TRUE)
     }
-    err <- tryCatch(call(fs, "study_ids"), condition = function(e) e)
+    err <- tryCatch(call(fs, "dataset_id"), condition = function(e) e)
     expect_s3_class(err, "picsureValidationError")
   }
 })
@@ -214,7 +214,7 @@ test_that("removeFacet() re-raises a failure from view() as picsureError", {
   }
 
   err <- tryCatch(
-    picsure::removeFacet(fs, "study_ids", "phs000007"),
+    picsure::removeFacet(fs, "dataset_id", "phs000007"),
     error = function(e) e
   )
   expect_s3_class(err, "picsureError")
@@ -225,7 +225,7 @@ test_that("removeFacet() restores the original selection when re-adding the surv
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200", "phs000286"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200", "phs000286"))
 
   real_add <- fs$add
   add_calls <- 0L
@@ -241,21 +241,21 @@ test_that("removeFacet() restores the original selection when re-adding the surv
   }
 
   err <- tryCatch(
-    picsure::removeFacet(fs, "study_ids", "phs000200"),
+    picsure::removeFacet(fs, "dataset_id", "phs000200"),
     error = function(e) e
   )
 
   expect_s3_class(err, "picsureError")
   expect_match(conditionMessage(err), "add rejected", fixed = TRUE)
   expect_equal(add_calls, 2L)
-  expect_equal(fs$view()[["study_ids"]], c("phs000007", "phs000200", "phs000286"))
+  expect_equal(fs$view()[["dataset_id"]], c("phs000007", "phs000200", "phs000286"))
 })
 
 test_that("removeFacet() still raises the re-add failure when the restore also fails", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200"))
   fs$add <- function(key, value) {
     stop(structure(
       list(message = "add rejected"),
@@ -264,7 +264,7 @@ test_that("removeFacet() still raises the re-add failure when the restore also f
   }
 
   err <- tryCatch(
-    picsure::removeFacet(fs, "study_ids", "phs000200"),
+    picsure::removeFacet(fs, "dataset_id", "phs000200"),
     error = function(e) e
   )
 

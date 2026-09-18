@@ -244,7 +244,7 @@ fake_picsure_py <- function() {
 # this fake carried a `$remove()` member that Python has never had, which let
 # a broken `removeFacet()` pass its tests. Only add a member here after
 # checking it against `_models/facet.py` in the Python adapter.
-new_fake_facet_set <- function(categories = c("study_ids", "data_source")) {
+new_fake_facet_set <- function(categories = c("dataset_id", "data_type", "data_source")) {
   state <- new.env(parent = emptyenv())
   state$entries <- list()  # list of list(key = ..., value = ...)
 

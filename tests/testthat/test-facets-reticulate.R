@@ -19,7 +19,7 @@ real_facet_set <- function() {
   facet <- reticulate::import("picsure._models.facet")
   facet$FacetSet(list(
     facet$FacetCategory$from_dict(list(
-      name = "study_ids",
+      name = "dataset_id",
       display = "Studies",
       facets = list(
         list(name = "phs000007", display = "FHS", count = 3L),
@@ -50,21 +50,21 @@ test_that("the Python FacetSet provides every member the R wrappers call", {
 test_that("removeFacet() drops a value from a real Python FacetSet", {
   skip_unless_python_facets()
   fs <- real_facet_set()
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200"))
 
-  result <- picsure::removeFacet(fs, "study_ids", "phs000007")
+  result <- picsure::removeFacet(fs, "dataset_id", "phs000007")
 
   expect_identical(result, fs)
-  expect_equal(selected_values(fs, "study_ids"), "phs000200")
+  expect_equal(selected_values(fs, "dataset_id"), "phs000200")
 })
 
 test_that("removeFacet() spares other categories and clears the request body", {
   skip_unless_python_facets()
   fs <- real_facet_set()
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200"))
   picsure::addFacet(fs, "data_source", "topmed")
 
-  picsure::removeFacet(fs, "study_ids", "phs000007")
+  picsure::removeFacet(fs, "dataset_id", "phs000007")
 
   expect_equal(selected_values(fs, "data_source"), "topmed")
   sent <- vapply(fs$to_request_facets(), function(f) f$name, character(1))
@@ -74,21 +74,21 @@ test_that("removeFacet() spares other categories and clears the request body", {
 test_that("removeFacet() removes every occurrence of a repeated value", {
   skip_unless_python_facets()
   fs <- real_facet_set()
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200", "phs000007"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200", "phs000007"))
 
-  picsure::removeFacet(fs, "study_ids", "phs000007")
+  picsure::removeFacet(fs, "dataset_id", "phs000007")
 
-  expect_equal(selected_values(fs, "study_ids"), "phs000200")
+  expect_equal(selected_values(fs, "dataset_id"), "phs000200")
 })
 
 test_that("removeFacet() leaves a real FacetSet untouched for an absent value", {
   skip_unless_python_facets()
   fs <- real_facet_set()
-  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
+  picsure::addFacet(fs, "dataset_id", c("phs000007", "phs000200"))
 
-  picsure::removeFacet(fs, "study_ids", "phs999999")
+  picsure::removeFacet(fs, "dataset_id", "phs999999")
 
-  expect_equal(selected_values(fs, "study_ids"), c("phs000007", "phs000200"))
+  expect_equal(selected_values(fs, "dataset_id"), c("phs000007", "phs000200"))
 })
 
 test_that("removeFacet() surfaces an unknown category as a picsureError", {

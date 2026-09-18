@@ -312,7 +312,7 @@ test_that("argument validation raises a picsureValidationError, not a simpleErro
     function() picsure::exportCSV(bdc, list(a = 1), tempfile()),
     function() picsure::exportTSV(bdc, df),
     function() picsure::addFacet(fs, c("a", "b"), "v"),
-    function() picsure::removeFacet(fs, "study_ids"),
+    function() picsure::removeFacet(fs, "dataset_id"),
     function() picsure::buildClause(type = "FILTER"),
     function() picsure::buildClause("x"),
     function() picsure::buildClause("x", type = "FILTER", min = "low"),
