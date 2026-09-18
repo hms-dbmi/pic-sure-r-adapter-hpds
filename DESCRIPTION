@@ -20,7 +20,6 @@ Imports:
 Suggests:
     withr,
     testthat (>= 3.0.0),
-    withr,
     covr,
     pkgload,
     knitr,
