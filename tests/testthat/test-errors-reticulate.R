@@ -173,3 +173,57 @@ def _picsure_raise_builtin():
   expect_s3_class(err, "picsureError")
   expect_equal(conditionMessage(err), "not a valid concept path")
 })
+
+# Every public exception class the pinned `picsure.errors` module defines.
+#
+# Listed Python-side and filtered to real subclasses of `PicSureError`, so a
+# helper or an imported name in that module cannot be mistaken for one.
+python_error_class_names <- function() {
+  reticulate::py_run_string(
+    "
+import inspect
+import picsure.errors as _E
+
+
+def _picsure_error_classes():
+    return sorted(
+        name
+        for name, obj in vars(_E).items()
+        if not name.startswith('_')
+        and inspect.isclass(obj)
+        and issubclass(obj, _E.PicSureError)
+    )
+"
+  )
+  reticulate::py$`_picsure_error_classes`()
+}
+
+test_that("every exception class the pinned build defines is mapped to a condition class", {
+  skip_unless_python_module()
+
+  defined <- python_error_class_names()
+  expect_true("PicSureError" %in% defined)
+
+  mapped <- sub(
+    "^picsure\\.errors\\.", "",
+    names(picsure:::.PICSURE_PY_CONDITION_CLASSES)
+  )
+  unmapped <- setdiff(defined, c(mapped, "PicSureError"))
+
+  expect_equal(
+    unmapped, character(0),
+    info = paste0(
+      "The pinned picsure.errors module defines ",
+      paste(unmapped, collapse = ", "),
+      ", which .PICSURE_PY_CONDITION_CLASSES in R/errors.R does not map. An ",
+      "unmapped class arrives as a bare picsureError, so a handler written ",
+      "for the specific failure, say tryCatch(picsureConnectionError = ",
+      "retry), quietly stops firing. Add the module-qualified name to ",
+      ".PICSURE_PY_CONDITION_CLASSES, and add an ancestry row for the R ",
+      "class it maps to in .PICSURE_CONDITION_PARENTS, which is a separate ",
+      "table and the one that is easy to forget. PicSureError is excluded ",
+      "here on purpose: it is the base class, and an exception raised as ",
+      "exactly PicSureError is meant to reach R as a plain picsureError."
+    )
+  )
+})

@@ -137,3 +137,23 @@ test_that("the dictionary schema matches the pinned Python adapter's column list
   expect_identical(names(picsure:::.DICTIONARY_RESULT_SCHEMA), with_values)
   expect_identical(setdiff(with_values, without_values), "values")
 })
+
+test_that("the consequences schema matches the pinned Python adapter's column list", {
+  skip_unless_python_module()
+  consequences <- reticulate::import("picsure")$genomicConsequences()
+
+  expect_s3_class(consequences, "data.frame")
+  expect_gt(nrow(consequences), 0L)
+  expect_identical(
+    names(consequences), names(picsure:::.CONSEQUENCES_RESULT_SCHEMA),
+    info = paste0(
+      "genomicConsequences() in the pinned Python build returns columns ",
+      paste(names(consequences), collapse = ", "),
+      " while .CONSEQUENCES_RESULT_SCHEMA in R/utils_coerce.R declares ",
+      paste(names(picsure:::.CONSEQUENCES_RESULT_SCHEMA), collapse = ", "),
+      ". apply_result_schema() types only the columns both sides name, so a ",
+      "renamed column silently stops being typed rather than failing. Bring ",
+      "the schema back into line with the Python column list."
+    )
+  )
+})

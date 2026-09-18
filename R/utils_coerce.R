@@ -352,10 +352,25 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
 )
 
 #' Column types of a genomic value-search result.
+#'
+#' This one mirrors an inline Python literal, not a module constant. The
+#' pinned adapter builds the frame as `pd.DataFrame({"value": [...]})` at the
+#' end of `search_genomic_values()` in
+#' `picsure/_services/genomic_search.py`, so there is no importable name to
+#' compare against and the only call that produces the frame goes over the
+#' network. No live drift guard is possible, unlike the dictionary and
+#' consequence schemas, which `test-search-reticulate.R` checks against the
+#' pinned build. Read that Python function by hand when the pin moves: a
+#' renamed column would leave `apply_result_schema()` typing nothing, with no
+#' warning and no failing test.
 #' @noRd
 .GENOMIC_VALUES_RESULT_SCHEMA <- c(value = "character")
 
 #' Column types of the offline variant-consequence vocabulary.
+#'
+#' Guarded against the pinned build by `test-search-reticulate.R`, which can
+#' call `genomicConsequences()` directly because it reads bundled data and
+#' needs no session.
 #' @noRd
 .CONSEQUENCES_RESULT_SCHEMA <- c(severity = "character", consequence = "character")
 

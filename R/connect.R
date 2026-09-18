@@ -291,6 +291,16 @@ connect <- function(platform, token = "", ...) {
 #'
 #' The R side rejects them instead of forwarding them, because an explicit
 #' `verify` string reaches httpx as a certificate path.
+#'
+#' These two vectors mirror inline Python literals, not module constants.
+#' Both word lists are tuples written into the body of `_resolve_verify()` in
+#' `picsure/_transport/client.py`, so there is no importable name to compare
+#' them against and no live drift guard is possible, unlike
+#' `CONNECT_EXTRA_KWARGS` and the enums, which read the pinned build. Read
+#' that Python function by hand when the pin moves. A word Python starts
+#' accepting and R does not know is forwarded rather than rejected, httpx
+#' then treats it as a CA-bundle path, and a researcher asking to turn
+#' verification off gets a certificate-load error instead.
 #' @noRd
 .VERIFY_TRUE_STRINGS <- c("true", "1", "yes", "on")
 .VERIFY_FALSE_STRINGS <- c("false", "0", "no", "off")
