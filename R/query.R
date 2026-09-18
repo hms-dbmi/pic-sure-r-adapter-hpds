@@ -90,10 +90,7 @@ runQuery <- function(session, query, type = "count", ...) {
 #' @return `result`, retyped when `type` is `"timestamp"`.
 #' @noRd
 apply_query_result_schema <- function(result, type) {
-  requested <- tryCatch(
-    as_enum_string(type, "picsure_query_type", "QueryType", field = "name"),
-    error = function(e) NULL
-  )
+  requested <- as_enum_string(type, "picsure_query_type", "QueryType", field = "name")
   if (is.null(requested) || !identical(toupper(requested), "TIMESTAMP")) {
     return(result)
   }
