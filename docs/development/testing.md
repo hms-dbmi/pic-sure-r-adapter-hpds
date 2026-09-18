@@ -178,9 +178,10 @@ Three workflows under [`.github/workflows/`](../../.github/workflows/):
   `testthat::test_local()`. On a scheduled failure it opens an issue
   tagged `integration-failure`.
 - [`pkgdown.yml`](../../.github/workflows/pkgdown.yml) — builds the
-  pkgdown site on PR (no deploy), push, release publish, and
-  `workflow_dispatch`. Deploys to the `gh-pages` branch on non-PR
-  events.
+  pkgdown site in a read-only job on every pull request, push, release
+  publish, and `workflow_dispatch`. A second job with write access deploys
+  the built site to the `gh-pages` branch when the event is a published
+  release, a manual `workflow_dispatch`, or a push to the default branch.
 
 ## Debugging a CI failure locally
 
