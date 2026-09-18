@@ -50,9 +50,11 @@
   `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a path to a CA bundle. An
   unusable value, such as the string `"false"`, raises a
   `picsureValidationError` naming the argument or option and the logical to
-  pass, rather than failing later inside Python. When verification is off,
-  `connect()` prints a message naming the argument or option that turned it
-  off.
+  pass, rather than failing later inside Python. When the `verify` argument
+  or `options(picsure.ssl_verify)` turns verification off, `connect()` prints
+  a message naming which of the two did it. Verification turned off
+  Python-side through `PICSURE_SSL_VERIFY` is silent on the R side, one more
+  reason to prefer the option.
 
   They exist because the environment variables that used to be the only way
   in, `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE`, work only if they are

@@ -151,9 +151,11 @@ An explicit `verify =` / `dev_mode =` argument to `connect()` always wins
 over the option, and both go through the same checks: `dev_mode` must be
 a single `TRUE` or `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a
 path string. A string that spells a boolean, such as `"false"`, is
-rejected rather than treated as a certificate path. Whenever verification
-ends up off, `connect()` emits a message naming the argument or option
-that turned it off.
+rejected rather than treated as a certificate path. When the `verify`
+argument or `options(picsure.ssl_verify)` turns verification off,
+`connect()` emits a message naming which of the two did it. Verification
+turned off Python-side through `PICSURE_SSL_VERIFY` is silent on the R
+side, one more reason to prefer the option.
 }
 
 \examples{
