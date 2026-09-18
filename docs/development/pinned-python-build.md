@@ -67,6 +67,20 @@ objects, so most of what follows announces itself here. Everything a guard
 catches is listed below anyway, so the list stays useful when a test is
 skipped for want of an interpreter.
 
+One of those guards has no entry further down because it mirrors no R-side
+constant:
+
+- [`tests/testthat/test-python-surface-reticulate.R`](../../tests/testthat/test-python-surface-reticulate.R)
+  reads the 10 session methods and 6 module-level callables the wrappers call
+  back off `picsure.Session` and the `picsure` module. The names are
+  hard-coded in `R/query.R`, `R/facets.R`, `R/export.R`, `R/search.R` and
+  `R/clauses.R`, and written out again in
+  [`tests/testthat/helper-mocks.R`](../../tests/testthat/helper-mocks.R), so
+  before this guard existed a renamed method left the whole unit run green
+  and surfaced only against a live deployment. It introspects the classes
+  rather than connecting, so a bump that renames one fails here, with no
+  token and no backend.
+
 ### 3. The enums
 
 - [`R/enums.R`](../../R/enums.R): the seven enum definitions.

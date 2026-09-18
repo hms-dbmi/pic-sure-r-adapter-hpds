@@ -22,8 +22,8 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
     list(
       platform = platform,
       token = token,
-      user_id = "user_123",
-      token_expires = "2026-05-14",
+      user_email = "researcher@example.test",
+      token_expiration = "2026-05-14",
       searchDictionary = function(...) {
         calls$searchDictionary <- c(calls$searchDictionary, list(list(...)))
         data.frame(
