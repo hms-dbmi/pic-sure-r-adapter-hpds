@@ -90,10 +90,11 @@
   in that case. `supports_genomic` is also `TRUE` for
   `Platform$NHANES_AUTHORIZED`, not only for the BDC authorized platforms.
 
-- Facet documentation, examples, and error messages now agree with the
-  category names the pinned Python adapter's `FacetSet` documents. The names
-  themselves come from the server's facets endpoint, and passing one it does
-  not publish raises an error listing the ones it does.
+- Facet documentation and error messages named `study_ids`, a category no
+  deployment publishes. The category names come from the server's facets
+  endpoint, and the dictionary serves `dataset_id`, `data_type`, and
+  `data_source`. Examples and messages now use those, and passing a name the
+  server does not publish raises an error listing the ones it does.
 
 - `platforms()` works against a real interpreter. It read the Python
   `Platform` enum's `__members__`, which crosses the reticulate boundary as a
