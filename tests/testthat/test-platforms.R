@@ -21,16 +21,6 @@ test_that(".platform_labels reads value$label from PlatformConfig-shaped members
   expect_equal(result, c("BDC Open", "BDC Authorized"))
 })
 
-test_that(".platform_labels passes a character vector of labels straight through", {
-  labels <- c(DEMO = "Demo", BDC_OPEN = "BDC Open")
-
-  result <- picsure:::.platform_labels(labels)
-
-  expect_type(result, "character")
-  expect_equal(result, c("Demo", "BDC Open"))
-  expect_null(names(result))
-})
-
 test_that(".py_enum_members leaves non-Python input alone", {
   members <- list(DEMO = list(value = list(label = "Demo")))
 

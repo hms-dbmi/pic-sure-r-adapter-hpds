@@ -30,14 +30,18 @@ platforms <- function() {
 
 #' Read the display label of each member of a converted Platform enum.
 #'
-#' @param members The named list `.py_enum_members()` produces, or a plain
-#'   character vector of labels.
+#' Takes the members alone. An earlier version also accepted a plain
+#' character vector of labels and returned it untouched, which meant a
+#' `platforms()` test built on the fake `Platform` in `helper-mocks.R`, a
+#' character vector, passed without ever reaching the conversion this helper
+#' exists for. The conversion is covered in `test-platforms-reticulate.R`
+#' against a genuine Python enum; a fake reaching here now fails on the
+#' member read instead of being absorbed.
+#'
+#' @param members The named list `.py_enum_members()` produces.
 #' @return An unnamed character vector of labels.
 #' @noRd
 .platform_labels <- function(members) {
-  if (is.character(members)) {
-    return(unname(members))
-  }
   vapply(as.list(members), .platform_label, character(1), USE.NAMES = FALSE)
 }
 
@@ -47,12 +51,9 @@ platforms <- function() {
 #' label lives at `value$label`. Reading `value` directly returns the
 #' dataclass and breaks `vapply(..., character(1))`.
 #'
-#' @param member One converted enum member, or a bare label string.
+#' @param member One converted enum member.
 #' @return The label as a character scalar.
 #' @noRd
 .platform_label <- function(member) {
-  if (is.character(member)) {
-    return(member)
-  }
   member$value$label
 }
