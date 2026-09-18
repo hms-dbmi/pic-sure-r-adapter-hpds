@@ -32,12 +32,28 @@ and that reasoning belongs next to the pin rather than here.
 - [`R/zzz.R`](../../R/zzz.R): `.PICSURE_PY_SPEC`, and `.PICSURE_PY_TAG`,
   which is the release tag when the new commit is one a tag points at and
   `NA_character_` otherwise.
-- [`tests/testthat/test-zzz.R`](../../tests/testthat/test-zzz.R): two
-  assertions name the repository URL and the exact SHA.
+- [`tests/testthat/test-zzz.R`](../../tests/testthat/test-zzz.R): four
+  assertions carry the pin. Three of them break on any bump:
+  - "Python dependency pin parses as the consent-routing adapter direct
+    reference" names the repository URL and the exact SHA.
+  - ".picsure_pinned_sha reads the commit off the dependency spec" names the
+    exact SHA again.
+  - "a hatch-vcs version built from the pinned commit is recognized as a
+    match" carries the pinned commit's abbreviation inside a sample version
+    string and compares it against the live pin.
 
-**Guard:** `test-zzz.R` fails until both are updated together, and
-`.picsure_warn_on_pin_mismatch()` warns at runtime when the build that
-actually loaded is not the pinned one.
+  The fourth, ".PICSURE_PY_TAG is NA while the pinned commit carries no
+  release tag", breaks only when the new commit is one a tag points at, and
+  it then flips from an `is.na()` check to an identity check against the new
+  tag.
+
+  Grepping for the old abbreviation over-reports: ".picsure_build_sha reads
+  the commit out of a hatch-vcs version" spells it too, but only as input to
+  the parser, and that test passes whatever the pin is.
+
+**Guard:** `test-zzz.R` fails until the spec and every assertion that names
+it are updated together, and `.picsure_warn_on_pin_mismatch()` warns at
+runtime when the build that actually loaded is not the pinned one.
 
 ### 2. Provision the new build, then run the boundary tests
 
