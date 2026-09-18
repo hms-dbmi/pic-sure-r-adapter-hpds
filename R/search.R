@@ -16,9 +16,13 @@
 #'   fixed by the dictionary schema whether or not the search matched
 #'   anything: `conceptPath`, `name`, `display`, `description`, `dataType`,
 #'   `studyId`, and `studyAcronym` are character, `min` and `max` numeric,
-#'   `allowFiltering` logical, and `values` and `meta` list columns. A search
-#'   that matched nothing returns a zero-row frame with those same types, so
-#'   arithmetic on `min` / `max` behaves the same either way.
+#'   `allowFiltering` logical, and `meta` a list column. `values` is a list
+#'   column too, and is present only when `include_values = TRUE`; with
+#'   `include_values = FALSE` the adapter never builds it and the returned
+#'   frame has no such column. The rest of the column set and its types are
+#'   the same either way. A search that matched nothing returns a zero-row
+#'   frame with those same types, so arithmetic on `min` / `max` behaves the
+#'   same either way.
 #' @examples
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
