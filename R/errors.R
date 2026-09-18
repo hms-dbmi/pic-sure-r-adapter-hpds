@@ -17,13 +17,15 @@
 #
 # The class hierarchy mirrors the shape the Python adapter is moving to, so a
 # handler written against either language reads the same once the pin catches
-# up. It runs ahead of the pinned build in one place: pinned
+# up. It runs ahead of the pinned build in two places. Pinned
 # `PicSureConsentDeniedError` derives straight from `PicSureError`, while R
 # already places `picsureConsentDeniedError` under `picsureAuthorizationError`
-# and so under `picsureAuthError`. The R side owns its own ancestry. A mapped
-# Python class is expanded through `.PICSURE_CONDITION_PARENTS` rather than
-# by copying the installed Python build's MRO, so the R hierarchy keeps its
-# shape when the pinned Python commit moves.
+# and so under `picsureAuthError`. Pinned `PicSureConsentLookupError` derives
+# straight from `PicSureConnectionError`, while R already inserts
+# `picsureServerError` between the two. The R side owns its own ancestry. A
+# mapped Python class is expanded through `.PICSURE_CONDITION_PARENTS` rather
+# than by copying the installed Python build's MRO, so the R hierarchy keeps
+# its shape when the pinned Python commit moves.
 
 # Ancestors of each condition class, most specific first, excluding
 # `picsureError`, which every one of them carries.
@@ -171,14 +173,25 @@
 #' build. What varies is how finely the leaf is identified. The pinned Python
 #' adapter has a flatter hierarchy. It defines `PicSureAuthError` but none of
 #' `PicSureAuthenticationError`, `PicSureAuthorizationError`,
-#' `PicSureTLSError`, or `PicSureServerError`. Against that build a
-#' server-side refusal arrives as a plain `picsureAuthError` and a transport
-#' failure as a plain `picsureConnectionError`. The authentication-versus-
-#' authorization and TLS-versus-5xx splits start arriving once the pin moves
-#' to a build that defines those classes. `picsureConsentDeniedError`,
+#' `PicSureTLSError`, or `PicSureServerError`.
+#'
+#' Against that build a server-side token refusal arrives as a plain
+#' `picsureAuthError` and a transport failure as a plain
+#' `picsureConnectionError`. `picsureTLSError` never arrives at all, and
+#' neither `picsureAuthenticationError` nor `picsureAuthorizationError`
+#' arrives as the leaf that identifies a condition. Those three start
+#' arriving once the pin moves to a build that defines the matching Python
+#' classes.
+#'
+#' Everything else in the tree arrives today. `picsureConsentDeniedError`,
 #' `picsureConsentLookupError`, `picsureQueryError`, and
-#' `picsureValidationError` are distinguished on the pinned build today, as
-#' are the `picsureValidationError`s this package raises itself.
+#' `picsureValidationError` are identified as leaves on the pinned build, as
+#' are the `picsureValidationError`s this package raises itself, and each
+#' carries the ancestors the R table gives it. That is how
+#' `picsureServerError` reaches a handler on the pinned build: not as a leaf,
+#' but on every `picsureConsentLookupError`, which the table places beneath
+#' it. `picsureAuthorizationError` and `picsureAuthError` reach a handler the
+#' same way, on every `picsureConsentDeniedError`.
 #' @examples
 #' \dontrun{
 #' tryCatch(

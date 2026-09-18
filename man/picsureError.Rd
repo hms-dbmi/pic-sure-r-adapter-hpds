@@ -78,14 +78,25 @@ exception's MRO, so the tree above is the shape of the R conditions on any
 build. What varies is how finely the leaf is identified. The pinned Python
 adapter has a flatter hierarchy. It defines `PicSureAuthError` but none of
 `PicSureAuthenticationError`, `PicSureAuthorizationError`,
-`PicSureTLSError`, or `PicSureServerError`. Against that build a
-server-side refusal arrives as a plain `picsureAuthError` and a transport
-failure as a plain `picsureConnectionError`. The authentication-versus-
-authorization and TLS-versus-5xx splits start arriving once the pin moves
-to a build that defines those classes. `picsureConsentDeniedError`,
+`PicSureTLSError`, or `PicSureServerError`.
+
+Against that build a server-side token refusal arrives as a plain
+`picsureAuthError` and a transport failure as a plain
+`picsureConnectionError`. `picsureTLSError` never arrives at all, and
+neither `picsureAuthenticationError` nor `picsureAuthorizationError`
+arrives as the leaf that identifies a condition. Those three start
+arriving once the pin moves to a build that defines the matching Python
+classes.
+
+Everything else in the tree arrives today. `picsureConsentDeniedError`,
 `picsureConsentLookupError`, `picsureQueryError`, and
-`picsureValidationError` are distinguished on the pinned build today, as
-are the `picsureValidationError`s this package raises itself.
+`picsureValidationError` are identified as leaves on the pinned build, as
+are the `picsureValidationError`s this package raises itself, and each
+carries the ancestors the R table gives it. That is how
+`picsureServerError` reaches a handler on the pinned build: not as a leaf,
+but on every `picsureConsentLookupError`, which the table places beneath
+it. `picsureAuthorizationError` and `picsureAuthError` reach a handler the
+same way, on every `picsureConsentDeniedError`.
 }
 
 \examples{

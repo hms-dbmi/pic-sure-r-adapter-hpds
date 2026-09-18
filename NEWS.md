@@ -31,10 +31,16 @@
   the leaf is identified does. The currently pinned Python build is flatter:
   it defines `PicSureAuthError` but no `PicSureAuthenticationError`,
   `PicSureAuthorizationError`, `PicSureTLSError`, or `PicSureServerError`.
-  Against it, a refusal is a plain `picsureAuthError` and a transport failure
-  a plain `picsureConnectionError`; the authentication-versus-authorization
-  and TLS-versus-5xx splits start arriving only once the pin is bumped to a
-  build that defines those classes.
+  Against it, a server-side token refusal is a plain `picsureAuthError` and a
+  transport failure a plain `picsureConnectionError`. `picsureTLSError` cannot
+  arrive at all yet, and `picsureAuthenticationError` and
+  `picsureAuthorizationError` cannot arrive as the leaf that identifies a
+  condition; those three start arriving only once the pin is bumped to a build
+  that defines the matching Python classes. The rest of the tree is live today,
+  ancestors included, so `picsureServerError` does reach a handler: not as a
+  leaf, but on every `picsureConsentLookupError`, which the R table places
+  beneath it, the same way `picsureAuthorizationError` comes along on every
+  `picsureConsentDeniedError`.
 
 - Two R options are now read on every `connect()` call and forwarded as
   call-time arguments. `picsure.ssl_verify` takes `TRUE`, `FALSE`, or the
