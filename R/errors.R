@@ -100,7 +100,28 @@
 
 # Backend `errorType` strings to R condition class, for a Python build whose
 # exception class does not name the refinement. A fallback behind the
-# class-vector lookup above.
+# class-vector lookup above, and a forward bridge rather than a live path.
+#
+# This is the third condition table and the odd one out. The two above are
+# keyed by names this package owns: R condition classes, and the Python
+# exception classes reticulate puts in a condition's class vector. `errorType`
+# is neither. It is a field in the JSON body the PIC-SURE server sends, which
+# the Python adapter reads and stores on the exception as `error_type`. This
+# is the only place in `R/` that knows a server wire-format field at all, and
+# that is why its keys look nothing like the keys of the table above it.
+#
+# Against the currently pinned Python build it is unreachable. The only two
+# exception classes that carry an `error_type` are `PicSureConsentDeniedError`
+# and `PicSureConsentLookupError`, both already keys in
+# `.PICSURE_PY_CONDITION_CLASSES`, and both set from the same branch of the
+# adapter that chose the class. So the class-vector lookup always matches
+# first and this table is consulted only for a condition a test fabricates.
+#
+# It is kept anyway, for the build where a server refinement arrives on an
+# exception class the map does not know. Such a build would otherwise give a
+# bare `picsureError`, and this table turns it into the leaf the server
+# named. It costs one lookup on an error path. Its values are covered by the
+# ancestry-row guard in `test-errors.R`, the same as the table above.
 .PICSURE_ERROR_TYPE_CLASSES <- c(
   consent_denied        = "picsureConsentDeniedError",
   consent_lookup_failed = "picsureConsentLookupError"
@@ -289,6 +310,11 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
 }
 
 # Picks the R condition class for a Python exception, most specific first.
+#
+# The class vector decides whenever it can, and on the pinned build it always
+# can for the two classes that carry an `error_type`, so the `errorType`
+# branch below is the forward bridge described at
+# `.PICSURE_ERROR_TYPE_CLASSES` and not a live path here.
 .picsure_condition_class_for <- function(py_cause) {
   mapped <- .PICSURE_PY_CONDITION_CLASSES[class(py_cause)]
   mapped <- mapped[!is.na(mapped)]
