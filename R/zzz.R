@@ -28,20 +28,20 @@ picsure_py <- NULL
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
 # earlier drift (R silently pinned at pre-rewrite @main) went unnoticed. This
-# SHA is the head of the Python `pic_sure_api_rewrite` branch, and is the
+# SHA is the head of the Python `pic_sure_api_rewrite` branch, the
 # squash-merge of PR #40 ("[ALS-12763] consent error handling").
 #
-# The SHA MUST name a commit reachable from a branch, never a pull-request
+# The SHA must name a commit reachable from a branch, never a pull-request
 # head. GitHub publishes PR heads under refs/pull/<n>/head, so `uv pip
 # install` and any tool that fetches the SHA directly resolve one and look
 # correct. reticulate's provisioning can instead fall back to fetching the
-# default refspec — branches and tags only — and then run
-# `git rev-parse <sha>^0`, which exits 128 for a commit no branch contains.
-# A PR-head pin therefore fails exactly where real users hit it, cannot be
-# satisfied from cache or offline at all, and disappears outright if the pull
-# request is deleted. A squash-merge produces a NEW commit: read the SHA back
-# off the branch after merging instead of reusing the one from the PR, and
-# confirm it with `git branch -r --contains <sha>` before pinning it.
+# default refspec, which covers branches and tags only, and then run
+# `git rev-parse <sha>^0`. That exits 128 for a commit no branch contains.
+# A PR-head pin therefore fails for real users, cannot be satisfied from
+# cache or offline, and vanishes if the pull request is deleted. A
+# squash-merge produces a new commit. Read the SHA back off the branch after
+# merging instead of reusing the one from the PR, and confirm it with
+# `git branch -r --contains <sha>` before pinning it.
 #
 # Bumping the pinned ref requires:
 #   1. Re-running the full integration suite under VPN against a backend
@@ -49,15 +49,14 @@ picsure_py <- NULL
 #   2. Updating any wrapper signatures whose Python kwargs changed.
 .PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@0eec30d062751396e006284e79c19110408e4a62"
 
-# Records whether the pinned-build check has already run, so the warning is
+# Records whether the pinned-build check has already run, so its report is
 # emitted at most once per session.
 .picsure_pin_check <- new.env(parent = emptyenv())
 
 # Reads the 40-character commit SHA off a PEP 508 requirement string.
 #
-# Returns NA_character_ when the spec pins no commit — a version-specifier pin
-# against a package index, say, which has no commit to compare and so cannot be
-# checked this way.
+# Returns NA_character_ when the spec pins no commit, as with a version
+# specifier against a package index, which has no commit to compare.
 .picsure_pinned_sha <- function(spec = .PICSURE_PY_SPEC) {
   found <- regexpr("[0-9a-f]{40}$", spec, perl = TRUE)
   if (found[[1L]] < 0L) NA_character_ else regmatches(spec, found)
@@ -82,10 +81,10 @@ picsure_py <- NULL
   }
 }
 
-# Reports whether reticulate has already initialized an interpreter, which is
-# what decides which of two load paths `reticulate::import()` takes below.
-# Asking with `initialize = FALSE` reads the state without starting Python, so
-# this is safe to call from `.onLoad`.
+# Reports whether reticulate has already initialized an interpreter, which
+# decides which load path `reticulate::import()` takes in `.onLoad`. Asking
+# with `initialize = FALSE` reads the state without starting Python, so this
+# is safe to call from `.onLoad`.
 .picsure_python_already_initialized <- function() {
   isTRUE(tryCatch(
     reticulate::py_available(initialize = FALSE),
@@ -93,20 +92,21 @@ picsure_py <- NULL
   ))
 }
 
-# Warns when the Python `picsure` build that actually loaded is not the pinned
-# commit. Compares the commit encoded in the installed distribution's version,
-# read through `importlib.metadata`, against the SHA in `.PICSURE_PY_SPEC`, and
-# returns TRUE invisibly only on a match. Runs at most once per session.
+# Reports, as a package startup message, when the Python `picsure` build that
+# actually loaded is not the pinned commit. Compares the commit encoded in the
+# installed distribution's version, read through `importlib.metadata`, against
+# the SHA in `.PICSURE_PY_SPEC`, and returns TRUE invisibly only on a match.
+# Runs at most once per session.
 #
-# Nothing else in the package notices when the module that resolves is not the
-# pinned one: an already-active virtual environment takes precedence over the
-# pin whenever reticulate attaches to it, which is how entire test campaigns ran
-# against an unpinned build without a single warning. This makes that
+# Nothing else in the package notices when the module that resolves is not
+# the pinned one. An already-active virtual environment takes precedence over
+# the pin whenever reticulate attaches to it, which is how entire test
+# campaigns ran against an unpinned build without any notice. This makes that
 # substitution visible.
 #
 # Deliberately never signals an error. A local override is a supported
 # development workflow, so disagreement is reported and execution continues.
-# Every step is guarded for the same reason: this runs from a reticulate load
+# Every step is guarded for the same reason. This runs from a reticulate load
 # hook and must not turn a working interpreter into an apparently broken one.
 .picsure_warn_on_pin_mismatch <- function() {
   if (isTRUE(.picsure_pin_check$done)) {
@@ -152,13 +152,16 @@ picsure_py <- NULL
   invisible(FALSE)
 }
 
+# Declares the pinned Python dependency and binds the lazy `picsure` module
+# handle. The Python environment is not provisioned until the first real
+# attribute access on `picsure_py`, so `library(picsure)` stays fast and tests
+# that never touch Python never trigger env creation. The `on_load` hook runs
+# the pinned-build check once the module has resolved. When Python is already
+# initialized, reticulate imports eagerly and skips that hook, so the check
+# runs directly instead.
 .onLoad <- function(libname, pkgname) {
   reticulate::py_require(.PICSURE_PY_SPEC)
 
-  # delay_load: the Python env isn't provisioned until the first real
-  # attribute access on picsure_py. `library(picsure)` stays fast; tests that
-  # never touch Python never trigger env creation. The on_load hook runs the
-  # pinned-build check once the module has actually resolved.
   picsure_py <<- reticulate::import(
     "picsure",
     delay_load = list(on_load = .picsure_warn_on_pin_mismatch)
