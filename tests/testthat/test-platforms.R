@@ -44,5 +44,7 @@ test_that("platforms() surfaces a missing Platform binding as an error", {
   testthat::local_mocked_bindings(picsure_py = fake)
 
   err <- tryCatch(picsure::platforms(), error = function(e) e)
+  expect_s3_class(err, "picsureConnectionError")
+  expect_s3_class(err, "picsureError")
   expect_s3_class(err, "error")
 })
