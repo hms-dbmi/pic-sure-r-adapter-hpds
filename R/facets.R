@@ -41,7 +41,7 @@ facets <- function(session) {
 .check_facet_key <- function(key, call = sys.call(-1L)) {
   if (is.null(key) || length(key) != 1L || !is.character(key) ||
       is.na(key) || !nzchar(key)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf(
         paste0(
           "`key` must be a single facet category name; got %s. A facet entry ",
@@ -51,7 +51,7 @@ facets <- function(session) {
         describe_argument_value(key)
       ),
       call = call
-    ))
+    )
   }
   key
 }
@@ -82,9 +82,9 @@ addFacet <- function(facet_set, key, value) {
   if (missing(key)) key <- NULL
   .check_facet_key(key)
   if (missing(value) || is.null(value) || length(value) == 0L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`value` is required. Pass the facet value (or vector of values) to add."
-    ))
+    )
   }
   for (v in value) {
     with_picsure_error(facet_set$add(key, v))
@@ -138,9 +138,9 @@ removeFacet <- function(facet_set, key, value) {
   if (missing(key)) key <- NULL
   .check_facet_key(key)
   if (missing(value) || is.null(value) || length(value) == 0L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`value` is required. Pass the facet value (or vector of values) to remove."
-    ))
+    )
   }
   view <- with_picsure_error(facet_set$view())
   original <- as.character(unlist(view[[key]], use.names = FALSE))

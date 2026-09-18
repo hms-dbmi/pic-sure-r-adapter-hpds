@@ -348,3 +348,41 @@ test_that(".picsure_raw_message survives a python.builtin.object whose Python ob
   )
   expect_equal(picsure:::.picsure_raw_message(no_message), "")
 })
+
+test_that("a rejected argument reports the wrapper the user called, not stop()", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  rejected_call <- function(expr) {
+    conditionCall(tryCatch(expr, picsureValidationError = function(e) e))
+  }
+
+  expect_identical(
+    rejected_call(picsure::buildQuery(includeConcepts = 1:3)),
+    quote(picsure::buildQuery(includeConcepts = 1:3))
+  )
+  expect_identical(
+    rejected_call(picsure::searchDictionary(bdc, term = 1:3)),
+    quote(picsure::searchDictionary(bdc, term = 1:3))
+  )
+  expect_identical(
+    rejected_call(picsure::saveQueryByName(bdc, NULL, "a name")),
+    quote(picsure::saveQueryByName(bdc, NULL, "a name"))
+  )
+  expect_identical(
+    rejected_call(picsure::connect(platform = 42)),
+    quote(picsure::connect(platform = 42))
+  )
+})
+
+test_that(".check_facet_key still reports the facet wrapper that threaded the call", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  fs <- picsure::facets(bdc)
+
+  err <- tryCatch(
+    picsure::addFacet(fs, c("a", "b"), "v"),
+    picsureValidationError = function(e) e
+  )
+  expect_identical(conditionCall(err), quote(picsure::addFacet(fs, c("a", "b"), "v")))
+})

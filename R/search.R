@@ -28,10 +28,10 @@
 #' @export
 searchDictionary <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
   if (is.null(term) || length(term) != 1L || !is.character(term) || is.na(term)) {
-    stop(.picsure_invalid_argument(sprintf(
+    .picsure_reject(sprintf(
       "`term` must be a single string (empty string is OK to fetch all); got %s.",
       describe_argument_value(term)
-    )))
+    ))
   }
 
   kwargs <- drop_nulls(list(

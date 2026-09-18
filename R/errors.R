@@ -200,14 +200,28 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
   )
 }
 
-# Builds the condition for an argument this package rejected itself.
-#
-# `call` defaults to the call of the wrapper that rejected the argument, so
-# the error reports `searchGenomicValues(...)` rather than this helper.
-.picsure_invalid_argument <- function(message, call = sys.call(-1L)) {
-  condition <- picsureError(message, class = "picsureValidationError")
+#' Raise the error for an argument this package rejected itself.
+#'
+#' Builds the condition and raises it in one step. A site written
+#' `stop(picsureError(...))` forces its argument inside `stop`'s own frame,
+#' so the condition records the `stop(...)` expression and the researcher
+#' reads the constructor rather than the function they called. Raising from
+#' here leaves the wrapper's frame one step up, so the error reports
+#' `searchGenomicValues(...)`.
+#'
+#' @param message The user-facing message.
+#' @param class The specialized condition class, `"picsureValidationError"`
+#'   unless a caller names another. `NULL` for a plain `picsureError`.
+#' @param call The call to report. Defaults to the caller's, which is the
+#'   wrapper the researcher invoked when the check sits in that wrapper's own
+#'   body. A nested closure or a shared check passes `NULL` instead, because
+#'   its own frame is not a call the researcher made.
+#' @return Never returns.
+#' @noRd
+.picsure_reject <- function(message, class = "picsureValidationError", call = sys.call(-1L)) {
+  condition <- picsureError(message, class = class)
   condition$call <- call
-  condition
+  stop(condition)
 }
 
 # Reads the Python exception class name off a reticulate condition.

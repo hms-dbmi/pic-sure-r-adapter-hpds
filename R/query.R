@@ -60,9 +60,9 @@
 #' @export
 runQuery <- function(session, query, type = "count", ...) {
   if (missing(query) || is.null(query)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery."
-    ))
+    )
   }
 
   kwargs <- drop_nulls(list(
@@ -177,14 +177,14 @@ runQueryByID <- function(session, query_id, type = "count") {
 #' @export
 removeSubQuery <- function(query, target) {
   if (missing(query) || is.null(query)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query` is required. Pass the clause, clause-group, or query handle to edit."
-    ))
+    )
   }
   if (missing(target) || is.null(target)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`target` is required. Pass the clause or clause-group handle to remove."
-    ))
+    )
   }
   with_picsure_error(picsure_py$removeSubQuery(query, target))
 }
@@ -206,9 +206,9 @@ replaceClause <- function(query, target, replacement) {
   if (missing(query) || is.null(query) ||
       missing(target) || is.null(target) ||
       missing(replacement) || is.null(replacement)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query`, `target`, and `replacement` are all required."
-    ))
+    )
   }
   with_picsure_error(picsure_py$replaceClause(query, target, replacement))
 }
@@ -238,17 +238,17 @@ replaceClause <- function(query, target, replacement) {
 #' @export
 saveQueryByName <- function(session, query, name, overwrite = FALSE) {
   if (missing(query) || is.null(query)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery."
-    ))
+    )
   }
   if (missing(name)) name <- NULL
   as_single_string(name, "name")
   if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
-    stop(.picsure_invalid_argument(sprintf(
+    .picsure_reject(sprintf(
       "`overwrite` must be a single logical (TRUE or FALSE); got %s.",
       describe_argument_value(overwrite)
-    )))
+    ))
   }
   with_picsure_error(session$saveQueryByName(query, name, overwrite = overwrite))
 }

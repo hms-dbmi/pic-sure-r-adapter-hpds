@@ -149,7 +149,7 @@
 connect <- function(platform, token = "", ...) {
   bad_platform_msg <- "`platform` is required. Pass a Platform member (e.g. picsure::Platform$BDC_AUTHORIZED) or a full URL string. See ?picsure::Platform."
   if (missing(platform) || is.null(platform)) {
-    stop(picsureError(bad_platform_msg, class = "picsureValidationError"))
+    .picsure_reject(bad_platform_msg)
   }
   # Track whether the platform is identifiably auth-required from R-side
   # info alone. For label strings or raw Python objects we can't tell
@@ -158,10 +158,9 @@ connect <- function(platform, token = "", ...) {
                          isTRUE(platform$requires_auth)
   if (inherits(platform, "picsure_enum_member")) {
     if (!inherits(platform, "picsure_platform")) {
-      stop(picsureError(
-        sprintf("Expected a Platform member, got %s.", format(platform)),
-        class = "picsureValidationError"
-      ))
+      .picsure_reject(
+        sprintf("Expected a Platform member, got %s.", format(platform))
+      )
     }
     # Convert the R-side member to the Python Platform enum member by
     # name. Going through the proxy avoids the URL/label ambiguity:
@@ -171,14 +170,14 @@ connect <- function(platform, token = "", ...) {
     platform <- picsure_py$Platform[[platform$name]]
   } else if (is.character(platform)) {
     if (length(platform) != 1L || is.na(platform) || !nzchar(platform)) {
-      stop(picsureError(bad_platform_msg, class = "picsureValidationError"))
+      .picsure_reject(bad_platform_msg)
     }
     # Only URL strings are valid string platforms. Python's
     # resolve_platform rejects human-readable labels ("BDC Authorized"),
     # so catch them here with an R-side message rather than letting the
     # forwarded call fail deeper with a less specific error.
     if (!grepl("^https?://", platform, ignore.case = TRUE)) {
-      stop(picsureError(
+      .picsure_reject(
         sprintf(
           paste0(
             "%s is not a valid platform. Platform labels are not accepted; ",
@@ -187,27 +186,25 @@ connect <- function(platform, token = "", ...) {
             "See ?picsure::Platform."
           ),
           encodeString(platform, quote = "\"")
-        ),
-        class = "picsureValidationError"
-      ))
+        )
+      )
     }
   } else if (!inherits(platform, "python.builtin.object")) {
     # Reject logicals like NA, numerics, lists, etc.; accept only strings,
     # picsure_platform members, or Python objects (e.g. a reticulate-
     # wrapped Platform enum member).
-    stop(picsureError(bad_platform_msg, class = "picsureValidationError"))
+    .picsure_reject(bad_platform_msg)
   }
   extras <- list(...)
   unknown <- setdiff(names(extras), CONNECT_EXTRA_KWARGS)
   if (length(unknown) > 0) {
-    stop(picsureError(
+    .picsure_reject(
       sprintf(
         "Unknown argument(s) to connect(): %s. Valid extras: %s.",
         paste(sprintf("`%s`", unknown), collapse = ", "),
         paste(sprintf("`%s`", CONNECT_EXTRA_KWARGS), collapse = ", ")
-      ),
-      class = "picsureValidationError"
-    ))
+      )
+    )
   }
 
   if (!is.null(extras$requires_auth)) {
@@ -219,16 +216,14 @@ connect <- function(platform, token = "", ...) {
   # PlatformInfo) decides.
   if (is.null(token)) token <- ""
   if (!is.character(token) || length(token) != 1L || is.na(token)) {
-    stop(picsureError(
-      "`token` must be a single character string (use \"\" for open platforms).",
-      class = "picsureValidationError"
-    ))
+    .picsure_reject(
+      "`token` must be a single character string (use \"\" for open platforms)."
+    )
   }
   if (requires_auth_known && !nzchar(token)) {
-    stop(picsureError(
-      "`token` is required for this platform. Copy it from the 'User Profile' tab of PIC-SURE.",
-      class = "picsureValidationError"
-    ))
+    .picsure_reject(
+      "`token` is required for this platform. Copy it from the 'User Profile' tab of PIC-SURE."
+    )
   }
 
   # Identify this adapter to the backend audit log. Python's connect()
@@ -315,24 +310,24 @@ connect <- function(platform, token = "", ...) {
   if (is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)) {
     spelled <- tolower(trimws(value))
     if (spelled %in% c(.VERIFY_TRUE_STRINGS, .VERIFY_FALSE_STRINGS)) {
-      stop(.picsure_invalid_argument(sprintf(
+      .picsure_reject(sprintf(
         paste0(
           "%s must be TRUE, FALSE, or a path to a CA bundle; got the string %s. ",
           "Pass the logical %s instead."
         ),
         label, encodeString(value, quote = "\""),
         if (spelled %in% .VERIFY_TRUE_STRINGS) "TRUE" else "FALSE"
-      )))
+      ), call = NULL)
     }
     return(value)
   }
-  stop(.picsure_invalid_argument(sprintf(
+  .picsure_reject(sprintf(
     paste0(
       "%s must be TRUE, FALSE, or a path to a CA bundle as a single ",
       "string; got %s."
     ),
     label, describe_argument_value(value)
-  )))
+  ), call = NULL)
 }
 
 #' Validate a logical flag setting.
@@ -345,10 +340,10 @@ connect <- function(platform, token = "", ...) {
   if (is.logical(value) && length(value) == 1L && !is.na(value)) {
     return(value)
   }
-  stop(.picsure_invalid_argument(sprintf(
+  .picsure_reject(sprintf(
     "%s must be TRUE or FALSE; got %s.", label,
     describe_argument_value(value)
-  )))
+  ), call = NULL)
 }
 
 # Whitelist of optional kwargs forwarded through `...` to picsure_py$connect.

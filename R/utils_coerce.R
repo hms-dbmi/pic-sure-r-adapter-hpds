@@ -64,11 +64,11 @@ describe_argument_value <- function(value) {
 #' @keywords internal
 as_positive_whole_number <- function(value, arg) {
   reject <- function(requirement) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf("`%s` must be %s; got %s.", arg, requirement,
               describe_argument_value(value)),
       call = NULL
-    ))
+    )
   }
   if (is.null(value) || length(value) != 1L || !is.numeric(value)) {
     reject("a single positive whole number")
@@ -108,11 +108,11 @@ check_optional_number <- function(value, arg) {
     return(NULL)
   }
   reject <- function(requirement) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf("`%s` must be %s; got %s.", arg, requirement,
               describe_argument_value(value)),
       call = NULL
-    ))
+    )
   }
   if (length(value) != 1L || !is.numeric(value)) {
     reject("a single number, or NULL")
@@ -136,14 +136,14 @@ check_optional_number <- function(value, arg) {
 #' @keywords internal
 as_single_string <- function(value, arg, hint = NULL) {
   reject <- function(requirement) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       paste0(
         sprintf("`%s` must be %s; got %s.", arg, requirement,
                 describe_argument_value(value)),
         if (is.null(hint)) "" else paste0(" ", hint)
       ),
       call = NULL
-    ))
+    )
   }
   if (is.null(value) || length(value) != 1L || !is.character(value)) {
     reject("a single non-empty character string")
@@ -174,21 +174,21 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
   if (is.null(value)) return(NULL)
   if (inherits(value, "picsure_enum_member")) {
     if (!inherits(value, expected_subclass)) {
-      stop(picsureError(
+      .picsure_reject(
         sprintf("Expected a %s member, got %s.", enum_name, format(value)),
-        class = "picsureValidationError"
-      ))
+        call = NULL
+      )
     }
     return(value[[field]])
   }
   if (!is.character(value) || length(value) != 1L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf(
         "%s value must be a single string or %s member; got %s.",
         enum_name, enum_name, describe_argument_value(value)
       ),
       call = NULL
-    ))
+    )
   }
   value
 }
@@ -279,22 +279,22 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
     match_idx <- which(tolower(valid) == tolower(s))
   }
   if (length(match_idx) == 0L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf(
         "%s value '%s' is not one of: %s",
         enum_name, s, paste(valid, collapse = ", ")
       ),
       call = NULL
-    ))
+    )
   }
   if (length(match_idx) > 1L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf(
         "%s value '%s' matches %d members case-insensitively (%s); pass the exact member name.",
         enum_name, s, length(match_idx), paste(valid[match_idx], collapse = ", ")
       ),
       call = NULL
-    ))
+    )
   }
   .py_enum_member(enum_obj, valid[[match_idx]])
 }
