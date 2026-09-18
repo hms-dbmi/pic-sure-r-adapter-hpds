@@ -4,13 +4,15 @@
 \alias{coerce_result_column}
 \title{Coerce one result column to a declared type.}
 \usage{
-coerce_result_column(column, type)
+coerce_result_column(column, type, name = "<unnamed>")
 }
 \arguments{
 \item{column}{The column as it arrived.}
 
 \item{type}{One of `"character"`, `"numeric"`, `"integer"`, `"logical"`,
 `"list"`.}
+
+\item{name}{The column's name, used in the warning.}
 }
 \value{
 The column, coerced.
@@ -20,5 +22,11 @@ A list column reaching a scalar type means the server sent a nested value
 where the schema expects one per row. Those cells are collapsed to a single
 string rather than deparsed, which is what `as.character()` on a list
 would do.
+}
+\details{
+A value that does not parse as the declared type becomes `NA`. The result
+is still returned, and one warning per column names the column and how
+many values were lost, so a server that starts sending text where the
+schema expects a number is visible without breaking the call.
 }
 \keyword{internal}

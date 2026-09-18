@@ -283,3 +283,35 @@ test_that("the timeseries schema matches the header HPDS writes", {
     c("integer", "character", "numeric", "character", "character")
   )
 })
+
+test_that("coerce_result_column warns once per column, naming it and the values lost", {
+  expect_warning(
+    out <- picsure:::coerce_result_column(c("12.5", "not a number", "", "7"), "numeric", "min"),
+    "Column `min` could not be fully coerced to numeric: 2 values became NA",
+    fixed = TRUE
+  )
+  expect_identical(out, c(12.5, NA, NA, 7))
+
+  expect_warning(
+    picsure:::coerce_result_column(c("TRUE", "maybe"), "logical", "allowFiltering"),
+    "Column `allowFiltering` could not be fully coerced to logical: 1 value became NA",
+    fixed = TRUE
+  )
+})
+
+test_that("coerce_result_column stays silent when nothing is lost", {
+  expect_silent(picsure:::coerce_result_column(c("1", NA, "3"), "integer", "PATIENT_NUM"))
+  expect_silent(picsure:::coerce_result_column(character(0), "numeric", "min"))
+  expect_silent(picsure:::coerce_result_column(c("a", "b"), "character", "name"))
+})
+
+test_that("apply_result_schema returns the frame and warns with the column name", {
+  data <- data.frame(min = c("1", "x"), max = c("2", "3"), stringsAsFactors = FALSE)
+
+  expect_warning(
+    out <- picsure:::apply_result_schema(data, c(min = "numeric", max = "numeric")),
+    "Column `min`", fixed = TRUE
+  )
+  expect_identical(out$min, c(1, NA))
+  expect_identical(out$max, c(2, 3))
+})

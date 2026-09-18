@@ -354,7 +354,7 @@ apply_result_schema <- function(data, schema) {
     return(data)
   }
   for (column in intersect(names(schema), names(data))) {
-    data[[column]] <- coerce_result_column(data[[column]], schema[[column]])
+    data[[column]] <- coerce_result_column(data[[column]], schema[[column]], column)
   }
   data
 }
@@ -366,12 +366,18 @@ apply_result_schema <- function(data, schema) {
 #' string rather than deparsed, which is what `as.character()` on a list
 #' would do.
 #'
+#' A value that does not parse as the declared type becomes `NA`. The result
+#' is still returned, and one warning per column names the column and how
+#' many values were lost, so a server that starts sending text where the
+#' schema expects a number is visible without breaking the call.
+#'
 #' @param column The column as it arrived.
 #' @param type One of `"character"`, `"numeric"`, `"integer"`, `"logical"`,
 #'   `"list"`.
+#' @param name The column's name, used in the warning.
 #' @return The column, coerced.
 #' @keywords internal
-coerce_result_column <- function(column, type) {
+coerce_result_column <- function(column, type, name = "<unnamed>") {
   if (identical(type, "list")) {
     return(if (is.list(column)) column else as.list(column))
   }
@@ -384,7 +390,7 @@ coerce_result_column <- function(column, type) {
       character(1), USE.NAMES = FALSE
     )
   }
-  switch(
+  coerced <- switch(
     type,
     character = as.character(column),
     numeric   = suppressWarnings(as.numeric(column)),
@@ -392,4 +398,12 @@ coerce_result_column <- function(column, type) {
     logical   = as.logical(column),
     column
   )
+  lost <- sum(is.na(coerced) & !is.na(column))
+  if (lost > 0L) {
+    warning(sprintf(
+      "Column `%s` could not be fully coerced to %s: %d value%s became NA.",
+      name, type, lost, if (lost == 1L) "" else "s"
+    ), call. = FALSE)
+  }
+  coerced
 }
