@@ -386,3 +386,21 @@ test_that(".check_facet_key still reports the facet wrapper that threaded the ca
   )
   expect_identical(conditionCall(err), quote(picsure::addFacet(fs, c("a", "b"), "v")))
 })
+
+test_that("an error raised from Python reports no call rather than an internal helper", {
+  fake_py_exception <- structure(
+    list(message = "Your token expired on 2026-03-14."),
+    class = c("python.builtin.Exception", "error", "condition")
+  )
+
+  err <- tryCatch(
+    with_picsure_error(stop(fake_py_exception)),
+    error = function(e) e
+  )
+
+  expect_null(conditionCall(err))
+  expect_s3_class(err, "picsureError")
+  expect_equal(conditionMessage(err), "Your token expired on 2026-03-14.")
+  expect_identical(err$py_cause, fake_py_exception)
+  expect_identical(err$python_class, "python.builtin.Exception")
+})
