@@ -21,15 +21,15 @@ Returns an opaque `FacetSet` handle tied to this session. Add entries with
 \details{
 The handle is created from the categories the *deployment* publishes, so
 the valid category names come from the server rather than from this
-package. Current PIC-SURE deployments serve two: `"dataset_id"` (the study
-or dataset, e.g. a dbGaP accession) and `"data_type"` (`"categorical"` or
-`"continuous"`). A category the server did not publish raises a
-`picsureError` listing the ones it did.
+package. The Python adapter's FacetSet documents `"study_ids"` (a study or
+dataset, e.g. a dbGaP accession) and `"data_source"` as its examples, and
+this package's tests use the same two. A category the server did not
+publish raises a `picsureError` listing the ones it did.
 }
 \examples{
 \dontrun{
 fs <- picsure::facets(bdc)
-fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
+fs <- picsure::addFacet(fs, "study_ids", "phs000007")
 picsure::searchDictionary(bdc, "sex", facets = fs)
 }
 }

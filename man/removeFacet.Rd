@@ -25,7 +25,7 @@ value that was never added leaves the FacetSet unchanged.
 \examples{
 \dontrun{
 fs <- picsure::facets(bdc)
-fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
-fs <- picsure::removeFacet(fs, "dataset_id", "phs000007")
+fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+fs <- picsure::removeFacet(fs, "study_ids", "phs000007")
 }
 }

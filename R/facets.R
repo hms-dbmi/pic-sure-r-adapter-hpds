@@ -7,17 +7,17 @@
 #'
 #' The handle is created from the categories the *deployment* publishes, so
 #' the valid category names come from the server rather than from this
-#' package. Current PIC-SURE deployments serve two: `"dataset_id"` (the study
-#' or dataset, e.g. a dbGaP accession) and `"data_type"` (`"categorical"` or
-#' `"continuous"`). A category the server did not publish raises a
-#' `picsureError` listing the ones it did.
+#' package. The Python adapter's FacetSet documents `"study_ids"` (a study or
+#' dataset, e.g. a dbGaP accession) and `"data_source"` as its examples, and
+#' this package's tests use the same two. A category the server did not
+#' publish raises a `picsureError` listing the ones it did.
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @return An opaque FacetSet handle.
 #' @examples
 #' \dontrun{
 #' fs <- picsure::facets(bdc)
-#' fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
+#' fs <- picsure::addFacet(fs, "study_ids", "phs000007")
 #' picsure::searchDictionary(bdc, "sex", facets = fs)
 #' }
 #' @export
@@ -45,7 +45,7 @@ facets <- function(session) {
         paste0(
           "`key` must be a single facet category name; got %s. A facet entry ",
           "selects values inside one category, so pass one key (e.g. ",
-          "\"dataset_id\" or \"data_type\") and give the vector to `value`."
+          "\"study_ids\" or \"data_source\") and give the vector to `value`."
         ),
         describe_argument_value(key)
       ),
@@ -62,7 +62,7 @@ facets <- function(session) {
 #' (all under the same `key`).
 #'
 #' @param facet_set A FacetSet from [`facets()`][picsure::facets].
-#' @param key Facet category name, e.g. `"dataset_id"` or `"data_type"`.
+#' @param key Facet category name, e.g. `"study_ids"` or `"data_source"`.
 #'   Exactly one category. A facet entry selects values inside a single
 #'   category, so a vector of keys raises a `picsureError`. The valid
 #'   category names come from the server, not from this package; a name the
@@ -73,8 +73,8 @@ facets <- function(session) {
 #' @examples
 #' \dontrun{
 #' fs <- picsure::facets(bdc)
-#' fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
-#' fs <- picsure::addFacet(fs, "dataset_id", c("phs000200", "phs000286"))
+#' fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+#' fs <- picsure::addFacet(fs, "study_ids", c("phs000200", "phs000286"))
 #' }
 #' @export
 addFacet <- function(facet_set, key, value) {
@@ -123,8 +123,8 @@ facet_values_after_removal <- function(view, key, value) {
 #' @examples
 #' \dontrun{
 #' fs <- picsure::facets(bdc)
-#' fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
-#' fs <- picsure::removeFacet(fs, "dataset_id", "phs000007")
+#' fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+#' fs <- picsure::removeFacet(fs, "study_ids", "phs000007")
 #' }
 #' @export
 removeFacet <- function(facet_set, key, value) {
