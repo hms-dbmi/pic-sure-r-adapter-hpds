@@ -12,7 +12,11 @@
 #'   [`Platform$BDC_AUTHORIZED`][picsure::Platform]) or a full URL string
 #'   for an unlisted deployment (e.g. `"https://my-picsure.example.com"`).
 #'   Human-readable label strings such as `"BDC Authorized"` are **not**
-#'   accepted and raise a `picsureError`.
+#'   accepted and raise a `picsureError`. A member is resolved against the
+#'   Python enum by its member name, which is the only unambiguous handle:
+#'   `Platform$BDC_AUTHORIZED` and `Platform$BDC_DEV_AUTHORIZED` share a
+#'   label, and `Platform$BDC_AUTHORIZED` and `Platform$BDC_OPEN` share a
+#'   URL, told apart by the `/hpds/auth` and `/hpds/open` backend paths.
 #' @param token Your personal PIC-SURE access token, obtained from the
 #'   "User Profile" tab of your PIC-SURE instance. Optional for open-access
 #'   platforms (`Platform$BDC_OPEN`, `Platform$BDC_DEV_OPEN`,
@@ -151,17 +155,8 @@ connect <- function(platform, token = "", ...) {
   requires_auth_known <- inherits(platform, "picsure_platform") &&
                          isTRUE(platform$requires_auth)
   if (inherits(platform, "picsure_enum_member")) {
-    if (!inherits(platform, "picsure_platform")) {
-      .picsure_reject(
-        sprintf("Expected a Platform member, got %s.", format(platform))
-      )
-    }
-    # Convert the R-side member to the Python Platform enum member by
-    # name. Going through the proxy avoids the URL/label ambiguity:
-    # BDC_AUTHORIZED and BDC_OPEN share a URL (distinguished by the
-    # /hpds/auth vs /hpds/open backend path); BDC_AUTHORIZED and
-    # BDC_DEV_AUTHORIZED share a label.
-    platform <- picsure_py$Platform[[platform$name]]
+    platform <- to_py_enum(platform, picsure_py$Platform, "Platform",
+                           "picsure_platform")
   } else if (is.character(platform)) {
     if (length(platform) != 1L || is.na(platform) || !nzchar(platform)) {
       .picsure_reject(bad_platform_msg)

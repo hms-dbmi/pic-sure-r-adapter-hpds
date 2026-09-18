@@ -11,7 +11,11 @@ connect(platform, token = "", ...)
 [`Platform$BDC_AUTHORIZED`][picsure::Platform]) or a full URL string
 for an unlisted deployment (e.g. `"https://my-picsure.example.com"`).
 Human-readable label strings such as `"BDC Authorized"` are **not**
-accepted and raise a `picsureError`.}
+accepted and raise a `picsureError`. A member is resolved against the
+Python enum by its member name, which is the only unambiguous handle:
+`Platform$BDC_AUTHORIZED` and `Platform$BDC_DEV_AUTHORIZED` share a
+label, and `Platform$BDC_AUTHORIZED` and `Platform$BDC_OPEN` share a
+URL, told apart by the `/hpds/auth` and `/hpds/open` backend paths.}
 
 \item{token}{Your personal PIC-SURE access token, obtained from the
 "User Profile" tab of your PIC-SURE instance. Optional for open-access

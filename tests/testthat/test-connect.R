@@ -205,6 +205,22 @@ test_that("connect() rejects a non-Platform member with a clear error", {
   expect_match(err$message, "Platform", fixed = TRUE)
 })
 
+test_that("connect() rejects a Platform member the Python enum does not define", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  unknown <- picsure::Platform$BDC_OPEN
+  unknown$name <- "NO_SUCH_MEMBER"
+
+  err <- tryCatch(
+    picsure::connect(platform = unknown, token = "tok"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "NO_SUCH_MEMBER", fixed = TRUE)
+})
+
 test_that("connect() accepts a full URL string platform", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)

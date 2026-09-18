@@ -105,3 +105,20 @@ test_that("a Platform member name resolves to a real Python Platform enum member
   expect_equal(resolved$value$requires_auth, member$requires_auth)
   expect_equal(resolved$value$supports_genomic, member$supports_genomic)
 })
+
+test_that("a Platform member the pinned enum lacks is refused as a picsureError", {
+  skip_unless_python_module()
+
+  unknown <- picsure::Platform$BDC_OPEN
+  unknown$name <- "NO_SUCH_MEMBER"
+
+  err <- tryCatch(
+    picsure::connect(platform = unknown, token = "tok"),
+    error = function(e) e
+  )
+
+  expect_s3_class(err, "picsureValidationError")
+  expect_s3_class(err, "picsureError")
+  expect_false(inherits(err, "python.builtin.KeyError"))
+  expect_match(conditionMessage(err), "NO_SUCH_MEMBER", fixed = TRUE)
+})
