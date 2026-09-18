@@ -126,6 +126,8 @@ test_that("connect() rejects unknown extra kwargs with a helpful message", {
   expect_match(msg, "include_consents", fixed = TRUE)
   expect_match(msg, "requires_auth", fixed = TRUE)
   expect_match(msg, "supports_genomic", fixed = TRUE)
+  expect_match(msg, "timeout", fixed = TRUE)
+  expect_match(msg, "validate", fixed = TRUE)
 })
 
 test_that("connect() rejects resource_uuid, which no longer routes anything", {
@@ -141,7 +143,7 @@ test_that("connect() rejects resource_uuid, which no longer routes anything", {
 })
 
 test_that("connect() forwards each whitelisted extra kwarg", {
-  for (key in c("include_consents", "requires_auth", "supports_genomic")) {
+  for (key in c("include_consents", "requires_auth", "supports_genomic", "timeout", "validate")) {
     fake <- fake_picsure_py()
     testthat::local_mocked_bindings(picsure_py = fake)
     args <- list(platform = "https://picsure.test", token = "tok")

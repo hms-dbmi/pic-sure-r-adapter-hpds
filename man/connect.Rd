@@ -33,9 +33,11 @@ Supported keys:
     `Platform` members, `FALSE` for every other member **and for a
     custom URL string**.}
   \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
-    unauthenticated mode against the open HPDS backend (no token
-    needed). `TRUE` for the `_AUTHORIZED` members and for a custom URL
-    string, `FALSE` for the `_OPEN` members.}
+    unauthenticated mode against the open HPDS backend and no token is
+    asked for, even on an `_AUTHORIZED` member. When `TRUE`, a token is
+    required, even for a custom URL string. Defaults to `TRUE` for the
+    `_AUTHORIZED` members and for a custom URL string, `FALSE` for the
+    `_OPEN` members.}
   \item{`supports_genomic`}{Logical. Whether genomic operations
     (`searchGenomicValues()`, genomic-filtered queries) are permitted.
     `TRUE` for `Platform$BDC_AUTHORIZED`, `Platform$BDC_DEV_AUTHORIZED`,
@@ -57,7 +59,19 @@ Supported keys:
     bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
     `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
     verifying.}
-}}
+  \item{`timeout`}{Numeric. Per-request deadline in seconds for the data
+    operations the session performs: counts, participant downloads, and
+    export polls. Defaults to the Python adapter's ten minutes, because
+    a large dataset can take minutes to assemble server-side. The
+    connect-time validation request keeps its own short deadline.}
+  \item{`validate`}{Logical. When `TRUE` (the Python adapter's default),
+    `connect()` checks the token's shape and expiry locally, then sends
+    one request to confirm the deployment is reachable and accepts the
+    token. Pass `FALSE` for offline or mocked use; nothing is sent or
+    checked, so the returned session may not work.}
+}
+`timeout` and `validate` need a pinned Python adapter that accepts
+them. An older pin rejects either as an unexpected keyword.}
 }
 \value{
 An opaque session object. Pass it as the first argument to
@@ -119,7 +133,12 @@ options(picsure.dev_mode  = TRUE)
 }
 
 An explicit `verify =` / `dev_mode =` argument to `connect()` always wins
-over the option.
+over the option, and both go through the same checks: `dev_mode` must be
+a single `TRUE` or `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a
+path string. A string that spells a boolean, such as `"false"`, is
+rejected rather than treated as a certificate path. Whenever verification
+ends up off, `connect()` emits a message naming the argument or option
+that turned it off.
 }
 
 \examples{

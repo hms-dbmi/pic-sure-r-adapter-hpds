@@ -58,7 +58,19 @@
 #'       bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
 #'       `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
 #'       verifying.}
+#'     \item{`timeout`}{Numeric. Per-request deadline in seconds for the data
+#'       operations the session performs: counts, participant downloads, and
+#'       export polls. Defaults to the Python adapter's ten minutes, because
+#'       a large dataset can take minutes to assemble server-side. The
+#'       connect-time validation request keeps its own short deadline.}
+#'     \item{`validate`}{Logical. When `TRUE` (the Python adapter's default),
+#'       `connect()` checks the token's shape and expiry locally, then sends
+#'       one request to confirm the deployment is reachable and accepts the
+#'       token. Pass `FALSE` for offline or mocked use; nothing is sent or
+#'       checked, so the returned session may not work.}
 #'   }
+#'   `timeout` and `validate` need a pinned Python adapter that accepts
+#'   them. An older pin rejects either as an unexpected keyword.
 #'
 #' @section Defaults:
 #' `include_consents`, `requires_auth`, and `supports_genomic` are all
@@ -327,5 +339,5 @@ connect <- function(platform, token = "", ...) {
 # translation. To bump: add the new kwarg here and to connect()'s @param block.
 CONNECT_EXTRA_KWARGS <- c(
   "include_consents", "requires_auth", "supports_genomic",
-  "client_type", "dev_mode", "verify"
+  "client_type", "dev_mode", "verify", "timeout", "validate"
 )
