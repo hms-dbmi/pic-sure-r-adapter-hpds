@@ -385,6 +385,14 @@ apply_result_schema <- function(data, schema) {
 #' many values were lost, so a server that starts sending text where the
 #' schema expects a number is visible without breaking the call.
 #'
+#' An empty cell in a column the schema declares `"character"` reaches R as a
+#' floating-point `NaN`: `pandas.read_csv` infers an all-empty column as
+#' `float64`, and reticulate hands that across as a `numeric`. Those cells
+#' become `NA_character_` rather than the three-character string `"NaN"` that
+#' `as.character()` alone would produce, so a timeseries `TVAL_CHAR` reads as
+#' missing whether or not the rows happened to carry any text. Nothing is
+#' reported as lost, because `NaN` already satisfies `is.na()`.
+#'
 #' @param column The column as it arrived.
 #' @param type One of `"character"`, `"numeric"`, `"integer"`, `"logical"`,
 #'   `"list"`.
@@ -403,6 +411,9 @@ coerce_result_column <- function(column, type, name = "<unnamed>") {
       },
       character(1), USE.NAMES = FALSE
     )
+  }
+  if (identical(type, "character") && is.double(column)) {
+    column[is.nan(column)] <- NA_real_
   }
   coerced <- switch(
     type,

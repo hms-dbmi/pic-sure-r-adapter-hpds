@@ -305,6 +305,27 @@ test_that("coerce_result_column stays silent when nothing is lost", {
   expect_silent(picsure:::coerce_result_column(c("a", "b"), "character", "name"))
 })
 
+test_that("coerce_result_column reads a floating-point NaN as NA, not the string NaN", {
+  coerced <- expect_silent(
+    picsure:::coerce_result_column(c(NaN, NaN), "character", "TVAL_CHAR")
+  )
+
+  expect_type(coerced, "character")
+  expect_true(all(is.na(coerced)))
+  expect_identical(coerced, c(NA_character_, NA_character_))
+})
+
+test_that("coerce_result_column still renders a genuine number as its own text", {
+  expect_identical(
+    picsure:::coerce_result_column(c(42, NaN, 7.5), "character", "TVAL_CHAR"),
+    c("42", NA_character_, "7.5")
+  )
+  expect_identical(
+    picsure:::coerce_result_column(c(1.5, 2.5), "numeric", "NVAL_NUM"),
+    c(1.5, 2.5)
+  )
+})
+
 test_that("apply_result_schema returns the frame and warns with the column name", {
   data <- data.frame(min = c("1", "x"), max = c("2", "3"), stringsAsFactors = FALSE)
 
