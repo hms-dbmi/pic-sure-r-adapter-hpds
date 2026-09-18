@@ -15,8 +15,12 @@
 #     `tryCatch(picsureError = ...)` missed them. They are now
 #     `picsureValidationError`s, which are `picsureError`s.
 #
-# The class hierarchy mirrors the Python one so a handler written against
-# either language reads the same. The R side owns its own ancestry. A mapped
+# The class hierarchy mirrors the shape the Python adapter is moving to, so a
+# handler written against either language reads the same once the pin catches
+# up. It runs ahead of the pinned build in one place: pinned
+# `PicSureConsentDeniedError` derives straight from `PicSureError`, while R
+# already places `picsureConsentDeniedError` under `picsureAuthorizationError`
+# and so under `picsureAuthError`. The R side owns its own ancestry. A mapped
 # Python class is expanded through `.PICSURE_CONDITION_PARENTS` rather than
 # by copying the installed Python build's MRO, so the R hierarchy keeps its
 # shape when the pinned Python commit moves.
@@ -156,7 +160,10 @@
 #' token rejection arrives as an authorization error while a locally-detected
 #' one (malformed, expired) arrives as an authentication error. That is why
 #' `picsureAuthError`, not either leaf, is the class to catch for token
-#' trouble.
+#' trouble. Note that `picsureAuthError` also catches
+#' `picsureConsentDeniedError`, which no token refresh will clear, so a
+#' handler that refreshes and retries should test for
+#' `picsureConsentDeniedError` first and give up on it rather than retry.
 #'
 #' **What the pinned Python build distinguishes.** The R side derives
 #' ancestry from its own table rather than from the installed Python

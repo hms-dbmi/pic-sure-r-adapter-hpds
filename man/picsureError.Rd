@@ -67,7 +67,10 @@ answers 403, not 401, for a bad token on `/user/me`, so a server-side
 token rejection arrives as an authorization error while a locally-detected
 one (malformed, expired) arrives as an authentication error. That is why
 `picsureAuthError`, not either leaf, is the class to catch for token
-trouble.
+trouble. Note that `picsureAuthError` also catches
+`picsureConsentDeniedError`, which no token refresh will clear, so a
+handler that refreshes and retries should test for
+`picsureConsentDeniedError` first and give up on it rather than retry.
 
 **What the pinned Python build distinguishes.** The R side derives
 ancestry from its own table rather than from the installed Python
