@@ -158,6 +158,12 @@ new_fake_picsure_py <- function() {
   )
 }
 
+# Fake of the `picsure` Python module as the R wrappers see it.
+#
+# Every callable records or returns plain R values, and `buildClause` and
+# `buildGenomicFilter` capture whatever arrived through `...` under `extra`,
+# so a test can tell "the wrapper forwarded min/max as unknown kwargs" from
+# "the wrapper absorbed them".
 fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authorized")) {
   calls <- new.env(parent = emptyenv())
   calls$connect <- list()
@@ -183,7 +189,7 @@ fake_picsure_py <- function(platform_names = c("Demo", "BDC Open", "BDC Authoriz
       )
     },
     buildGenomicFilter = function(key, values = NULL, ...) {
-      list(kind = "genomic_filter", key = key, values = values)
+      list(kind = "genomic_filter", key = key, values = values, extra = list(...))
     },
     genomicConsequences = function() {
       data.frame(
