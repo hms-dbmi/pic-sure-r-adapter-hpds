@@ -225,6 +225,60 @@ test_that("picsureError() expands a class to its documented ancestors", {
   )
 })
 
+test_that("every row names one immediate parent, and the chain is derived", {
+  for (parent in picsure:::.PICSURE_CONDITION_PARENTS) {
+    expect_lte(length(parent), 1L)
+  }
+  expect_identical(
+    picsure:::.picsure_condition_ancestors("picsureConsentLookupError"),
+    c("picsureServerError", "picsureConnectionError")
+  )
+  expect_identical(
+    picsure:::.picsure_condition_ancestors("picsureQueryError"),
+    character()
+  )
+})
+
+test_that("a row naming a parent with no row of its own fails loudly", {
+  testthat::local_mocked_bindings(
+    .PICSURE_CONDITION_PARENTS = list(picsureQueryError = "picsureNoSuchError")
+  )
+
+  expect_error(
+    picsureError("m", class = "picsureQueryError"),
+    "has no row for", fixed = TRUE
+  )
+})
+
+test_that("a cycle in the rows fails loudly instead of looping", {
+  testthat::local_mocked_bindings(
+    .PICSURE_CONDITION_PARENTS = list(
+      picsureAuthError           = "picsureAuthenticationError",
+      picsureAuthenticationError = "picsureAuthError"
+    )
+  )
+
+  expect_error(
+    picsureError("m", class = "picsureAuthError"),
+    "is its own ancestor", fixed = TRUE
+  )
+})
+
+test_that("a row that stores a whole chain fails loudly", {
+  testthat::local_mocked_bindings(
+    .PICSURE_CONDITION_PARENTS = list(
+      picsureAuthError          = character(),
+      picsureAuthorizationError = "picsureAuthError",
+      picsureConsentDeniedError = c("picsureAuthorizationError", "picsureAuthError")
+    )
+  )
+
+  expect_error(
+    picsureError("m", class = "picsureConsentDeniedError"),
+    "names 2 parents", fixed = TRUE
+  )
+})
+
 test_that("every condition class in the hierarchy is catchable as picsureError", {
   for (cls in names(picsure:::.PICSURE_CONDITION_PARENTS)) {
     err <- tryCatch(stop(picsureError("m", class = cls)), picsureError = function(e) e)
@@ -242,9 +296,9 @@ missing_ancestry_message <- function(table_name, missing) {
     "error of that kind would reach the researcher as a bare simpleError ",
     "reading \"'arg' should be one of ...\", with their own message gone and ",
     "tryCatch(picsureError = ...) no longer matching it. Add a row to ",
-    ".PICSURE_CONDITION_PARENTS naming that class's ancestors, most specific ",
-    "first and excluding picsureError, and document it in the hierarchy ",
-    "diagrams in R/errors.R."
+    ".PICSURE_CONDITION_PARENTS naming that class's one immediate parent, ",
+    "character() if it is a root, and document it in the hierarchy diagrams ",
+    "in R/errors.R. The rest of the chain is derived from the rows."
   )
 }
 

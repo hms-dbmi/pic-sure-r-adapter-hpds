@@ -27,8 +27,10 @@
 # than by copying the installed Python build's MRO, so the R hierarchy keeps
 # its shape when the pinned Python commit moves.
 
-# Ancestors of each condition class, most specific first, excluding
-# `picsureError`, which every one of them carries.
+# The immediate parent of each condition class, or `character()` for a root.
+# One name per row, never a chain: `.picsure_condition_ancestors()` walks the
+# rows to build the full ancestry, so a row and the tree below can never
+# disagree. `picsureError` is carried by every condition and named by no row.
 #
 #   picsureError
 #   |- picsureAuthError                  server answered and refused
@@ -66,11 +68,11 @@
   picsureAuthError           = character(),
   picsureAuthenticationError = "picsureAuthError",
   picsureAuthorizationError  = "picsureAuthError",
-  picsureConsentDeniedError  = c("picsureAuthorizationError", "picsureAuthError"),
+  picsureConsentDeniedError  = "picsureAuthorizationError",
   picsureConnectionError     = character(),
   picsureTLSError            = "picsureConnectionError",
   picsureServerError         = "picsureConnectionError",
-  picsureConsentLookupError  = c("picsureServerError", "picsureConnectionError"),
+  picsureConsentLookupError  = "picsureServerError",
   picsureQueryError          = character(),
   picsureValidationError     = character()
 )
@@ -127,6 +129,59 @@
   consent_lookup_failed = "picsureConsentLookupError"
 )
 
+# Walks `.PICSURE_CONDITION_PARENTS` from one class up to its root.
+#
+# Returns the ancestors most specific first, excluding `picsureError`, which
+# every condition carries. Deriving the chain rather than storing it is what
+# keeps a row from disagreeing with the tree: a leaf added under
+# `picsureServerError` inherits `picsureConnectionError` whether or not
+# whoever added it thought to say so.
+#
+# A row naming more than one parent, a parent with no row of its own, and a
+# cycle are all bad edits, and each stops the walk with a message naming the
+# row rather than producing a condition whose ancestry is wrong or hanging.
+.picsure_condition_ancestors <- function(class) {
+  ancestors <- character()
+  current <- class
+  repeat {
+    parent <- .PICSURE_CONDITION_PARENTS[[current]]
+    if (length(parent) == 0L) {
+      return(ancestors)
+    }
+    if (length(parent) > 1L) {
+      stop(sprintf(
+        paste0(
+          "Condition class '%s' names %d parents in .PICSURE_CONDITION_PARENTS. ",
+          "Each row names one immediate parent, or character() for a root; ",
+          "the rest of the chain is derived."
+        ),
+        current, length(parent)
+      ), call. = FALSE)
+    }
+    if (!parent %in% names(.PICSURE_CONDITION_PARENTS)) {
+      stop(sprintf(
+        paste0(
+          "Condition class '%s' names the parent '%s', which ",
+          ".PICSURE_CONDITION_PARENTS has no row for. Add a row for it, or ",
+          "correct the parent name."
+        ),
+        current, parent
+      ), call. = FALSE)
+    }
+    if (parent %in% c(class, ancestors)) {
+      stop(sprintf(
+        paste0(
+          "Condition class '%s' is its own ancestor through '%s' in ",
+          ".PICSURE_CONDITION_PARENTS. The rows must form a tree."
+        ),
+        class, parent
+      ), call. = FALSE)
+    }
+    ancestors <- c(ancestors, parent)
+    current <- parent
+  }
+}
+
 # Expands a condition class to the full vector `structure()` should carry.
 #
 # `class` must be NULL or one of the names in `.PICSURE_CONDITION_PARENTS`.
@@ -139,7 +194,7 @@
     return(base)
   }
   class <- match.arg(class, names(.PICSURE_CONDITION_PARENTS))
-  unique(c(class, .PICSURE_CONDITION_PARENTS[[class]], base))
+  unique(c(class, .picsure_condition_ancestors(class), base))
 }
 
 #' Construct a picsureError condition.

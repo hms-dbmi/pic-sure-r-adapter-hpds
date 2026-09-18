@@ -82,8 +82,11 @@ checked by hand, and the failing test's message says what to move where.
 
 ### 5. The exception classes
 
-- [`R/errors.R`](../../R/errors.R): `.PICSURE_PY_CONDITION_CLASSES`, and an
-  ancestry row in `.PICSURE_CONDITION_PARENTS` for any R class the map gains.
+- [`R/errors.R`](../../R/errors.R): `.PICSURE_PY_CONDITION_CLASSES`, and a row
+  in `.PICSURE_CONDITION_PARENTS` for any R class the map gains, naming that
+  class's one immediate parent. The rest of the chain is derived, so a leaf
+  added under `picsureServerError` inherits `picsureConnectionError` without
+  anyone having to say so.
 - [`tests/testthat/test-errors-reticulate.R`](../../tests/testthat/test-errors-reticulate.R)
   holds the `expected` vector in "each Python error class maps to its R condition
   class".
