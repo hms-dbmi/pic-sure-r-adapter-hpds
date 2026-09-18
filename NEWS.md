@@ -1,4 +1,4 @@
-# picsure (development version)
+# picsure 2.0.0.9000
 
 - **Breaking:** `connect()` no longer accepts `resource_uuid`. PIC-SURE v3
   routes by URL path (`/hpds/auth` vs `/hpds/open`, chosen by the `Platform`
@@ -6,7 +6,8 @@
   still takes the argument for backwards compatibility — it stores it on the
   session and ignores it — but forwarding a value that cannot affect the
   result is worse than refusing it, so this wrapper drops it from the
-  accepted extras: passing it raises a `picsureError` listing the valid ones.
+  accepted extras: passing it raises a `picsureValidationError` listing the
+  valid ones.
   There is no replacement; delete the argument. `Platform` members never
   carried a resource UUID, so nothing else in the R API changes.
 
@@ -96,8 +97,9 @@
 
 - `removeFacet()` works. It called `FacetSet.remove()`, a method the Python
   adapter has never defined, so every call failed with an `AttributeError`.
-  It now rewrites the category's selections without the removed values, and
-  accepts a vector of values like `addFacet()` does.
+  It now rebuilds the category's selections without the removed values,
+  accepts a vector of values like `addFacet()` does, and rejects an empty
+  `value` with a `picsureValidationError`.
 
 - `connect()` now sources the user's consent list from PSAMA's
   `/psama/user/me/consents` endpoint instead of the query template. This is a
