@@ -9,21 +9,30 @@ removeFacet(facet_set, key, value)
 \arguments{
 \item{facet_set}{A FacetSet from [`facets()`][picsure::facets].}
 
-\item{key}{Facet key.}
+\item{key}{Facet key. Exactly one category, as for
+[`addFacet()`][picsure::addFacet].}
 
-\item{value}{Facet value (scalar only).}
+\item{value}{Facet value, or a vector of values under the same `key`.}
 }
 \value{
 The same FacetSet, invisibly, for chaining.
 }
 \description{
 Mutates the underlying Python FacetSet and returns the same handle for
-chaining.
+chaining. Every entry under `key` matching `value` is dropped; removing a
+value that was never added leaves the FacetSet unchanged.
+}
+\details{
+The Python FacetSet has no per-value removal, so the category is rebuilt:
+the survivors are computed first, the category is cleared, and the
+survivors are added back. If adding them back fails, the original
+selection is restored before the error is raised, so a failed removal
+never leaves the category empty.
 }
 \examples{
 \dontrun{
 fs <- picsure::facets(bdc)
-fs <- picsure::addFacet(fs, "study_ids", "phs000007")
-fs <- picsure::removeFacet(fs, "study_ids", "phs000007")
+fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
+fs <- picsure::removeFacet(fs, "dataset_id", "phs000007")
 }
 }
