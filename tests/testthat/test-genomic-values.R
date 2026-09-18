@@ -30,8 +30,6 @@ test_that("connect accepts supports_genomic as a known kwarg", {
   )
 })
 
-# RR-10: page and size are validated instead of silently coerced
-
 test_that("searchGenomicValues forwards validated integers for page and size", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
@@ -58,12 +56,10 @@ test_that("searchGenomicValues rejects a fractional page instead of truncating i
   expect_length(bdc$.calls$searchGenomicValues, 0L)
 })
 
-test_that("searchGenomicValues rejects a non-numeric page instead of sending NA", {
+test_that("searchGenomicValues rejects a non-numeric page without sending or warning", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
-  # The old behaviour: as.integer("two") warned "NAs introduced by coercion"
-  # and forwarded NA. Nothing may be sent, and nothing may warn.
   err <- tryCatch(
     picsure::searchGenomicValues(bdc, "Gene_with_variant", page = "two"),
     condition = function(e) e

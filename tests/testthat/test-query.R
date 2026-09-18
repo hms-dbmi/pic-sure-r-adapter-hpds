@@ -338,14 +338,10 @@ test_that("saveQueryByName validates name and overwrite", {
                "single logical")
 })
 
-# RL-11: a timestamp result is typed from the timeseries schema
-
 test_that("runQuery(type = 'timestamp') applies the timeseries schema", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   bdc$runQuery <- function(...) {
-    # What read_csv() produces for a query over numeric concepts only: every
-    # TVAL_CHAR is empty, so the column is inferred as numeric.
     data.frame(
       PATIENT_NUM  = c("1", "2"),
       CONCEPT_PATH = c("\\phs1\\age\\", "\\phs1\\age\\"),
@@ -399,8 +395,6 @@ test_that("a count result is not mistaken for a data frame to retype", {
 
   expect_equal(count$value, 42L)
 })
-
-# RL-12: query-editing and query-running arguments raise picsureErrors
 
 test_that("query wrappers reject their arguments as picsureValidationErrors", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())

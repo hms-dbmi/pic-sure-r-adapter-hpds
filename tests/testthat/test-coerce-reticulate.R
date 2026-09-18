@@ -1,21 +1,12 @@
 # Enum-resolution tests that cross the real reticulate boundary.
 #
-# A named R list cannot exhibit the defect these cover. `names()` on an R list
-# is its member list; `names()` on a Python enum class is every attribute,
-# which for an enum that mixes in `str` includes all 47 string methods. Two
-# things follow, and both are real:
-#
-#   * `count`, `index`, `format`, and `strip` look like members of every
-#     str-mixin enum, so a caller passing one of those names got a bound
-#     method forwarded to Python instead of the "not one of" error.
-#   * A member actually named `COUNT` ties with the inherited `str.count`
-#     under the case-insensitive comparison, and the enum was then indexed
-#     with a length-2 subscript.
-#
-# (Attribute access does find a member that shadows a mixin method — enum
-# members are set as class attributes. The hazard is the non-member name and
-# the tie, not the shadowing.) Only a genuine Python enum shows any of this,
-# which is why these tests live here rather than against a fake.
+# A named R list cannot show the defect these cover. `names()` on an R list is
+# its member list, but `names()` on a Python enum class is every attribute,
+# and for an enum that mixes in `str` that includes all 47 string methods. So
+# `count`, `index`, `format`, and `strip` looked like members of every
+# str-mixin enum, and a member actually named `COUNT` tied with the inherited
+# `str.count` under a case-insensitive comparison. Only a genuine Python enum
+# shows either, which is why these tests do not use a fake.
 
 test_that("names() on a str-mixin Python enum is not its member list", {
   skip_unless_python_module()
@@ -25,7 +16,6 @@ test_that("names() on a str-mixin Python enum is not its member list", {
   members <- picsure:::.py_enum_member_names(frequency)
 
   expect_setequal(members, c("RARE", "COMMON", "NOVEL"))
-  # The hazard, asserted rather than assumed: string methods are attributes.
   expect_true(all(c("count", "index", "format", "strip") %in% attributes_seen))
   expect_false(any(c("count", "index", "format", "strip") %in% members))
   expect_gt(length(attributes_seen), length(members))
@@ -34,12 +24,6 @@ test_that("names() on a str-mixin Python enum is not its member list", {
 test_that("a member whose name collides with a string method still resolves", {
   skip_unless_python_module()
 
-  # The genomic enums are the obvious next use for to_py_enum(), and all three
-  # mix in str. `COUNT` is the collision that matters: `names()` on such an
-  # enum reports both the member `COUNT` and the inherited `str.count`, so a
-  # case-insensitive comparison matched two entries and the enum was then
-  # indexed with a length-2 subscript. Resolving through `__members__` sees
-  # one member and no methods.
   reticulate::py_run_string("
 from enum import Enum
 
@@ -71,9 +55,6 @@ class _CollidingEnum(str, Enum):
 test_that("attribute lookup on a str-mixin enum really does return methods", {
   skip_unless_python_module()
 
-  # The premise of the fix, asserted rather than assumed: a name that is a
-  # string method and not a member resolves, by attribute access, to the
-  # bound method. That value used to be forwarded to Python as an enum.
   frequency <- picsure_py$VariantFrequency
 
   for (method_name in c("count", "index", "format", "strip")) {
@@ -117,7 +98,6 @@ test_that("to_py_enum resolves every member of every picsure Python enum", {
     for (member in members) {
       resolved <- to_py_enum(member, enum$obj, enum$name, enum$subclass)
       expect_false(is.null(resolved), info = paste(enum$name, member))
-      # Whatever came back has to be the member, never a callable.
       expect_false(is.function(resolved), info = paste(enum$name, member))
       expect_equal(
         as.character(picsure:::.py_enum_member(enum$obj, member)),

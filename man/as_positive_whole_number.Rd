@@ -15,9 +15,10 @@ as_positive_whole_number(value, arg)
 `value` as an integer scalar.
 }
 \description{
-Page and size arguments used to go through `as.integer()` with no check at
-all, so `page = 1.7` was silently truncated to 1 and `page = "two"` became
-`NA` and was forwarded to Python. Each rejection names the argument and
-what arrived, and raises a `picsureValidationError` (a `picsureError`).
+Rejects `NA`, `NaN`, `Inf`, a fraction, anything below 1, anything above
+`.Machine$integer.max`, non-numeric input, and any length other than one,
+so `page = 1.7` is an error rather than a silent truncation to 1. Each
+rejection names the argument and what arrived, and raises a
+`picsureValidationError`, which is a `picsureError`.
 }
 \keyword{internal}

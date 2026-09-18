@@ -71,8 +71,6 @@ test_that("searchDictionary() forwards a FacetSet as the facets kwarg", {
   expect_identical(call$facets, fs)
 })
 
-# RL-12 / RL-10: argument rejection and result typing
-
 test_that("searchDictionary() rejects a non-string term as a picsureValidationError", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")

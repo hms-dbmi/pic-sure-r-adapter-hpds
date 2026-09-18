@@ -25,14 +25,18 @@ facets <- function(session) {
   with_picsure_error(session$facets())
 }
 
-# Rejects a facet key that is not one non-empty string.
-#
-# A facet entry selects values inside ONE category: the Python FacetSet's
-# `add(category, values)` takes a single category and a vector of values, so
-# a vector of values is legitimate and a vector of keys is not. Before this
-# check a length-2 key reached `is.na(key)` inside an `||`, and R reported
-# "'length = 2' in coercion to 'logical(1)'" — a base R complaint about
-# condition length rather than a package error naming the argument.
+#' Reject a facet key that is not one non-empty string.
+#'
+#' A facet entry selects values inside one category. The Python FacetSet's
+#' `add(category, values)` takes a single category and a vector of values, so
+#' a vector of values is fine and a vector of keys is not. Checking length
+#' first keeps a length-2 key out of `is.na(key)` inside an `||`, which base R
+#' rejects with a condition-length error that does not name the argument.
+#'
+#' @param key The value passed as `key`.
+#' @param call The call to report in the error, by default the caller's.
+#' @return `key` unchanged.
+#' @noRd
 .check_facet_key <- function(key, call = sys.call(-1L)) {
   if (is.null(key) || length(key) != 1L || !is.character(key) ||
       is.na(key) || !nzchar(key)) {
@@ -59,7 +63,7 @@ facets <- function(session) {
 #'
 #' @param facet_set A FacetSet from [`facets()`][picsure::facets].
 #' @param key Facet category name, e.g. `"dataset_id"` or `"data_type"`.
-#'   Exactly one category — a facet entry selects values inside a single
+#'   Exactly one category. A facet entry selects values inside a single
 #'   category, so a vector of keys raises a `picsureError`. The valid
 #'   category names come from the server, not from this package; a name the
 #'   deployment does not publish raises a `picsureError` listing the ones it

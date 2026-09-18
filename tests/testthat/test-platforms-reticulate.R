@@ -3,10 +3,10 @@
 # platforms() shipped broken for every real caller while its tests were
 # green. The fake stood `picsure_py$Platform` up as an R character vector, so
 # the call took the non-Python branch and never reached the conversion. A real
-# `Platform` is an Enum class, and `Platform.__members__` is a `mappingproxy`
-# — a type reticulate has no converter for. `py_to_r()` returns the proxy
-# unchanged, and the `vapply()` over it fails with "cannot coerce type
-# 'environment' to vector of type 'list'".
+# `Platform` is an Enum class whose `__members__` is a `mappingproxy`, a type
+# reticulate cannot convert. `py_to_r()` returns the proxy unchanged, and the
+# `vapply()` over it fails with "cannot coerce type 'environment' to vector of
+# type 'list'".
 #
 # The synthetic enum below needs only a bare interpreter, so the conversion
 # boundary is covered even where the picsure package is not installed.

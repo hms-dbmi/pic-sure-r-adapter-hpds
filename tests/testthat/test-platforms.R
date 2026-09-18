@@ -1,12 +1,9 @@
 # Pure-R tests for the label extraction platforms() performs after the Python
-# boundary. The boundary itself — where the bug lived — is crossed in
-# test-platforms-reticulate.R; a fake that hands back an R character vector
+# boundary. The boundary itself, where the bug lived, is crossed in
+# test-platforms-reticulate.R. A fake that hands back an R character vector
 # cannot reproduce a reticulate conversion failure.
 
 test_that(".platform_labels reads value$label from PlatformConfig-shaped members", {
-  # Members shaped like the converted Python Platform enum: `value` is the
-  # PlatformConfig dataclass (read via $label), not a string. Reading $value
-  # directly would return the dataclass and break vapply(..., character(1)).
   py_members <- list(
     BDC_OPEN = list(
       name = "BDC_OPEN",

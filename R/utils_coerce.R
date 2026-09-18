@@ -52,10 +52,11 @@ describe_argument_value <- function(value) {
 
 #' Validate a single positive whole number.
 #'
-#' Page and size arguments used to go through `as.integer()` with no check at
-#' all, so `page = 1.7` was silently truncated to 1 and `page = "two"` became
-#' `NA` and was forwarded to Python. Each rejection names the argument and
-#' what arrived, and raises a `picsureValidationError` (a `picsureError`).
+#' Rejects `NA`, `NaN`, `Inf`, a fraction, anything below 1, anything above
+#' `.Machine$integer.max`, non-numeric input, and any length other than one,
+#' so `page = 1.7` is an error rather than a silent truncation to 1. Each
+#' rejection names the argument and what arrived, and raises a
+#' `picsureValidationError`, which is a `picsureError`.
 #'
 #' @param value The value to validate.
 #' @param arg The argument's name, for the error message.
@@ -192,18 +193,19 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
   value
 }
 
-# Lists the member names of a Python enum class, or of the named R list that
-# stands in for one in the unit tests.
-#
-# `names()` on a Python enum class is NOT the member list: it reports every
-# attribute. For an enum that mixes in `str` — VariantFrequency,
-# GenomicFilterKey, and VariantSeverity all do — that includes all 47 string
-# methods, so `count`, `index`, `format`, and `strip` look like members. Only
-# `__members__` is the member map.
-#
-# `__members__` is a mappingproxy, and reticulate has no converter for that
-# type, so it is copied into a real dict first: that gives `py_to_r()`
-# something it knows how to convert.
+#' List the member names of a Python enum class.
+#'
+#' `names()` on a Python enum class is not the member list. It reports every
+#' attribute, and for an enum that mixes in `str` that includes all 47 string
+#' methods, so `count`, `index`, `format`, and `strip` look like members.
+#' VariantFrequency, GenomicFilterKey, and VariantSeverity all mix in `str`.
+#' Only `__members__` is the member map. It is a mappingproxy, which
+#' reticulate cannot convert, so it is copied into a real dict first.
+#'
+#' @param enum_obj The Python enum class, or the named R list that stands in
+#'   for one in the unit tests.
+#' @return A character vector of member names.
+#' @noRd
 .py_enum_member_names <- function(enum_obj) {
   if (!inherits(enum_obj, "python.builtin.object")) {
     return(names(enum_obj))
@@ -216,13 +218,19 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
   names(mapping)
 }
 
-# Fetches one member of a Python enum class by exact member name.
-#
-# Goes through `__members__[name]`, never attribute access: for a str-mixin
-# enum, `enum_obj$count` is the bound `str.count` method, so a member whose
-# name collided with a string method would resolve to the method instead of
-# the member. `__members__` holds members only, and raises KeyError for
-# anything else.
+#' Fetch one member of a Python enum class by exact member name.
+#'
+#' Goes through `__members__[name]`, never attribute access. For a str-mixin
+#' enum, `enum_obj$count` is the bound `str.count` method, so a member whose
+#' name collided with a string method would resolve to the method instead of
+#' the member. `__members__` holds members only and raises KeyError for
+#' anything else.
+#'
+#' @param enum_obj The Python enum class, or the named R list that stands in
+#'   for one in the unit tests.
+#' @param name The exact member name.
+#' @return The member.
+#' @noRd
 .py_enum_member <- function(enum_obj, name) {
   if (!inherits(enum_obj, "python.builtin.object")) {
     return(enum_obj[[name]])
@@ -277,21 +285,18 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
   .py_enum_member(enum_obj, valid[[match_idx]])
 }
 
-# Column types of a dictionary-search result.
-#
-# The Python adapter builds the empty result as `pd.DataFrame(columns=...)`,
-# whose columns are all dtype `object`, so a search that matched nothing
-# reached R with every column character — including `min`, `max`, and
-# `allowFiltering`, which are numeric and logical on any non-empty result.
-# Downstream arithmetic therefore broke only when the search found nothing.
-# Typing the result from the schema instead of from the rows it happens to
-# contain makes the two cases agree.
-#
-# Types come from `DictionaryEntry` in the Python adapter: six string fields,
-# a categorical value list, two optional floats, an optional bool, an
-# optional metadata dict, and an optional string. `values` and `meta` are
-# list columns in both directions, since each cell holds a vector or a
-# mapping rather than a scalar.
+#' Column types of a dictionary-search result.
+#'
+#' The Python adapter builds a matched-nothing result as
+#' `pd.DataFrame(columns=...)`, whose columns are all dtype `object`, so an
+#' empty search reached R with every column character, including `min`,
+#' `max`, and `allowFiltering`, which are numeric and logical on any
+#' non-empty result. Typing from this schema instead of from the rows makes
+#' the two cases agree.
+#'
+#' Types follow `DictionaryEntry` in the Python adapter. `values` and `meta`
+#' are list columns because each cell holds a vector or a mapping.
+#' @noRd
 .DICTIONARY_RESULT_SCHEMA <- c(
   conceptPath    = "character",
   name           = "character",
@@ -307,14 +312,14 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
   studyAcronym   = "character"
 )
 
-# Column types of a timeseries (`type = "timestamp"`) query result.
-#
-# HPDS's TimeseriesProcessor writes a fixed header and fills exactly one of
-# NVAL_NUM / TVAL_CHAR per row: the numeric value for a numeric concept and
-# the text value for a string concept, with the other left empty. A query
-# over numeric concepts alone therefore produces an all-empty TVAL_CHAR
-# column, which `pandas.read_csv` infers as float64 — so a text column
-# arrived in R as numeric depending on which concepts the query touched.
+#' Column types of a timeseries (`type = "timestamp"`) query result.
+#'
+#' HPDS's TimeseriesProcessor writes a fixed header and fills exactly one of
+#' NVAL_NUM and TVAL_CHAR per row, leaving the other empty. A query over
+#' numeric concepts alone therefore produces an all-empty TVAL_CHAR column,
+#' which `pandas.read_csv` infers as float64, so without this schema a text
+#' column arrived in R as numeric or character depending on the query.
+#' @noRd
 .TIMESERIES_RESULT_SCHEMA <- c(
   PATIENT_NUM  = "integer",
   CONCEPT_PATH = "character",
@@ -323,10 +328,12 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
   TIMESTAMP    = "character"
 )
 
-# Column types of a genomic value-search result.
+#' Column types of a genomic value-search result.
+#' @noRd
 .GENOMIC_VALUES_RESULT_SCHEMA <- c(value = "character")
 
-# Column types of the offline variant-consequence vocabulary.
+#' Column types of the offline variant-consequence vocabulary.
+#' @noRd
 .CONSEQUENCES_RESULT_SCHEMA <- c(severity = "character", consequence = "character")
 
 #' Type a result data frame from its known schema.

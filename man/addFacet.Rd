@@ -10,7 +10,7 @@ addFacet(facet_set, key, value)
 \item{facet_set}{A FacetSet from [`facets()`][picsure::facets].}
 
 \item{key}{Facet category name, e.g. `"dataset_id"` or `"data_type"`.
-Exactly one category — a facet entry selects values inside a single
+Exactly one category. A facet entry selects values inside a single
 category, so a vector of keys raises a `picsureError`. The valid
 category names come from the server, not from this package; a name the
 deployment does not publish raises a `picsureError` listing the ones it

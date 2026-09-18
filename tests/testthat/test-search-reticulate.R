@@ -1,16 +1,17 @@
 # Dictionary-result typing, across the real reticulate boundary.
 #
 # A fake cannot show this defect. An R data.frame built in a test already has
-# the types the test chose; the problem is what pandas hands back. The Python
-# adapter builds a matched-nothing result as `pd.DataFrame(columns=[...])`,
-# whose every column is dtype `object`, and reticulate converts `object` to
-# character — so `min`, `max`, and `allowFiltering` arrived as character on an
-# empty search and as numeric / numeric / logical on any other, and
-# downstream arithmetic broke only when the search found nothing.
+# the types the test chose, and the problem is what pandas hands back. The
+# Python adapter builds a matched-nothing result as
+# `pd.DataFrame(columns=[...])`, whose every column is dtype `object`, and
+# reticulate converts `object` to character. So `min`, `max`, and
+# `allowFiltering` arrived as character on an empty search and as numeric,
+# numeric, and logical on any other, and downstream arithmetic broke only
+# when the search found nothing.
 
 # Builds the two frames the Python adapter's two branches produce, with the
-# same columns and dtypes `_entries_to_dataframe()` and the empty-result
-# branch of `search_dictionary()` produce.
+# same columns and dtypes as `_entries_to_dataframe()` and the empty-result
+# branch of `search_dictionary()`.
 dictionary_frames <- function() {
   reticulate::py_run_string("
 import pandas as pd
@@ -20,10 +21,8 @@ _DICT_COLUMNS = [
     'values', 'min', 'max', 'allowFiltering', 'meta', 'studyAcronym',
 ]
 
-# search_dictionary()'s no-results branch.
 _dict_empty = pd.DataFrame(columns=_DICT_COLUMNS)
 
-# _entries_to_dataframe() for one Continuous concept.
 _dict_full = pd.DataFrame({
     'conceptPath': ['\\\\phs1\\\\bmi\\\\'],
     'name': ['bmi'],
@@ -51,7 +50,6 @@ test_that("pandas really does hand back an all-character empty dictionary result
 
   frames <- dictionary_frames()
 
-  # The defect, asserted rather than assumed.
   expect_equal(nrow(frames$empty), 0L)
   expect_true(all(column_types(frames$empty) == "character"))
   expect_false(all(column_types(frames$full) == "character"))
@@ -81,9 +79,6 @@ test_that("arithmetic on min / max works on an empty search result", {
   frames <- dictionary_frames()
   typed <- picsure:::apply_result_schema(frames$empty, picsure:::.DICTIONARY_RESULT_SCHEMA)
 
-  # This is what used to fail: subtracting two character columns is
-  # "non-numeric argument to binary operator", so code that worked on every
-  # non-empty search broke on this one.
   expect_error(as.character(frames$empty$max) - as.character(frames$empty$min))
   expect_identical(typed$max - typed$min, numeric(0))
   expect_equal(sum(typed$max - typed$min), 0)

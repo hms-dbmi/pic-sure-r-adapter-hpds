@@ -110,8 +110,6 @@ test_that("to_py_enum rejects a member of the wrong subclass before doing proxy 
   expect_match(err$message, "GroupOperator", fixed = TRUE)
 })
 
-# RR-10: numeric arguments are validated, not silently coerced
-
 test_that("as_positive_whole_number accepts a positive whole number as an integer", {
   expect_identical(picsure:::as_positive_whole_number(1, "page"), 1L)
   expect_identical(picsure:::as_positive_whole_number(100L, "size"), 100L)
@@ -184,12 +182,7 @@ test_that("describe_argument_value says what actually arrived", {
   expect_match(picsure:::describe_argument_value(1.5), "1.5", fixed = TRUE)
 })
 
-# RR-12: enum members resolve through the member map, not by attribute lookup
-
 test_that("to_py_enum reports a case-insensitive tie instead of guessing", {
-  # Two members that differ only in case cannot be told apart from a
-  # case-insensitive string, and the old code indexed the enum with a
-  # length-2 subscript when that happened.
   tied <- list(Rare = "a", RARE = "b")
   err <- tryCatch(
     to_py_enum("rare", tied, "VariantFrequency", "picsure_variant_frequency"),
@@ -216,8 +209,6 @@ test_that("to_py_enum's rejection is a picsureError naming the enum", {
   expect_s3_class(err, "picsureValidationError")
   expect_s3_class(err, "picsureError")
 })
-
-# RL-10 / RL-11: results are typed from a schema, not inferred from rows
 
 test_that("apply_result_schema types an empty frame the same as a full one", {
   schema <- c(a = "character", b = "numeric", c = "logical", d = "integer", e = "list")
@@ -283,8 +274,6 @@ test_that("the dictionary schema matches the Python DictionaryEntry fields", {
 })
 
 test_that("the timeseries schema matches the header HPDS writes", {
-  # TimeseriesProcessor.getHeaderRow() is fixed; if this list changes, the
-  # server changed and the schema has to follow it.
   expect_identical(
     names(picsure:::.TIMESERIES_RESULT_SCHEMA),
     c("PATIENT_NUM", "CONCEPT_PATH", "NVAL_NUM", "TVAL_CHAR", "TIMESTAMP")

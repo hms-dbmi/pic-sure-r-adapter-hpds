@@ -1,17 +1,14 @@
 # Drift test — verifies R-side enum definitions match the Python adapter.
 #
-# Parity can only be checked against a live interpreter, and a missing
-# interpreter used to be indistinguishable from genuinely disagreeing enums:
-# the old guard trusted `inherits(picsure_py, "python.builtin.module")`, which
-# the `delay_load = TRUE` proxy satisfies before Python exists, so all eight
-# comparisons ran and all eight died with an opaque "Installation of Python
-# not found".
+# Parity can only be checked against a live interpreter. The old guard trusted
+# `inherits(picsure_py, "python.builtin.module")`, which the `delay_load = TRUE`
+# proxy satisfies before Python exists, so a missing interpreter looked like
+# eight disagreeing enums, each dying with "Installation of Python not found".
 #
-# The environment is now asserted once, loudly, by the first test below. A
-# missing interpreter is a failure — not a silent skip — because an
-# environment without Python must not look like a clean run. The comparisons
-# themselves skip, so that failure arrives once and says what it means. See
-# helper-python.R for the probe.
+# The first test below asserts the environment once. A missing interpreter is
+# a failure rather than a skip, so an environment without Python cannot look
+# like a clean run. The comparisons themselves skip, so that failure arrives
+# once. The probe lives in helper-python.R.
 
 test_that("a Python picsure adapter is available to verify enum parity against", {
   status <- python_status()

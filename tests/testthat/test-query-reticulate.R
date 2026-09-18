@@ -1,21 +1,19 @@
 # Timeseries-result typing, across the real reticulate boundary.
 #
 # The same root cause as the dictionary schema, in the other direction. HPDS's
-# TimeseriesProcessor writes a fixed header —
-# PATIENT_NUM, CONCEPT_PATH, NVAL_NUM, TVAL_CHAR, TIMESTAMP — and fills
-# exactly one of NVAL_NUM / TVAL_CHAR per row: the number for a numeric
-# concept, the text for a string concept, the other left empty. The Python
-# adapter parses that with `pandas.read_csv`, which infers per column, so a
-# query over numeric concepts alone leaves TVAL_CHAR empty in every row and
-# read_csv types it float64. The text column then reached R as numeric,
-# changing type with the data. Only real pandas parsing shows this, which is
-# why it is tested here.
+# TimeseriesProcessor writes the fixed header PATIENT_NUM, CONCEPT_PATH,
+# NVAL_NUM, TVAL_CHAR, TIMESTAMP and fills exactly one of NVAL_NUM and
+# TVAL_CHAR per row, leaving the other empty. The Python adapter parses that
+# with `pandas.read_csv`, which infers per column, so a query over numeric
+# concepts alone leaves TVAL_CHAR empty in every row and read_csv types it
+# float64. The text column then reached R as numeric, changing type with the
+# data. Only real pandas parsing shows this, which is why it is tested here.
 
 # The header TimeseriesProcessor.getHeaderRow() writes, verbatim.
 TIMESERIES_HEADER <- "PATIENT_NUM,CONCEPT_PATH,NVAL_NUM,TVAL_CHAR,TIMESTAMP"
 
-# Parses a timeseries CSV body exactly as the Python adapter's
-# _parse_dataframe() does, and hands the result across to R.
+# Parses a timeseries CSV body the way the Python adapter's _parse_dataframe()
+# does, and hands the result across to R.
 parse_timeseries_csv <- function(rows) {
   reticulate::py_run_string("
 import pandas as pd
@@ -36,19 +34,16 @@ timeseries_column_types <- function(data) {
 test_that("read_csv really does type an all-empty text column as numeric", {
   skip_unless_python_module()
 
-  # A query over numeric concepts only: TVAL_CHAR is empty in every row.
   numeric_only <- parse_timeseries_csv(c(
     "1,\\\\phs1\\\\age\\\\,42.0,,2020-01-01T00:00:00Z",
     "2,\\\\phs1\\\\age\\\\,51.0,,2020-01-02T00:00:00Z"
   ))
-  # A query over string concepts only: NVAL_NUM is empty in every row.
   text_only <- parse_timeseries_csv(c(
     "1,\\\\phs1\\\\sex\\\\,,F,2020-01-01T00:00:00Z"
   ))
 
   expect_equal(timeseries_column_types(numeric_only)[["TVAL_CHAR"]], "numeric")
   expect_equal(timeseries_column_types(text_only)[["TVAL_CHAR"]], "character")
-  # The same column, two types, decided by the data. That is the defect.
   expect_false(identical(
     timeseries_column_types(numeric_only)[["TVAL_CHAR"]],
     timeseries_column_types(text_only)[["TVAL_CHAR"]]
@@ -113,8 +108,6 @@ test_that("the timestamp schema applies whether type came as a string or a membe
 test_that("a participant result's server-driven columns are left alone", {
   skip_unless_python_module()
 
-  # Participant and VCF-excerpt results have one column per concept the query
-  # asked for, so there is no schema to apply and inference is all there is.
   reticulate::py_run_string("
 import pandas as pd
 from io import StringIO

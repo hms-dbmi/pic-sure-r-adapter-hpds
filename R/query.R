@@ -8,9 +8,9 @@
 #'
 #' - `"count"` — a `CountResult` object with `$value` (exact count, or
 #'   `NULL` for obfuscated small cohorts), `$margin`, and `$cap`.
-#' - `"cross_count"` — a named list of `CountResult` objects keyed by
-#'   concept path (reticulate converts the Python `dict`; the values stay
-#'   Python objects).
+#' - `"cross_count"`: a named list of `CountResult` objects keyed by
+#'   concept path. Reticulate converts the Python `dict`, and the values stay
+#'   Python objects.
 #' - `"participant"` — data.frame with one row per matching participant
 #'   across all included concepts.
 #' - `"timestamp"` — data.frame of participant-level timestamps for
@@ -43,14 +43,13 @@
 #'   `data.frame`. For `"variant_list"`, a character vector.
 #'
 #'   A `"timestamp"` result is typed from the fixed timeseries schema HPDS
-#'   declares — `PATIENT_NUM` integer, `CONCEPT_PATH` character, `NVAL_NUM`
-#'   numeric, `TVAL_CHAR` character, `TIMESTAMP` character — rather than
-#'   inferred from the rows. HPDS fills exactly one of `NVAL_NUM` /
+#'   declares rather than inferred from the rows: `PATIENT_NUM` integer,
+#'   `CONCEPT_PATH` character, `NVAL_NUM` numeric, `TVAL_CHAR` character,
+#'   `TIMESTAMP` character. HPDS fills exactly one of `NVAL_NUM` and
 #'   `TVAL_CHAR` per row, so a query over numeric concepts alone leaves
 #'   `TVAL_CHAR` empty in every row, and inference used to hand that column
-#'   back as numeric. `"participant"` and the VCF-excerpt results have a
-#'   server-driven column set (one per concept), so their columns are left as
-#'   they arrive.
+#'   back as numeric. `"participant"` and the VCF-excerpt results have one
+#'   column per concept, so their columns are left as they arrive.
 #' @examples
 #' \dontrun{
 #' count <- picsure::runQuery(bdc, full_query, type = "count")
@@ -78,12 +77,18 @@ runQuery <- function(session, query, type = "count", ...) {
   )
 }
 
-# Types a query result from the schema its result type declares.
-#
-# Only the timeseries result has a fixed, server-declared column set (HPDS's
-# TimeseriesProcessor always writes the same five columns). A participant or
-# VCF-excerpt result's columns are the concepts the query asked for, so there
-# is no schema to apply and the frame is returned as it arrived.
+#' Type a query result from the schema its result type declares.
+#'
+#' Only the timeseries result has a fixed, server-declared column set, since
+#' HPDS's TimeseriesProcessor always writes the same five columns. A
+#' participant or VCF-excerpt result's columns are the concepts the query
+#' asked for, so there is no schema to apply and the frame is returned as it
+#' arrived.
+#'
+#' @param result Whatever the Python `runQuery` call returned.
+#' @param type The requested query type, as a string or `QueryType` member.
+#' @return `result`, retyped when `type` is `"timestamp"`.
+#' @noRd
 apply_query_result_schema <- function(result, type) {
   requested <- tryCatch(
     as_enum_string(type, "picsure_query_type", "QueryType", field = "name"),

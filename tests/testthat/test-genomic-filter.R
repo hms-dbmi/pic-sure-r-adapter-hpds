@@ -24,13 +24,7 @@ test_that("buildGenomicFilter coerces a list of mixed members and strings", {
   expect_equal(gf$values, c("Rare", "Common"))
 })
 
-# Numeric range filtering was removed to match the categorical-only genomic
-# filters the PIC-SURE frontend sends. `min` / `max` are therefore not
-# parameters of the wrapper: they fall into `...` and reach Python as unknown
-# kwargs, whose signature rejects them. The earlier version of this test only
-# read `gf$min` / `gf$max` off a filter built WITHOUT them, which the fake
-# never returns either way, so it asserted nothing about min/max at all.
-test_that("buildGenomicFilter does not accept numeric range (min/max) args", {
+test_that("buildGenomicFilter forwards min and max as unknown kwargs, not parameters", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
 
   expect_false(any(c("min", "max") %in% names(formals(picsure::buildGenomicFilter))))

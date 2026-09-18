@@ -3,14 +3,14 @@
 # The fake FacetSet in helper-mocks.R is an R list of closures, so it answers
 # to whatever member a wrapper happens to call. That is how removeFacet()
 # shipped calling `FacetSet.remove()`, a method the Python class has never
-# defined: the fake grew the member, the tests passed, every real call raised
-# AttributeError. These tests build a genuine picsure FacetSet inside a Python
-# interpreter, so a wrapper that reaches for a member Python does not have
-# fails here.
+# defined. The fake grew the member, the tests passed, and every real call
+# raised AttributeError. These tests build a genuine picsure FacetSet inside a
+# Python interpreter, so a wrapper that reaches for a member Python does not
+# have fails here.
 
-# Delegates to the shared probe in helper-python.R, which forces resolution
-# rather than trusting the `delay_load = TRUE` module proxy and memoizes the
-# answer so a missing interpreter is diagnosed once, not once per test.
+# Skips unless the Python facet module imports. Uses the shared probe in
+# helper-python.R, which forces resolution rather than trusting the
+# `delay_load = TRUE` module proxy and diagnoses a missing interpreter once.
 skip_unless_python_facets <- function() {
   skip_unless_python_module("picsure._models.facet")
 }

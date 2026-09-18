@@ -124,8 +124,6 @@ test_that("removeFacet() re-raises Python exceptions as picsureError", {
   expect_match(conditionMessage(err), "not a valid facet category", fixed = TRUE)
 })
 
-# RR-11: a length > 1 key is a package error, not a base R condition-length error
-
 test_that("addFacet() rejects multiple keys with a package error", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
@@ -141,12 +139,11 @@ test_that("addFacet() rejects multiple keys with a package error", {
   expect_match(conditionMessage(err), "`key`", fixed = TRUE)
   expect_match(conditionMessage(err), "2 values", fixed = TRUE)
   expect_match(conditionMessage(err), "one key", fixed = TRUE)
-  # The base R complaint this replaces.
   expect_false(grepl("coercion to 'logical(1)'", conditionMessage(err), fixed = TRUE))
   expect_length(fs$.state$entries, 0L)
 })
 
-test_that("removeFacet() rejects multiple keys with a package error", {
+test_that("removeFacet() rejects multiple keys before touching the FacetSet", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
@@ -159,7 +156,6 @@ test_that("removeFacet() rejects multiple keys with a package error", {
 
   expect_s3_class(err, "picsureValidationError")
   expect_match(conditionMessage(err), "`key`", fixed = TRUE)
-  # The FacetSet is untouched: the key is checked before anything is cleared.
   expect_equal(fs$view()[["study_ids"]], "phs000007")
 })
 
@@ -178,9 +174,7 @@ test_that("both facet wrappers reject every non-scalar-string key", {
   }
 })
 
-test_that("multiple facet values stay legitimate", {
-  # The Python FacetSet's add(category, values) takes one category and a
-  # vector of values, so the vector belongs on `value`, never on `key`.
+test_that("both facet wrappers accept a vector of values under one key", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
   fs <- picsure::facets(bdc)
