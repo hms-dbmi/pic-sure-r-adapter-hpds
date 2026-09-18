@@ -126,3 +126,14 @@ _dict_extra = pd.DataFrame({
   expect_type(typed$min, "double")
   expect_equal(typed$someFutureField, "keep me")
 })
+
+test_that("the dictionary schema matches the pinned Python adapter's column list", {
+  skip_unless_python_module("picsure._services.search")
+  search <- reticulate::import("picsure._services.search")
+
+  with_values    <- as.character(search$`_COLUMNS_WITH_VALUES`)
+  without_values <- as.character(search$`_COLUMNS_WITHOUT_VALUES`)
+
+  expect_identical(names(picsure:::.DICTIONARY_RESULT_SCHEMA), with_values)
+  expect_identical(setdiff(with_values, without_values), "values")
+})
