@@ -61,11 +61,13 @@ Catch `picsureAuthError` for "refresh the token and retry",
 `picsureConnectionError` for "the deployment is unreachable, back off and
 retry", `picsureQueryError` for "the query itself is wrong", and
 `picsureValidationError` for an argument this package rejected before any
-request was made. PSAMA answers 403, not 401, for a bad or absent token on
-`/user/me`, so a server-side token rejection arrives as an authorization
-error while a locally-detected one (missing, malformed) arrives as an
-authentication error. That is why `picsureAuthError`, not either leaf, is
-the class to catch for token trouble.
+request was made. A token that is missing where one is required is a
+`picsureValidationError`, the same as any other rejected argument. PSAMA
+answers 403, not 401, for a bad token on `/user/me`, so a server-side
+token rejection arrives as an authorization error while a locally-detected
+one (malformed, expired) arrives as an authentication error. That is why
+`picsureAuthError`, not either leaf, is the class to catch for token
+trouble.
 
 **What the pinned Python build distinguishes.** The R side derives
 ancestry from its own table rather than from the installed Python
