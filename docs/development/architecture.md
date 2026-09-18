@@ -17,14 +17,29 @@ The bridge lives in [`R/zzz.R`](../../R/zzz.R). The relevant moves:
   `picsure_py$PhenotypicFilterType`, etc.).
 - `.onLoad()` calls `reticulate::py_require(.PICSURE_PY_SPEC)` to
   declare the Python dependency. The spec is a PEP 508 direct
-  reference pointing at the upstream package's `main` branch (the
-  Python package is not yet on PyPI); see the comment in `R/zzz.R`
+  reference (the Python package is not yet on PyPI) pinned to an
+  immutable commit SHA on the upstream `pic_sure_api_rewrite` branch.
+  `@main` is pre-rewrite and 404s at `connect()` against the rewrite
+  gateway, so it must not be used here; see the comment in `R/zzz.R`
   for the bump procedure.
 - `.onLoad()` then assigns `picsure_py <<- reticulate::import("picsure",
-  delay_load = TRUE)`. `delay_load = TRUE` is the load-time invariant:
-  `library(picsure)` stays fast, and tests that never touch Python
-  never trigger env creation. The Python env is materialized lazily on
-  the first real attribute access on `picsure_py`.
+  delay_load = list(on_load = .picsure_warn_on_pin_mismatch))`. The
+  delayed load is the load-time invariant: `library(picsure)` stays
+  fast, and tests that never touch Python never trigger env creation.
+  The Python env is materialized lazily on the first real attribute
+  access on `picsure_py`.
+- `.picsure_warn_on_pin_mismatch()` checks, once per session, that the
+  Python `picsure` build which actually loaded is the pinned one. It
+  compares the commit SHA (or release tag) in `.PICSURE_PY_SPEC`
+  against the installed distribution's version, which `hatch-vcs`
+  derives from `git describe`. A build naming a different commit or
+  release only warns, because a local override is a supported
+  development workflow; a build it cannot compare, having no
+  distribution metadata or a version carrying neither commit nor tag,
+  emits a package startup message instead. `delay_load`'s `on_load`
+  hook runs it when the module resolves lazily; `.onLoad()` runs it
+  directly when Python is already initialized, because reticulate then
+  imports eagerly and skips the hook.
 - `.onAttach()` prints a one-line notice that first-call provisioning
   may take a few seconds.
 
