@@ -163,10 +163,11 @@ tryCatch(
 
 v1 took `httr` options directly. In 2.0.0 the HTTP client lives in Python, so
 TLS verification and developer-mode instrumentation are set through R options
-that `connect()` reads on every call:
+that `connect()` reads on every call. `picsure.ssl_verify` takes `TRUE`,
+`FALSE`, or the path to a CA bundle:
 
 ```{r}
-options(picsure.ssl_verify = FALSE)   # or a path to a CA bundle
+options(picsure.ssl_verify = FALSE)
 options(picsure.dev_mode   = TRUE)
 local <- picsure::connect(platform = "https://localhost", token = my_token)
 ```

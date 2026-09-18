@@ -36,10 +36,11 @@
   build that defines those classes.
 
 - Two R options are now read on every `connect()` call and forwarded as
-  call-time arguments:
+  call-time arguments. `picsure.ssl_verify` takes `TRUE`, `FALSE`, or the
+  path to a CA bundle:
 
   ```r
-  options(picsure.ssl_verify = FALSE)   # or TRUE, or a path to a CA bundle
+  options(picsure.ssl_verify = FALSE)
   options(picsure.dev_mode   = TRUE)
   ```
 
