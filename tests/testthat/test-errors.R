@@ -412,6 +412,74 @@ test_that("a rejected argument reports the wrapper the user called, not stop()",
   )
 })
 
+test_that("a rejection from a shared validator reports the wrapper too", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  rejected_call <- function(expr) {
+    conditionCall(tryCatch(expr, picsureValidationError = function(e) e))
+  }
+
+  expect_identical(
+    rejected_call(picsure::searchGenomicValues(bdc, genomicConceptPath = 1)),
+    quote(picsure::searchGenomicValues(bdc, genomicConceptPath = 1))
+  )
+  expect_identical(
+    rejected_call(picsure::searchGenomicValues(bdc, "Gene_with_variant", page = 1.7)),
+    quote(picsure::searchGenomicValues(bdc, "Gene_with_variant", page = 1.7))
+  )
+  expect_identical(
+    rejected_call(picsure::runQuery(bdc, "q", type = "no-such-type")),
+    quote(picsure::runQuery(bdc, "q", type = "no-such-type"))
+  )
+  expect_identical(
+    rejected_call(picsure::runQueryByID(bdc, "an-id", type = "no-such-type")),
+    quote(picsure::runQueryByID(bdc, "an-id", type = "no-such-type"))
+  )
+  expect_identical(
+    rejected_call(picsure::buildClause("\\phs1\\bmi\\", type = "FILTER", min = "x")),
+    quote(picsure::buildClause("\\phs1\\bmi\\", type = "FILTER", min = "x"))
+  )
+  expect_identical(
+    rejected_call(picsure::exportCSV(bdc, "data", path = 1)),
+    quote(picsure::exportCSV(bdc, "data", path = 1))
+  )
+  expect_identical(
+    rejected_call(
+      picsure::connect(platform = "https://picsure.test", token = "t", dev_mode = "x")
+    ),
+    quote(
+      picsure::connect(platform = "https://picsure.test", token = "t", dev_mode = "x")
+    )
+  )
+  expect_identical(
+    rejected_call(
+      picsure::connect(platform = "https://picsure.test", token = "t", verify = NA)
+    ),
+    quote(
+      picsure::connect(platform = "https://picsure.test", token = "t", verify = NA)
+    )
+  )
+})
+
+test_that("a setting rejected from its R option still reports connect()", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+
+  err <- with_picsure_options(
+    list(picsure.dev_mode = "x"),
+    tryCatch(
+      picsure::connect(platform = "https://picsure.test", token = "t"),
+      picsureValidationError = function(e) e
+    )
+  )
+
+  expect_identical(
+    conditionCall(err),
+    quote(picsure::connect(platform = "https://picsure.test", token = "t"))
+  )
+  expect_match(conditionMessage(err), "options(picsure.dev_mode)", fixed = TRUE)
+})
+
 test_that(".check_facet_key still reports the facet wrapper that threaded the call", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")

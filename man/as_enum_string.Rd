@@ -4,7 +4,13 @@
 \alias{as_enum_string}
 \title{Resolve a string OR a typed enum member to its string identifier.}
 \usage{
-as_enum_string(value, expected_subclass, enum_name, field = "name")
+as_enum_string(
+  value,
+  expected_subclass,
+  enum_name,
+  field = "name",
+  call = sys.call(-1L)
+)
 }
 \arguments{
 \item{value}{NULL, a single string, or a `picsure_enum_member`.}
@@ -17,6 +23,9 @@ as_enum_string(value, expected_subclass, enum_name, field = "name")
 
 \item{field}{For members, which field to extract: `"name"` (default)
 or `"value"`.}
+
+\item{call}{The call to report in the error, by default the caller's, so
+the rejection names the wrapper the researcher invoked.}
 }
 \value{
 NULL if `value` is NULL; otherwise a character scalar.

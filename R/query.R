@@ -65,9 +65,11 @@ runQuery <- function(session, query, type = "count", ...) {
     )
   }
 
+  query_type <- to_py_enum(type, picsure_py$QueryType, "QueryType",
+                           "picsure_query_type")
   kwargs <- drop_nulls(list(
     query = query,
-    type  = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type"),
+    type  = query_type,
     ...
   ))
 
@@ -90,7 +92,8 @@ runQuery <- function(session, query, type = "count", ...) {
 #' @return `result`, retyped when `type` is `"timestamp"`.
 #' @noRd
 apply_query_result_schema <- function(result, type) {
-  requested <- as_enum_string(type, "picsure_query_type", "QueryType", field = "name")
+  requested <- as_enum_string(type, "picsure_query_type", "QueryType",
+                              field = "name", call = NULL)
   if (is.null(requested) || !identical(toupper(requested), "TIMESTAMP")) {
     return(result)
   }
@@ -151,11 +154,10 @@ runQueryByID <- function(session, query_id, type = "count") {
   if (missing(query_id)) query_id <- NULL
   as_single_string(query_id, "query_id", hint = "It is the saved query's UUID.")
 
+  query_type <- to_py_enum(type, picsure_py$QueryType, "QueryType",
+                           "picsure_query_type")
   apply_query_result_schema(
-    with_picsure_error(session$runQueryByID(
-      query_id,
-      type = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type")
-    )),
+    with_picsure_error(session$runQueryByID(query_id, type = query_type)),
     type
   )
 }
@@ -244,11 +246,6 @@ saveQueryByName <- function(session, query, name, overwrite = FALSE) {
   }
   if (missing(name)) name <- NULL
   as_single_string(name, "name")
-  if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
-    .picsure_reject(sprintf(
-      "`overwrite` must be a single logical (TRUE or FALSE); got %s.",
-      describe_argument_value(overwrite)
-    ))
-  }
+  as_single_flag(overwrite, "`overwrite`")
   with_picsure_error(session$saveQueryByName(query, name, overwrite = overwrite))
 }

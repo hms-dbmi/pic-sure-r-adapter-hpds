@@ -77,11 +77,13 @@ searchGenomicValues <- function(session, genomicConceptPath, query = "", page = 
     genomicConceptPath, "genomicConceptPath",
     hint = "For example \"Gene_with_variant\"."
   )
+  page <- as_positive_whole_number(page, "page")
+  size <- as_positive_whole_number(size, "size")
   kwargs <- drop_nulls(list(
     genomicConceptPath = genomicConceptPath,
     query              = query,
-    page               = as_positive_whole_number(page, "page"),
-    size               = as_positive_whole_number(size, "size"),
+    page               = page,
+    size               = size,
     ...
   ))
   apply_result_schema(

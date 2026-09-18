@@ -4,12 +4,15 @@
 \alias{check_optional_number}
 \title{Validate an optional single finite number, leaving its type alone.}
 \usage{
-check_optional_number(value, arg)
+check_optional_number(value, arg, call = sys.call(-1L))
 }
 \arguments{
 \item{value}{The value to validate, or NULL.}
 
 \item{arg}{The argument's name, for the error message.}
+
+\item{call}{The call to report in the error, by default the caller's, so
+the rejection names the wrapper the researcher invoked.}
 }
 \value{
 `value` unchanged.

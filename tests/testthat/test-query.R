@@ -335,7 +335,23 @@ test_that("saveQueryByName validates name and overwrite", {
   expect_error(picsure::saveQueryByName(session, "Q", ""),  "non-empty")
   expect_error(picsure::saveQueryByName(session, "Q", NA_character_), "non-empty")
   expect_error(picsure::saveQueryByName(session, "Q", "Cohort", overwrite = NA),
-               "single logical")
+               "TRUE or FALSE")
+})
+
+test_that("saveQueryByName rejects every non-scalar-logical overwrite", {
+  session <- new_fake_session()
+
+  for (value in list(NULL, NA, NA_character_, "TRUE", "yes", 1, 0,
+                     c(TRUE, FALSE), logical(0), list(TRUE))) {
+    err <- tryCatch(
+      picsure::saveQueryByName(session, "Q", "Cohort", overwrite = value),
+      condition = function(e) e
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`overwrite`", fixed = TRUE)
+  }
+
+  expect_length(session$.calls$saveQueryByName, 0L)
 })
 
 test_that("runQuery(type = 'timestamp') applies the timeseries schema", {

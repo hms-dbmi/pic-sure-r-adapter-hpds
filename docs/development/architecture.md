@@ -97,7 +97,7 @@ delegate to a `picsure_py$*` or `session$*` callable inside
 | [`R/enums.R`](../../R/enums.R)               | R-side enum constants `PhenotypicFilterType`, `GroupOperator`, `QueryType`, `Platform`. Each member is an S3 list of class `c(<subclass>, "picsure_enum_member")`. Mirrors the Python enums.                  |
 | [`R/errors.R`](../../R/errors.R)             | `picsureError()` condition constructor, `with_picsure_error()` wrapper that catches `python.builtin.Exception` and re-raises as `picsureError`.                                                     |
 | [`R/platforms.R`](../../R/platforms.R)       | `platforms()`: returns the label strings of the Python `Platform` enum. `.platform_labels()` is the field-read helper unit tests exercise without a live Python session.                            |
-| [`R/utils_coerce.R`](../../R/utils_coerce.R) | Everything at the R<->Python boundary that is not a wrapper: kwarg shaping (`drop_nulls()`), argument validation (`as_positive_whole_number()`, `check_optional_number()`, `as_single_string()`, `describe_argument_value()`), enum resolution (`as_enum_string()`, `to_py_enum()`, the `.py_enum_*` lookups), and result typing (`apply_result_schema()`, `coerce_result_column()`, and the four result schemas). See the type-coercion section below. |
+| [`R/utils_coerce.R`](../../R/utils_coerce.R) | Everything at the R<->Python boundary that is not a wrapper: kwarg shaping (`drop_nulls()`), argument validation (`as_positive_whole_number()`, `check_optional_number()`, `as_single_string()`, `as_single_flag()`, `describe_argument_value()`), enum resolution (`as_enum_string()`, `to_py_enum()`, the `.py_enum_*` lookups), and result typing (`apply_result_schema()`, `coerce_result_column()`, and the four result schemas). See the type-coercion section below. |
 | [`R/zzz.R`](../../R/zzz.R)                   | `.onLoad` / `.onAttach`; declares `.PICSURE_PY_SPEC` and the package-private `picsure_py` binding.                                                                                                 |
 
 ## Public API surface
@@ -135,9 +135,25 @@ compose this before calling Python.
 
 **Argument validation**, all raising `picsureValidationError`s that name
 the argument and what arrived. `as_positive_whole_number()`,
-`check_optional_number()`, and `as_single_string()` are the checks;
-`describe_argument_value()` renders the rejected value for their
-messages.
+`check_optional_number()`, `as_single_string()`, and `as_single_flag()`
+are the checks; `describe_argument_value()` renders the rejected value
+for their messages. Each one is the only implementation of its
+predicate: `as_single_flag()` serves both `connect()`'s `dev_mode` and
+`saveQueryByName()`'s `overwrite`, and `.check_facet_key()` in
+`R/facets.R` is `as_single_string()` plus a facet-specific hint.
+
+Every one of them takes a `call` argument defaulting to `sys.call(-1L)`
+in its own frame and threads it into `.picsure_reject()`, so the
+rejection reports the wrapper the researcher invoked rather than no call
+at all. That default holds only when the validator is called straight
+from the wrapper's body. Calling it inside an argument to another
+closure, as in `drop_nulls(list(page = as_positive_whole_number(...)))`,
+makes the promise resolve one frame deeper and the error reports
+`drop_nulls(...)`, so the wrappers assign each validated value to a
+local first. `connect()`'s settings go through `.picsure_setting()`,
+which adds a frame of its own and therefore takes and forwards a `call`
+too. `NULL` stays correct where no frame is a call anyone made, which is
+the Python error boundary in `with_picsure_error()`.
 
 **Enum resolution across the boundary.** `as_enum_string()` resolves a
 plain string or a `picsure_enum_member` to its string identifier,

@@ -249,8 +249,10 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
 #'   unless a caller names another. `NULL` for a plain `picsureError`.
 #' @param call The call to report. Defaults to the caller's, which is the
 #'   wrapper the researcher invoked when the check sits in that wrapper's own
-#'   body. A nested closure or a shared check passes `NULL` instead, because
-#'   its own frame is not a call the researcher made.
+#'   body. A shared validator in `R/utils_coerce.R` takes the same default in
+#'   its own frame and threads it down here, so a rejection raised from a
+#'   helper names the wrapper too. `NULL` is for the frames that genuinely
+#'   are not a call anyone made, chiefly the Python error boundary.
 #' @return Never returns.
 #' @noRd
 .picsure_reject <- function(message, class = "picsureValidationError", call = sys.call(-1L)) {
@@ -402,10 +404,12 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
 # package plumbing and not the call the researcher wrote, inside
 # `removeFacet()`'s restore `tryCatch` and inside the block form in
 # `platforms()`, so a recovered call would sometimes name a `tryCatch`
-# internal. The shared argument checkers pass `call = NULL` for the same
-# reason, and the message Python wrote is written to stand on its own. The
-# Python origin stays reachable on `$py_cause` and `$python_class`, and
-# through `reticulate::py_last_error()`.
+# internal, and the message Python wrote is written to stand on its own. The
+# shared argument checkers meet the same problem from the other end and
+# solve it differently: each takes the call as a parameter defaulted to its
+# own caller's, so the wrapper's call reaches the condition without anything
+# being recovered from the stack here. The Python origin stays reachable on
+# `$py_cause` and `$python_class`, and through `reticulate::py_last_error()`.
 .picsure_error_from_python <- function(py_cause) {
   condition <- picsureError(
     .picsure_with_python_detail(.picsure_python_message(py_cause), py_cause),

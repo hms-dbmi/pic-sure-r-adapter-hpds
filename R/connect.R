@@ -238,7 +238,7 @@ connect <- function(platform, token = "", ...) {
     ))
   }
   dev_mode <- .picsure_setting(
-    extras$dev_mode, "dev_mode", "picsure.dev_mode", .picsure_check_flag
+    extras$dev_mode, "dev_mode", "picsure.dev_mode", as_single_flag
   )
   extras$dev_mode <- dev_mode$value
 
@@ -263,22 +263,30 @@ connect <- function(platform, token = "", ...) {
 #' @param explicit The value passed to `connect()`, or `NULL`.
 #' @param arg_name The `connect()` argument name, used in messages.
 #' @param option_name The R option name, for example `"picsure.ssl_verify"`.
-#' @param check Validator called as `check(value, label)`. It returns the
-#'   value or signals a `picsureValidationError` that names `label`.
+#' @param check Validator called as `check(value, label, call)`. It returns
+#'   the value or signals a `picsureValidationError` that names `label`.
+#' @param call The call to report in a rejection, by default this function's
+#'   own caller. Threaded down to `check` because the validator's caller is
+#'   this helper rather than `connect()`, so leaving it to the validator's
+#'   own default would report an internal.
 #' @return A list with `value`, the validated setting or `NULL`, and
 #'   `source`, a phrase naming where it came from, or `NULL` when unset.
 #' @noRd
-.picsure_setting <- function(explicit, arg_name, option_name, check) {
+.picsure_setting <- function(explicit, arg_name, option_name, check,
+                             call = sys.call(-1L)) {
   if (!is.null(explicit)) {
     label <- sprintf("`%s`", arg_name)
-    return(list(value = check(explicit, label), source = sprintf("the %s argument", label)))
+    return(list(
+      value  = check(explicit, label, call = call),
+      source = sprintf("the %s argument", label)
+    ))
   }
   value <- getOption(option_name, NULL)
   if (is.null(value)) {
     return(list(value = NULL, source = NULL))
   }
   label <- sprintf("options(%s)", option_name)
-  list(value = check(value, label), source = label)
+  list(value = check(value, label, call = call), source = label)
 }
 
 #' Strings the Python adapter reads as booleans in `PICSURE_SSL_VERIFY`.
@@ -305,9 +313,11 @@ connect <- function(platform, token = "", ...) {
 #'   A string that spells a boolean is rejected with a message saying which
 #'   logical to pass instead.
 #' @param label Name of the argument or option, used in the error message.
+#' @param call The call to report in the error. `.picsure_setting()` passes
+#'   `connect()`'s own call, because this validator's caller is that helper.
 #' @return `value` unchanged.
 #' @noRd
-.picsure_check_verify <- function(value, label) {
+.picsure_check_verify <- function(value, label, call = sys.call(-1L)) {
   if (is.logical(value) && length(value) == 1L && !is.na(value)) {
     return(value)
   }
@@ -321,7 +331,7 @@ connect <- function(platform, token = "", ...) {
         ),
         label, encodeString(value, quote = "\""),
         if (spelled %in% .VERIFY_TRUE_STRINGS) "TRUE" else "FALSE"
-      ), call = NULL)
+      ), call = call)
     }
     return(value)
   }
@@ -331,23 +341,7 @@ connect <- function(platform, token = "", ...) {
       "string; got %s."
     ),
     label, describe_argument_value(value)
-  ), call = NULL)
-}
-
-#' Validate a logical flag setting.
-#'
-#' @param value `TRUE` or `FALSE`.
-#' @param label Name of the argument or option, used in the error message.
-#' @return `value` unchanged.
-#' @noRd
-.picsure_check_flag <- function(value, label) {
-  if (is.logical(value) && length(value) == 1L && !is.na(value)) {
-    return(value)
-  }
-  .picsure_reject(sprintf(
-    "%s must be TRUE or FALSE; got %s.", label,
-    describe_argument_value(value)
-  ), call = NULL)
+  ), call = call)
 }
 
 # Whitelist of optional kwargs forwarded through `...` to picsure_py$connect.

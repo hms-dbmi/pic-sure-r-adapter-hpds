@@ -48,11 +48,17 @@ buildClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, .
     )
   }
 
+  filter_type <- to_py_enum(
+    type, picsure_py$PhenotypicFilterType, "PhenotypicFilterType",
+    "picsure_phenotypic_filter_type"
+  )
+  min <- check_optional_number(min, "min")
+  max <- check_optional_number(max, "max")
   kwargs <- drop_nulls(list(
     keys       = keys,
-    type       = to_py_enum(type, picsure_py$PhenotypicFilterType, "PhenotypicFilterType", "picsure_phenotypic_filter_type"),
-    min        = check_optional_number(min, "min"),
-    max        = check_optional_number(max, "max"),
+    type       = filter_type,
+    min        = min,
+    max        = max,
     categories = categories,
     ...
   ))
