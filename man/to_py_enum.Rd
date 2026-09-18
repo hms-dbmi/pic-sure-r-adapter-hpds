@@ -24,6 +24,8 @@ NULL if value is NULL; otherwise the corresponding enum member.
 \description{
 The R API accepts strings like "FILTER", "and", or members like
 [`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]
-and maps them to the Python enum member at call time.
+and maps them to the Python enum member at call time. Resolution goes
+through the enum's `__members__` map, so only real members can be
+returned.
 }
 \keyword{internal}

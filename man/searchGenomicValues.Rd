@@ -22,16 +22,18 @@ authorized platform.}
 
 \item{query}{Optional search term to narrow results (e.g. `"BRCA"`).}
 
-\item{page}{1-based page number.}
+\item{page}{1-based page number. A single positive whole number; a
+fractional or non-numeric value raises a `picsureError` rather than
+being silently truncated or turned into `NA`.}
 
-\item{size}{Page size (values per call).}
+\item{size}{Page size (values per call). Same validation as `page`.}
 
 \item{...}{Additional keyword arguments forwarded to the Python call.}
 }
 \value{
-A data.frame with a single `value` column. (The Python adapter's
-  pagination metadata lives on the DataFrame's `.attrs` and does not survive
-  reticulate conversion; paginate via `page`/`size`.)
+A data.frame with a single character `value` column. (The Python
+  adapter's pagination metadata lives on the DataFrame's `.attrs` and does
+  not survive reticulate conversion; paginate via `page`/`size`.)
 }
 \description{
 Returns one page of values for a genomic key (e.g. all genes with variants),

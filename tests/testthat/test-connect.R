@@ -19,14 +19,36 @@ test_that("connect() errors when platform is missing", {
   expect_match(conditionMessage(err), "platform")
 })
 
-test_that("connect() errors when an auth-required Platform member is given without a token", {
+test_that("a missing token on an auth-required Platform member is a picsureValidationError", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  for (args in list(
+    list(platform = picsure::Platform$BDC_AUTHORIZED),
+    list(platform = picsure::Platform$BDC_AUTHORIZED, token = "")
+  )) {
+    err <- tryCatch(do.call(picsure::connect, args), error = function(e) e)
+    expect_s3_class(err, "picsureValidationError")
+    expect_false(inherits(err, "picsureAuthError"))
+    expect_match(conditionMessage(err), "token")
+  }
+})
+
+test_that("requires_auth = FALSE on an auth-required member does not demand a token", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, requires_auth = FALSE)
+  recorded <- fake$.calls$connect[[1]]
+  expect_identical(recorded$token, "")
+  expect_identical(recorded$requires_auth, FALSE)
+})
+
+test_that("requires_auth = TRUE on a URL string demands a token in R", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   err <- tryCatch(
-    picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED),
+    picsure::connect(platform = "https://picsure.test", requires_auth = TRUE),
     error = function(e) e
   )
-  expect_s3_class(err, "picsureError")
-  expect_match(conditionMessage(err), "token")
+  expect_s3_class(err, "picsureValidationError")
+  expect_match(conditionMessage(err), "`token` is required", fixed = TRUE)
 })
 
 test_that("connect() defers token-presence check to Python for string platforms", {
@@ -101,13 +123,27 @@ test_that("connect() rejects unknown extra kwargs with a helpful message", {
   expect_s3_class(err, "picsureError")
   msg <- conditionMessage(err)
   expect_match(msg, "resourceUuid", fixed = TRUE)
-  expect_match(msg, "resource_uuid", fixed = TRUE)
   expect_match(msg, "include_consents", fixed = TRUE)
   expect_match(msg, "requires_auth", fixed = TRUE)
+  expect_match(msg, "supports_genomic", fixed = TRUE)
+  expect_match(msg, "timeout", fixed = TRUE)
+  expect_match(msg, "validate", fixed = TRUE)
+})
+
+test_that("connect() rejects resource_uuid, which no longer routes anything", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  err <- tryCatch(
+    picsure::connect(
+      platform = "https://picsure.test", token = "tok", resource_uuid = "x"
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "Unknown argument", fixed = TRUE)
 })
 
 test_that("connect() forwards each whitelisted extra kwarg", {
-  for (key in c("resource_uuid", "include_consents", "requires_auth")) {
+  for (key in c("include_consents", "requires_auth", "supports_genomic", "timeout", "validate")) {
     fake <- fake_picsure_py()
     testthat::local_mocked_bindings(picsure_py = fake)
     args <- list(platform = "https://picsure.test", token = "tok")
@@ -189,4 +225,201 @@ test_that("connect() lets the caller override client_type", {
   )
   recorded <- fake$.calls$connect[[1]]
   expect_equal(recorded$client_type, "PYTHON_ADAPTER")
+})
+
+test_that("connect() forwards options(picsure.ssl_verify) as the verify kwarg", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = FALSE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$verify, FALSE)
+})
+
+test_that("connect() forwards a CA-bundle path from options(picsure.ssl_verify)", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = "/etc/ssl/my-ca.pem"), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$verify, "/etc/ssl/my-ca.pem")
+})
+
+test_that("connect() forwards options(picsure.dev_mode) as the dev_mode kwarg", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.dev_mode = TRUE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$dev_mode, TRUE)
+})
+
+test_that("an explicit verify / dev_mode argument beats the option", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = FALSE, picsure.dev_mode = TRUE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok",
+                     verify = TRUE, dev_mode = FALSE)
+  })
+
+  recorded <- fake$.calls$connect[[1]]
+  expect_identical(recorded$verify, TRUE)
+  expect_identical(recorded$dev_mode, FALSE)
+})
+
+test_that("neither kwarg is sent when the option is unset, so Python's default stands", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = NULL, picsure.dev_mode = NULL), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  recorded <- fake$.calls$connect[[1]]
+  expect_false("verify" %in% names(recorded))
+  expect_false("dev_mode" %in% names(recorded))
+})
+
+test_that("the options are read on every call, not cached", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  with_picsure_options(list(picsure.ssl_verify = FALSE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+  with_picsure_options(list(picsure.ssl_verify = TRUE), {
+    picsure::connect(platform = "https://picsure.test", token = "tok")
+  })
+
+  expect_identical(fake$.calls$connect[[1]]$verify, FALSE)
+  expect_identical(fake$.calls$connect[[2]]$verify, TRUE)
+})
+
+test_that("an unusable option value is a picsureError naming the option", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+
+  bad_verify <- list(NA, "", 1, c(TRUE, FALSE), c("a", "b"), list(TRUE))
+  for (value in bad_verify) {
+    err <- with_picsure_options(
+      list(picsure.ssl_verify = value),
+      tryCatch(picsure::connect(platform = "https://picsure.test", token = "tok"),
+               condition = function(e) e)
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "picsure.ssl_verify", fixed = TRUE)
+  }
+
+  for (value in list(NA, "TRUE", 1, c(TRUE, FALSE))) {
+    err <- with_picsure_options(
+      list(picsure.dev_mode = value),
+      tryCatch(picsure::connect(platform = "https://picsure.test", token = "tok"),
+               condition = function(e) e)
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "picsure.dev_mode", fixed = TRUE)
+  }
+})
+
+test_that("an explicit verify or dev_mode argument is validated like the option", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+
+  err <- tryCatch(
+    picsure::connect(platform = "https://picsure.test", token = "tok", dev_mode = "FALSE"),
+    condition = function(e) e
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_match(conditionMessage(err), "`dev_mode` must be TRUE or FALSE", fixed = TRUE)
+
+  for (value in list(NA, "", 1, c(TRUE, FALSE))) {
+    err <- tryCatch(
+      picsure::connect(platform = "https://picsure.test", token = "tok", verify = value),
+      condition = function(e) e
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`verify` must be TRUE, FALSE, or a path to a CA bundle",
+                 fixed = TRUE)
+  }
+})
+
+test_that("a string that spells a boolean is rejected for verify, argument or option", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+
+  for (value in c("false", "FALSE", "0", "no", "off")) {
+    err <- tryCatch(
+      picsure::connect(platform = "https://picsure.test", token = "tok", verify = value),
+      condition = function(e) e
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "TRUE, FALSE, or a path to a CA bundle", fixed = TRUE)
+    expect_match(conditionMessage(err), "Pass the logical FALSE instead", fixed = TRUE)
+  }
+  for (value in c("true", "1", "yes", "on")) {
+    err <- tryCatch(
+      picsure::connect(platform = "https://picsure.test", token = "tok", verify = value),
+      condition = function(e) e
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "Pass the logical TRUE instead", fixed = TRUE)
+  }
+
+  err <- with_picsure_options(
+    list(picsure.ssl_verify = "false"),
+    tryCatch(picsure::connect(platform = "https://picsure.test", token = "tok"),
+             condition = function(e) e)
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_match(conditionMessage(err), "options(picsure.ssl_verify) must be TRUE, FALSE, or a path",
+               fixed = TRUE)
+})
+
+test_that("a CA bundle path passed as the verify argument is forwarded unchanged", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  expect_no_message(
+    picsure::connect(platform = "https://picsure.test", token = "tok", verify = "/etc/ssl/my-ca.pem")
+  )
+  expect_identical(fake$.calls$connect[[1]]$verify, "/etc/ssl/my-ca.pem")
+})
+
+test_that("connect() says when TLS verification is off and names what turned it off", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  expect_message(
+    picsure::connect(platform = "https://picsure.test", token = "tok", verify = FALSE),
+    "TLS certificate verification is off.*the `verify` argument"
+  )
+  expect_message(
+    with_picsure_options(list(picsure.ssl_verify = FALSE), {
+      picsure::connect(platform = "https://picsure.test", token = "tok")
+    }),
+    "TLS certificate verification is off.*options\\(picsure.ssl_verify\\)"
+  )
+  expect_identical(fake$.calls$connect[[1]]$verify, FALSE)
+  expect_identical(fake$.calls$connect[[2]]$verify, FALSE)
+})
+
+test_that("connect() is quiet when TLS verification is on or unset", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  expect_no_message(
+    picsure::connect(platform = "https://picsure.test", token = "tok", verify = TRUE)
+  )
+  expect_no_message(
+    with_picsure_options(list(picsure.ssl_verify = NULL), {
+      picsure::connect(platform = "https://picsure.test", token = "tok")
+    })
+  )
+  expect_no_message(
+    with_picsure_options(list(picsure.ssl_verify = TRUE), {
+      picsure::connect(platform = "https://picsure.test", token = "tok")
+    })
+  )
 })

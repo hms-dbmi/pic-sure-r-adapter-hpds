@@ -21,7 +21,13 @@ the response. Set FALSE to omit them for a lighter payload.}
 `Session.searchDictionary()` call.}
 }
 \value{
-A `data.frame` of matching dictionary entries.
+A `data.frame` of matching dictionary entries, with column types
+  fixed by the dictionary schema whether or not the search matched
+  anything: `conceptPath`, `name`, `display`, `description`, `dataType`,
+  `studyId`, and `studyAcronym` are character, `min` and `max` numeric,
+  `allowFiltering` logical, and `values` and `meta` list columns. A search
+  that matched nothing returns a zero-row frame with those same types, so
+  arithmetic on `min` / `max` behaves the same either way.
 }
 \description{
 Runs a keyword search against the session's dictionary resource and returns

@@ -24,7 +24,9 @@ Platform
 \description{
 Pass a member to [`connect()`][picsure::connect]'s `platform`
 argument. Mirrors Python's `picsure.Platform`. Each member exposes
-the connection URL, default resource UUID, label, and policy flags.
+the connection URL, label, and policy flags. The gateway now selects
+the HPDS backend by URL path (`/hpds/auth` vs `/hpds/open`), so
+members no longer carry a resource UUID.
 }
 \examples{
 \dontrun{
