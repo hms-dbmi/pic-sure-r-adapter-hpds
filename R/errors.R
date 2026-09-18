@@ -226,8 +226,8 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
 #' `stop(picsureError(...))` forces its argument inside `stop`'s own frame,
 #' so the condition records the `stop(...)` expression and the researcher
 #' reads the constructor rather than the function they called. Raising from
-#' here leaves the wrapper's frame one step up, so the error reports
-#' `searchGenomicValues(...)`.
+#' here leaves the wrapper's frame one step up, so a rejection in
+#' `buildQuery()`'s own body reports `buildQuery(...)`.
 #'
 #' @param message The user-facing message.
 #' @param class The specialized condition class, `"picsureValidationError"`
