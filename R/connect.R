@@ -32,9 +32,11 @@
 #'       `Platform` members, `FALSE` for every other member **and for a
 #'       custom URL string**.}
 #'     \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
-#'       unauthenticated mode against the open HPDS backend (no token
-#'       needed). `TRUE` for the `_AUTHORIZED` members and for a custom URL
-#'       string, `FALSE` for the `_OPEN` members.}
+#'       unauthenticated mode against the open HPDS backend and no token is
+#'       asked for, even on an `_AUTHORIZED` member. When `TRUE`, a token is
+#'       required, even for a custom URL string. Defaults to `TRUE` for the
+#'       `_AUTHORIZED` members and for a custom URL string, `FALSE` for the
+#'       `_OPEN` members.}
 #'     \item{`supports_genomic`}{Logical. Whether genomic operations
 #'       (`searchGenomicValues()`, genomic-filtered queries) are permitted.
 #'       `TRUE` for `Platform$BDC_AUTHORIZED`, `Platform$BDC_DEV_AUTHORIZED`,
@@ -166,6 +168,22 @@ connect <- function(platform, token = "", ...) {
     # wrapped Platform enum member).
     stop(picsureError(bad_platform_msg, class = "picsureValidationError"))
   }
+  extras <- list(...)
+  unknown <- setdiff(names(extras), CONNECT_EXTRA_KWARGS)
+  if (length(unknown) > 0) {
+    stop(picsureError(
+      sprintf(
+        "Unknown argument(s) to connect(): %s. Valid extras: %s.",
+        paste(sprintf("`%s`", unknown), collapse = ", "),
+        paste(sprintf("`%s`", CONNECT_EXTRA_KWARGS), collapse = ", ")
+      ),
+      class = "picsureValidationError"
+    ))
+  }
+
+  if (!is.null(extras$requires_auth)) {
+    requires_auth_known <- isTRUE(extras$requires_auth)
+  }
   # Token type validation runs regardless of platform. The non-empty
   # check fires only when the R-side platform info confirms auth is
   # required; otherwise Python's own check (which sees the resolved
@@ -180,19 +198,6 @@ connect <- function(platform, token = "", ...) {
   if (requires_auth_known && !nzchar(token)) {
     stop(picsureError(
       "`token` is required for this platform. Copy it from the 'User Profile' tab of PIC-SURE.",
-      class = "picsureValidationError"
-    ))
-  }
-
-  extras <- list(...)
-  unknown <- setdiff(names(extras), CONNECT_EXTRA_KWARGS)
-  if (length(unknown) > 0) {
-    stop(picsureError(
-      sprintf(
-        "Unknown argument(s) to connect(): %s. Valid extras: %s.",
-        paste(sprintf("`%s`", unknown), collapse = ", "),
-        paste(sprintf("`%s`", CONNECT_EXTRA_KWARGS), collapse = ", ")
-      ),
       class = "picsureValidationError"
     ))
   }

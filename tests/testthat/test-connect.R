@@ -32,6 +32,25 @@ test_that("a missing token on an auth-required Platform member is a picsureValid
   }
 })
 
+test_that("requires_auth = FALSE on an auth-required member does not demand a token", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, requires_auth = FALSE)
+  recorded <- fake$.calls$connect[[1]]
+  expect_identical(recorded$token, "")
+  expect_identical(recorded$requires_auth, FALSE)
+})
+
+test_that("requires_auth = TRUE on a URL string demands a token in R", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  err <- tryCatch(
+    picsure::connect(platform = "https://picsure.test", requires_auth = TRUE),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_match(conditionMessage(err), "`token` is required", fixed = TRUE)
+})
+
 test_that("connect() defers token-presence check to Python for string platforms", {
   # We can't tell from R whether a custom URL requires auth, so an
   # empty/missing token is forwarded as "" and Python's
