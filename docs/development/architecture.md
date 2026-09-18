@@ -20,8 +20,10 @@ The bridge lives in [`R/zzz.R`](../../R/zzz.R). The relevant moves:
   reference (the Python package is not yet on PyPI) pinned to an
   immutable commit SHA on the upstream `pic_sure_api_rewrite` branch.
   `@main` is pre-rewrite and 404s at `connect()` against the rewrite
-  gateway, so it must not be used here; see the comment in `R/zzz.R`
-  for the bump procedure.
+  gateway, so it must not be used here; the comment in `R/zzz.R` says
+  why a pull-request head is never a valid pin, and
+  [`pinned-python-build.md`](pinned-python-build.md) is the checklist of
+  every site a bump touches.
 - `.onLoad()` then assigns `picsure_py <<- reticulate::import("picsure",
   delay_load = list(on_load = .picsure_warn_on_pin_mismatch))`. The
   delayed load is the load-time invariant: `library(picsure)` stays

@@ -21,6 +21,7 @@ their way around. If you're looking for end-user documentation, see
 | Package architecture         | [`docs/development/architecture.md`](docs/development/architecture.md) |
 | Testing                      | [`docs/development/testing.md`](docs/development/testing.md)   |
 | Releasing                    | [`docs/development/releasing.md`](docs/development/releasing.md) |
+| Bumping the pinned Python build | [`docs/development/pinned-python-build.md`](docs/development/pinned-python-build.md) |
 
 ## Local development setup
 
