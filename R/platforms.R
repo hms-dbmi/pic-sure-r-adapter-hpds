@@ -20,8 +20,7 @@ platforms <- function() {
     members <- picsure_py$Platform
     if (is.null(members)) {
       stop(picsureError(
-        "picsure_py$Platform is NULL; reticulate bindings may not be initialized.",
-        class = "picsureConnectionError"
+        "picsure_py$Platform is NULL; reticulate bindings may not be initialized."
       ))
     }
     .platform_labels(.py_enum_members(members))
