@@ -32,9 +32,16 @@ Supported keys:
     the studies the user may see. `TRUE` for the BDC authorized
     `Platform` members, `FALSE` for every other member **and for a
     custom URL string**.}
-  \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
-    unauthenticated mode against the open HPDS backend and no token is
-    asked for, even on an `_AUTHORIZED` member. When `TRUE`, a token is
+  \item{`requires_auth`}{Logical. When `FALSE`, neither this package nor
+    the Python adapter asks for a token, even on an `_AUTHORIZED`
+    member. It does not on its own move the session to the open HPDS
+    backend: the pinned adapter picks that backend only when neither
+    `requires_auth` nor `include_consents` is in force, and
+    `include_consents` still defaults to the member's own flag, which is
+    `TRUE` for the BDC authorized members. To connect anonymously
+    against the open backend on such a member, pass
+    `include_consents = FALSE` as well; otherwise `connect()` calls
+    PSAMA's consent endpoint with no token. When `TRUE`, a token is
     required, even for a custom URL string. Defaults to `TRUE` for the
     `_AUTHORIZED` members and for a custom URL string, `FALSE` for the
     `_OPEN` members.}
