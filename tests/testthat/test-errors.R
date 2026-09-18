@@ -190,6 +190,19 @@ test_that("an R condition carrying no Python object has no python_class", {
   expect_null(err$py_cause)
 })
 
+test_that("picsureError() rejects a class name it does not know", {
+  expect_error(
+    picsureError("m", class = "picsureAuthErorr"),
+    "should be one of"
+  )
+  expect_error(picsureError("m", class = ""), "should be one of")
+  expect_error(picsureError("m", class = NA_character_), "should be one of")
+  expect_error(
+    picsureError("m", class = c("picsureAuthError", "picsureQueryError")),
+    "must be of length 1"
+  )
+})
+
 test_that("picsureError() expands a class to its documented ancestors", {
   expect_identical(
     class(picsureError("m", class = "picsureConsentDeniedError")),

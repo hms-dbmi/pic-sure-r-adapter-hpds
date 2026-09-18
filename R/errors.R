@@ -86,14 +86,18 @@
 )
 
 # Expands a condition class to the full vector `structure()` should carry.
+#
+# `class` must be NULL or one of the names in `.PICSURE_CONDITION_PARENTS`.
+# Anything else is rejected by `match.arg()`, so a misspelled class in a
+# wrapper fails at the raise rather than producing a condition no handler
+# matches.
 .picsure_condition_classes <- function(class = NULL) {
   base <- c("picsureError", "error", "condition")
-  if (is.null(class) || length(class) != 1L || is.na(class) || !nzchar(class)) {
+  if (is.null(class)) {
     return(base)
   }
-  parents <- .PICSURE_CONDITION_PARENTS[[class]]
-  if (is.null(parents)) parents <- character()
-  unique(c(class, parents, base))
+  class <- match.arg(class, names(.PICSURE_CONDITION_PARENTS))
+  unique(c(class, .PICSURE_CONDITION_PARENTS[[class]], base))
 }
 
 #' Construct a picsureError condition.
@@ -117,7 +121,8 @@
 #'   `"picsureConsentDeniedError"`, `"picsureConnectionError"`,
 #'   `"picsureTLSError"`, `"picsureServerError"`,
 #'   `"picsureConsentLookupError"`, `"picsureQueryError"`, or
-#'   `"picsureValidationError"`. Ancestor classes are added for you.
+#'   `"picsureValidationError"`. Ancestor classes are added for you. Any
+#'   other value is an error.
 #' @return A condition inheriting `c("picsureError", "error", "condition")`,
 #'   with `$py_cause` and `$python_class` describing the Python origin when
 #'   there was one.

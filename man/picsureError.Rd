@@ -23,7 +23,8 @@ addition to `picsureError`. One of `"picsureAuthError"`,
 `"picsureConsentDeniedError"`, `"picsureConnectionError"`,
 `"picsureTLSError"`, `"picsureServerError"`,
 `"picsureConsentLookupError"`, `"picsureQueryError"`, or
-`"picsureValidationError"`. Ancestor classes are added for you.}
+`"picsureValidationError"`. Ancestor classes are added for you. Any
+other value is an error.}
 }
 \value{
 A condition inheriting `c("picsureError", "error", "condition")`,
