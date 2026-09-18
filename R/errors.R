@@ -47,6 +47,21 @@
 # locally-detected one (malformed, expired) is an authentication error. Both
 # are `picsureAuthError`s, which is the class to catch when the fix is to
 # refresh the token.
+#
+# This table's names are the key set the other two condition tables draw
+# from. Every value in `.PICSURE_PY_CONDITION_CLASSES` and every value in
+# `.PICSURE_ERROR_TYPE_CLASSES` must appear as a name here, because
+# `.picsure_condition_classes()` passes the chosen class through
+# `match.arg(class, names(.PICSURE_CONDITION_PARENTS))`. A value with no row
+# here does not fail at load time or in any wrapper: it fails when the
+# backend first raises that error, and it fails by replacing the
+# researcher's message with `match.arg()`'s "'arg' should be one of ..." on
+# a bare `simpleError`, which `tryCatch(picsureError = ...)` does not catch.
+# Adding a class to either table therefore means adding a row here too.
+# `test-errors.R` guards that subset relation for both tables. The reverse
+# does not hold: a name here with no Python class mapped to it is
+# legitimate, and several are, because the R hierarchy runs ahead of the
+# pinned build.
 .PICSURE_CONDITION_PARENTS <- list(
   picsureAuthError           = character(),
   picsureAuthenticationError = "picsureAuthError",

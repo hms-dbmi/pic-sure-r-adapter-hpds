@@ -233,6 +233,43 @@ test_that("every condition class in the hierarchy is catchable as picsureError",
   }
 })
 
+missing_ancestry_message <- function(table_name, missing) {
+  paste0(
+    table_name, " maps to ", paste(missing, collapse = ", "),
+    ", which .PICSURE_CONDITION_PARENTS has no row for. ",
+    ".picsure_condition_classes() resolves the class through ",
+    "match.arg(class, names(.PICSURE_CONDITION_PARENTS)), so the first real ",
+    "error of that kind would reach the researcher as a bare simpleError ",
+    "reading \"'arg' should be one of ...\", with their own message gone and ",
+    "tryCatch(picsureError = ...) no longer matching it. Add a row to ",
+    ".PICSURE_CONDITION_PARENTS naming that class's ancestors, most specific ",
+    "first and excluding picsureError, and document it in the hierarchy ",
+    "diagrams in R/errors.R."
+  )
+}
+
+test_that("every Python class the map names has an ancestry row", {
+  known <- names(picsure:::.PICSURE_CONDITION_PARENTS)
+  mapped <- unname(picsure:::.PICSURE_PY_CONDITION_CLASSES)
+  missing <- setdiff(mapped, known)
+
+  expect_equal(
+    missing, character(0),
+    info = missing_ancestry_message(".PICSURE_PY_CONDITION_CLASSES", missing)
+  )
+})
+
+test_that("every errorType the map names has an ancestry row", {
+  known <- names(picsure:::.PICSURE_CONDITION_PARENTS)
+  mapped <- unname(picsure:::.PICSURE_ERROR_TYPE_CLASSES)
+  missing <- setdiff(mapped, known)
+
+  expect_equal(
+    missing, character(0),
+    info = missing_ancestry_message(".PICSURE_ERROR_TYPE_CLASSES", missing)
+  )
+})
+
 test_that("both token-problem leaves are catchable as picsureAuthError", {
   for (cls in c("picsureAuthenticationError", "picsureAuthorizationError")) {
     caught <- tryCatch(
