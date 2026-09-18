@@ -123,24 +123,40 @@ Internal helpers are snake_case.
 ## R <-> Python type coercion
 
 Type handling at the boundary lives in
-[`R/utils_coerce.R`](../../R/utils_coerce.R). Three helpers, three
-concerns:
+[`R/utils_coerce.R`](../../R/utils_coerce.R), which covers four
+concerns. The roxygen on each function is the detail; this is the map.
 
-- **`drop_nulls(x)`** — removes `NULL`-valued entries from a kwargs
-  list before handing it to `do.call(py_callable, kwargs)`. reticulate
-  maps R `NULL` to Python `None`, which would override the Python
-  function's own default. Dropping `NULL`s first lets Python supply
-  its defaults. The wrappers in `connect.R`, `clauses.R`, `query.R`,
-  and `search.R` all compose this before calling Python.
-- **`as_enum_string(value, expected_subclass, enum_name, field)`** —
-  resolves either a plain string or a `picsure_enum_member` to its
-  string identifier. Rejects members of the wrong subclass (e.g. a
-  `GroupOperator` member where a `PhenotypicFilterType` is expected) before
-  doing anything else.
-- **`to_py_enum(value, enum_obj, enum_name, expected_subclass)`** —
-  case-insensitively resolves a string or a typed enum member against
-  a Python enum proxy (or, in tests, a named R list). Returns the
-  Python enum member that reticulate then passes through unchanged.
+**Kwarg shaping.** `drop_nulls(x)` removes `NULL`-valued entries from a
+kwargs list before `do.call(py_callable, kwargs)`. reticulate maps R
+`NULL` to Python `None`, which would override the Python function's own
+default. Dropping `NULL`s first lets Python supply its defaults. The
+wrappers in `connect.R`, `clauses.R`, `query.R`, and `search.R` all
+compose this before calling Python.
+
+**Argument validation**, all raising `picsureValidationError`s that name
+the argument and what arrived. `as_positive_whole_number()`,
+`check_optional_number()`, and `as_single_string()` are the checks;
+`describe_argument_value()` renders the rejected value for their
+messages.
+
+**Enum resolution across the boundary.** `as_enum_string()` resolves a
+plain string or a `picsure_enum_member` to its string identifier,
+rejecting members of the wrong subclass (a `GroupOperator` where a
+`PhenotypicFilterType` is expected) first. `to_py_enum()` then resolves
+that case-insensitively against a Python enum proxy and returns the
+member reticulate passes through unchanged. `.py_enum_members()`,
+`.py_enum_member_names()`, and `.py_enum_member()` are the lookups
+underneath: they go through `__members__`, copying that `mappingproxy`
+into a real `dict` because reticulate has no converter for it.
+
+**Result typing from a declared schema.** `apply_result_schema()` types
+the columns of a returned data frame from a schema, and
+`coerce_result_column()` does one column, warning rather than failing
+when values are lost. The schemas are `.DICTIONARY_RESULT_SCHEMA`,
+`.TIMESERIES_RESULT_SCHEMA`, `.GENOMIC_VALUES_RESULT_SCHEMA`, and
+`.CONSEQUENCES_RESULT_SCHEMA`. They exist because pandas infers a column
+type from the rows, so an empty or all-empty column arrived in R with
+whatever type the query happened to produce.
 
 Notes on the gotchas the wrappers actually encode:
 
