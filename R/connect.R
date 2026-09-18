@@ -175,7 +175,7 @@ connect <- function(platform, token = "", ...) {
   if (requires_auth_known && !nzchar(token)) {
     stop(picsureError(
       "`token` is required for this platform. Copy it from the 'User Profile' tab of PIC-SURE.",
-      class = "picsureAuthenticationError"
+      class = "picsureValidationError"
     ))
   }
 

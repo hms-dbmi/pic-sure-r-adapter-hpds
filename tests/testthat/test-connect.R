@@ -19,14 +19,17 @@ test_that("connect() errors when platform is missing", {
   expect_match(conditionMessage(err), "platform")
 })
 
-test_that("connect() errors when an auth-required Platform member is given without a token", {
+test_that("a missing token on an auth-required Platform member is a picsureValidationError", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  err <- tryCatch(
-    picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED),
-    error = function(e) e
-  )
-  expect_s3_class(err, "picsureError")
-  expect_match(conditionMessage(err), "token")
+  for (args in list(
+    list(platform = picsure::Platform$BDC_AUTHORIZED),
+    list(platform = picsure::Platform$BDC_AUTHORIZED, token = "")
+  )) {
+    err <- tryCatch(do.call(picsure::connect, args), error = function(e) e)
+    expect_s3_class(err, "picsureValidationError")
+    expect_false(inherits(err, "picsureAuthError"))
+    expect_match(conditionMessage(err), "token")
+  }
 })
 
 test_that("connect() defers token-presence check to Python for string platforms", {
