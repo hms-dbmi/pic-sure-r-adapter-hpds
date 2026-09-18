@@ -161,14 +161,27 @@ Notes on the gotchas the wrappers actually encode:
 
 Source of truth is [`R/errors.R`](../../R/errors.R).
 
-- `picsureError(message, py_cause = NULL)` constructs a condition of
-  class `c("picsureError", "error", "condition")`. The original
-  Python exception, when present, is attached as `$py_cause` for
-  advanced debugging via `reticulate::py_last_error()`.
+- `picsureError(message, py_cause = NULL, class = NULL)` constructs the
+  condition. `class` names one of the specialized classes, whose
+  ancestors `.PICSURE_CONDITION_PARENTS` fills in, and every condition
+  carries `picsureError` whatever `class` is, so the documented
+  `tryCatch(picsureError = ...)` handler catches all of them. The tree
+  and what each class means are in `?picsure::picsureError`; it is not
+  redrawn here.
+- The original Python exception, when present, is attached as
+  `$py_cause` for advanced debugging via
+  `reticulate::py_last_error()`, and its class name as `$python_class`.
 - `with_picsure_error(expr)` wraps any reticulate call so that a
   `python.builtin.Exception` raised inside `expr` is caught and
   re-raised as a `picsureError`, preserving the message Python crafted
-  for end users. Non-Python R errors pass through unchanged.
+  for end users. It maps the Python exception to its matching subclass
+  through `.PICSURE_PY_CONDITION_CLASSES`, falling back to the
+  backend's `errorType` string. Non-Python R errors pass through
+  unchanged.
+- The R side derives a condition's ancestry from its own table rather
+  than from the installed Python exception's MRO, so the hierarchy
+  keeps its shape when the pinned commit moves. What changes with the
+  pin is how finely the leaf is identified.
 
 Every public wrapper that crosses the boundary uses
 `with_picsure_error(...)` so users always see a clean
