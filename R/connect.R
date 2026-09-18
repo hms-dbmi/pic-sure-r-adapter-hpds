@@ -101,7 +101,12 @@
 #' }
 #'
 #' An explicit `verify =` / `dev_mode =` argument to `connect()` always wins
-#' over the option.
+#' over the option, and both go through the same checks: `dev_mode` must be
+#' a single `TRUE` or `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a
+#' path string. A string that spells a boolean, such as `"false"`, is
+#' rejected rather than treated as a certificate path. Whenever verification
+#' ends up off, `connect()` emits a message naming the argument or option
+#' that turned it off.
 #' @return An opaque session object. Pass it as the first argument to
 #'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
 #' @examples
@@ -196,12 +201,23 @@ connect <- function(platform, token = "", ...) {
   # defaults to "PYTHON_ADAPTER"; override it here unless the caller set it.
   if (is.null(extras$client_type)) extras$client_type <- "R_ADAPTER"
 
-  if (is.null(extras$verify)) {
-    extras$verify <- .picsure_option_default("picsure.ssl_verify", .picsure_check_verify)
+  verify <- .picsure_setting(
+    extras$verify, "verify", "picsure.ssl_verify", .picsure_check_verify
+  )
+  extras$verify <- verify$value
+  if (isFALSE(verify$value)) {
+    message(sprintf(
+      paste0(
+        "TLS certificate verification is off for this connection, set by %s. ",
+        "Use this only for local or self-signed deployments."
+      ),
+      verify$source
+    ))
   }
-  if (is.null(extras$dev_mode)) {
-    extras$dev_mode <- .picsure_option_default("picsure.dev_mode", .picsure_check_flag)
-  }
+  dev_mode <- .picsure_setting(
+    extras$dev_mode, "dev_mode", "picsure.dev_mode", .picsure_check_flag
+  )
+  extras$dev_mode <- dev_mode$value
 
   kwargs <- drop_nulls(c(
     list(platform = platform, token = token),
@@ -211,62 +227,92 @@ connect <- function(platform, token = "", ...) {
   with_picsure_error(do.call(picsure_py$connect, kwargs))
 }
 
-#' Read an R option and validate it.
+#' Resolve a connect() setting from its argument or its R option.
 #'
-#' `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE` are read by the Python adapter
-#' through `os.environ`, which CPython snapshots when the interpreter starts.
-#' Reticulate embeds that interpreter in the R process, so `Sys.setenv()`
-#' reaches Python only before the first call has provisioned it. The R options
-#' are read here on every call, so setting one takes effect on the next
-#' `connect()` regardless of when the interpreter came up.
+#' An explicit argument wins. Otherwise the R option is read, on every call,
+#' and `NULL` means neither was given, so the Python adapter's own default
+#' stands. The options exist because `PICSURE_SSL_VERIFY` and
+#' `PICSURE_DEV_MODE` are read by the Python adapter through `os.environ`,
+#' which CPython snapshots when the interpreter starts. Reticulate embeds
+#' that interpreter in the R process, so `Sys.setenv()` reaches Python only
+#' before the first call has provisioned it.
 #'
-#' @param name Option name, for example `"picsure.ssl_verify"`.
-#' @param check Validator called as `check(value, name)`. It returns the value
-#'   or signals a `picsureValidationError`.
-#' @return The validated option value, or `NULL` when the option is unset.
+#' @param explicit The value passed to `connect()`, or `NULL`.
+#' @param arg_name The `connect()` argument name, used in messages.
+#' @param option_name The R option name, for example `"picsure.ssl_verify"`.
+#' @param check Validator called as `check(value, label)`. It returns the
+#'   value or signals a `picsureValidationError` that names `label`.
+#' @return A list with `value`, the validated setting or `NULL`, and
+#'   `source`, a phrase naming where it came from, or `NULL` when unset.
 #' @noRd
-.picsure_option_default <- function(name, check) {
-  value <- getOption(name, NULL)
-  if (is.null(value)) {
-    return(NULL)
+.picsure_setting <- function(explicit, arg_name, option_name, check) {
+  if (!is.null(explicit)) {
+    label <- sprintf("`%s`", arg_name)
+    return(list(value = check(explicit, label), source = sprintf("the %s argument", label)))
   }
-  check(value, name)
+  value <- getOption(option_name, NULL)
+  if (is.null(value)) {
+    return(list(value = NULL, source = NULL))
+  }
+  label <- sprintf("options(%s)", option_name)
+  list(value = check(value, label), source = label)
 }
 
-#' Validate a `verify` option value.
+#' Strings the Python adapter reads as booleans in `PICSURE_SSL_VERIFY`.
+#'
+#' The R side rejects them instead of forwarding them, because an explicit
+#' `verify` string reaches httpx as a certificate path.
+#' @noRd
+.VERIFY_TRUE_STRINGS <- c("true", "1", "yes", "on")
+.VERIFY_FALSE_STRINGS <- c("false", "0", "no", "off")
+
+#' Validate a `verify` setting.
 #'
 #' @param value `TRUE`, `FALSE`, or a path to a CA bundle as a single string.
-#' @param name Option name used in the error message.
+#'   A string that spells a boolean is rejected with a message saying which
+#'   logical to pass instead.
+#' @param label Name of the argument or option, used in the error message.
 #' @return `value` unchanged.
 #' @noRd
-.picsure_check_verify <- function(value, name) {
+.picsure_check_verify <- function(value, label) {
   if (is.logical(value) && length(value) == 1L && !is.na(value)) {
     return(value)
   }
   if (is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)) {
+    spelled <- tolower(trimws(value))
+    if (spelled %in% c(.VERIFY_TRUE_STRINGS, .VERIFY_FALSE_STRINGS)) {
+      stop(.picsure_invalid_argument(sprintf(
+        paste0(
+          "%s must be TRUE, FALSE, or a path to a CA bundle; got the string %s. ",
+          "Pass the logical %s instead."
+        ),
+        label, encodeString(value, quote = "\""),
+        if (spelled %in% .VERIFY_TRUE_STRINGS) "TRUE" else "FALSE"
+      )))
+    }
     return(value)
   }
   stop(.picsure_invalid_argument(sprintf(
     paste0(
-      "options(%s) must be TRUE, FALSE, or a path to a CA bundle as a single ",
+      "%s must be TRUE, FALSE, or a path to a CA bundle as a single ",
       "string; got %s."
     ),
-    name, describe_argument_value(value)
+    label, describe_argument_value(value)
   )))
 }
 
-#' Validate a logical flag option value.
+#' Validate a logical flag setting.
 #'
 #' @param value `TRUE` or `FALSE`.
-#' @param name Option name used in the error message.
+#' @param label Name of the argument or option, used in the error message.
 #' @return `value` unchanged.
 #' @noRd
-.picsure_check_flag <- function(value, name) {
+.picsure_check_flag <- function(value, label) {
   if (is.logical(value) && length(value) == 1L && !is.na(value)) {
     return(value)
   }
   stop(.picsure_invalid_argument(sprintf(
-    "options(%s) must be TRUE or FALSE; got %s.", name,
+    "%s must be TRUE or FALSE; got %s.", label,
     describe_argument_value(value)
   )))
 }
