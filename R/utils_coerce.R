@@ -299,14 +299,17 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name",
   enum_obj$`__members__`[[name]]
 }
 
-#' Resolve a case-insensitive string OR a typed enum member against a
-#' Python enum proxy.
+#' Resolve a case-insensitive string OR a typed enum member to the Python
+#' enum's own spelling of the member name.
 #'
 #' The R API accepts strings like "FILTER", "and", or members like
-#' [`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]
-#' and maps them to the Python enum member at call time. Resolution goes
-#' through the enum's `__members__` map, so only real members can be
-#' returned.
+#' [`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType].
+#' Resolution goes through the enum's `__members__` map, so only a real
+#' member name can come back. This is the single place the package decides
+#' what an enum-shaped argument means: a wrapper that needs both the Python
+#' member and a decision of its own about which member was asked for calls
+#' this once and uses the answer for both, rather than resolving twice by
+#' two rules.
 #'
 #' @param value NULL, a single string, or a `picsure_enum_member`.
 #' @param enum_obj The Python enum proxy (or a named list in tests).
@@ -318,10 +321,11 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name",
 #'   the rejection names the wrapper the researcher invoked. Threaded on to
 #'   `as_enum_string()` as well, so a member of the wrong enum and an
 #'   unknown member name report the same call.
-#' @return NULL if value is NULL; otherwise the corresponding enum member.
+#' @return NULL if `value` is NULL; otherwise the member name as the enum
+#'   itself spells it.
 #' @keywords internal
-to_py_enum <- function(value, enum_obj, enum_name, expected_subclass,
-                       call = sys.call(-1L)) {
+resolve_enum_member_name <- function(value, enum_obj, enum_name, expected_subclass,
+                                     call = sys.call(-1L)) {
   s <- as_enum_string(value, expected_subclass, enum_name = enum_name,
                       field = "name", call = call)
   if (is.null(s)) return(NULL)
@@ -348,7 +352,25 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass,
       call = call
     )
   }
-  .py_enum_member(enum_obj, valid[[match_idx]])
+  valid[[match_idx]]
+}
+
+#' Resolve a case-insensitive string OR a typed enum member against a
+#' Python enum proxy.
+#'
+#' `resolve_enum_member_name()` decides which member was asked for; this
+#' fetches it. A caller that also needs the name should resolve the name
+#' itself and use [`.py_enum_member()`] rather than call both.
+#'
+#' @inheritParams resolve_enum_member_name
+#' @return NULL if value is NULL; otherwise the corresponding enum member.
+#' @keywords internal
+to_py_enum <- function(value, enum_obj, enum_name, expected_subclass,
+                       call = sys.call(-1L)) {
+  name <- resolve_enum_member_name(value, enum_obj, enum_name, expected_subclass,
+                                   call = call)
+  if (is.null(name)) return(NULL)
+  .py_enum_member(enum_obj, name)
 }
 
 #' Column types of a dictionary-search result.

@@ -27,10 +27,8 @@ unknown member name report the same call.}
 NULL if value is NULL; otherwise the corresponding enum member.
 }
 \description{
-The R API accepts strings like "FILTER", "and", or members like
-[`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]
-and maps them to the Python enum member at call time. Resolution goes
-through the enum's `__members__` map, so only real members can be
-returned.
+`resolve_enum_member_name()` decides which member was asked for; this
+fetches it. A caller that also needs the name should resolve the name
+itself and use [`.py_enum_member()`] rather than call both.
 }
 \keyword{internal}

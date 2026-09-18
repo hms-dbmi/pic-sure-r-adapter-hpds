@@ -99,7 +99,7 @@ delegate to a `picsure_py$*` or `session$*` callable inside
 | [`R/enums.R`](../../R/enums.R)               | R-side enum constants `PhenotypicFilterType`, `GroupOperator`, `QueryType`, `Platform`. Each member is an S3 list of class `c(<subclass>, "picsure_enum_member")`. Mirrors the Python enums.                  |
 | [`R/errors.R`](../../R/errors.R)             | `picsureError()` condition constructor, `with_picsure_error()` wrapper that catches `python.builtin.Exception` and re-raises as `picsureError`.                                                     |
 | [`R/platforms.R`](../../R/platforms.R)       | `platforms()`: returns the label strings of the Python `Platform` enum. `.platform_labels()` is the field-read helper unit tests exercise without a live Python session.                            |
-| [`R/utils_coerce.R`](../../R/utils_coerce.R) | Everything at the R<->Python boundary that is not a wrapper: kwarg shaping (`drop_nulls()`), argument validation (`as_positive_whole_number()`, `check_optional_number()`, `as_single_string()`, `as_single_flag()`, `describe_argument_value()`), enum resolution (`as_enum_string()`, `to_py_enum()`, the `.py_enum_*` lookups), and result typing (`apply_result_schema()`, `coerce_result_column()`, and the four result schemas). See the type-coercion section below. |
+| [`R/utils_coerce.R`](../../R/utils_coerce.R) | Everything at the R<->Python boundary that is not a wrapper: kwarg shaping (`drop_nulls()`), argument validation (`as_positive_whole_number()`, `check_optional_number()`, `as_single_string()`, `as_single_flag()`, `describe_argument_value()`), enum resolution (`as_enum_string()`, `resolve_enum_member_name()`, `to_py_enum()`, the `.py_enum_*` lookups), and result typing (`apply_result_schema()`, `coerce_result_column()`, and the four result schemas). See the type-coercion section below. |
 | [`R/zzz.R`](../../R/zzz.R)                   | `.onLoad` / `.onAttach`; declares `.PICSURE_PY_SPEC` and the package-private `picsure_py` binding.                                                                                                 |
 
 ## Public API surface
@@ -160,9 +160,15 @@ the Python error boundary in `with_picsure_error()`.
 **Enum resolution across the boundary.** `as_enum_string()` resolves a
 plain string or a `picsure_enum_member` to its string identifier,
 rejecting members of the wrong subclass (a `GroupOperator` where a
-`PhenotypicFilterType` is expected) first. `to_py_enum()` then resolves
-that case-insensitively against a Python enum proxy and returns the
-member reticulate passes through unchanged. `.py_enum_members()`,
+`PhenotypicFilterType` is expected) first.
+`resolve_enum_member_name()` then matches that case-insensitively
+against a Python enum proxy and returns the enum's own spelling of the
+member name, which is the one place the package decides what an
+enum-shaped argument means. `to_py_enum()` is that plus the
+`__members__` fetch, for the callers that want only the member.
+`runQuery()` and `runQueryByID()` want both, because the query type
+chooses the result schema as well as the Python call, so they resolve
+the name once and derive each from it. `.py_enum_members()`,
 `.py_enum_member_names()`, and `.py_enum_member()` are the lookups
 underneath: they go through `__members__`, copying that `mappingproxy`
 into a real `dict` because reticulate has no converter for it.
