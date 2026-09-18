@@ -9,7 +9,7 @@ picsureError(message, py_cause = NULL, class = NULL)
 \arguments{
 \item{message}{The user-facing error message. When the source is a Python
 PicSureError, this is the Python-crafted message with reticulate's
-class prefix and `py_last_error()` footer removed — Python already wrote
+class prefix and `py_last_error()` footer removed. Python already wrote
 the sentence for researchers.}
 
 \item{py_cause}{Optional; the condition reticulate raised for the original
@@ -60,24 +60,23 @@ Catch `picsureAuthError` for "refresh the token and retry",
 `picsureConnectionError` for "the deployment is unreachable, back off and
 retry", `picsureQueryError` for "the query itself is wrong", and
 `picsureValidationError` for an argument this package rejected before any
-request was made. Note that PSAMA answers 403, not 401, for a bad or
-absent token on `/user/me`, so a server-side token rejection arrives as an
-authorization error while a locally-detected one (missing, malformed)
-arrives as an authentication error — which is why `picsureAuthError`, not
-either leaf, is the class to catch for token trouble.
+request was made. PSAMA answers 403, not 401, for a bad or absent token on
+`/user/me`, so a server-side token rejection arrives as an authorization
+error while a locally-detected one (missing, malformed) arrives as an
+authentication error. That is why `picsureAuthError`, not either leaf, is
+the class to catch for token trouble.
 
-**What the pinned Python build actually distinguishes.** The R side derives
+**What the pinned Python build distinguishes.** The R side derives
 ancestry from its own table rather than from the installed Python
 exception's MRO, so the tree above is the shape of the R conditions on any
-build. What varies is how finely the *leaf* is identified. The currently
-pinned Python adapter has a flatter hierarchy: it defines
-`PicSureAuthError` but no `PicSureAuthenticationError`,
-`PicSureAuthorizationError`, `PicSureTLSError`, or `PicSureServerError`.
-Against that build a server-side refusal arrives as a plain
-`picsureAuthError` and a transport failure as a plain
-`picsureConnectionError`; the authentication-versus-authorization and
-TLS-versus-5xx splits only start arriving once the pin moves to a build
-that defines those classes. `picsureConsentDeniedError`,
+build. What varies is how finely the leaf is identified. The pinned Python
+adapter has a flatter hierarchy. It defines `PicSureAuthError` but none of
+`PicSureAuthenticationError`, `PicSureAuthorizationError`,
+`PicSureTLSError`, or `PicSureServerError`. Against that build a
+server-side refusal arrives as a plain `picsureAuthError` and a transport
+failure as a plain `picsureConnectionError`. The authentication-versus-
+authorization and TLS-versus-5xx splits start arriving once the pin moves
+to a build that defines those classes. `picsureConsentDeniedError`,
 `picsureConsentLookupError`, `picsureQueryError`, and
 `picsureValidationError` are distinguished on the pinned build today, as
 are the `picsureValidationError`s this package raises itself.

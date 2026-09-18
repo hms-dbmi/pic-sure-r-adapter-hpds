@@ -126,8 +126,6 @@ test_that("with_picsure_error leaves unknown or absent error types as picsureErr
   }
 })
 
-# RR-5: reticulate's framing is stripped from the message
-
 test_that("with_picsure_error strips reticulate's class prefix and footer", {
   framed <- structure(
     list(message = paste0(
@@ -192,8 +190,6 @@ test_that("an R condition carrying no Python object has no python_class", {
   expect_null(err$py_cause)
 })
 
-# RL-13: the condition hierarchy mirrors the Python one
-
 test_that("picsureError() expands a class to its documented ancestors", {
   expect_identical(
     class(picsureError("m", class = "picsureConsentDeniedError")),
@@ -224,11 +220,7 @@ test_that("every condition class in the hierarchy is catchable as picsureError",
   }
 })
 
-test_that("an authentication problem is catchable as the general auth condition", {
-  # PSAMA answers 403, not 401, for a bad token on /user/me, so a server-side
-  # rejection is an authorization error and a locally-detected one an
-  # authentication error. A handler for "this is a token problem" has to catch
-  # both, which is what picsureAuthError is for.
+test_that("both token-problem leaves are catchable as picsureAuthError", {
   for (cls in c("picsureAuthenticationError", "picsureAuthorizationError")) {
     caught <- tryCatch(
       stop(picsureError("token trouble", class = cls)),
@@ -261,10 +253,7 @@ test_that("the Python exception class picks the R condition class", {
   }
 })
 
-test_that("the most specific Python class in the MRO wins", {
-  # A consent refusal under the current Python hierarchy carries
-  # PicSureAuthorizationError and PicSureAuthError in its MRO too; the R
-  # condition must be the consent one, not one of its ancestors.
+test_that("the most specific Python class in the MRO wins over its ancestors", {
   fake <- structure(
     list(message = "picsure.errors.PicSureConsentDeniedError: consents do not cover this"),
     class = c("picsure.errors.PicSureConsentDeniedError",
@@ -277,11 +266,7 @@ test_that("the most specific Python class in the MRO wins", {
   expect_identical(class(err)[[1L]], "picsureConsentDeniedError")
 })
 
-test_that("the pinned Python build's flatter hierarchy still maps cleanly", {
-  # The pinned build puts PicSureConsentDeniedError directly under
-  # PicSureError and has no PicSureAuthorizationError at all. The R side
-  # re-derives the ancestry from its own table, so the R condition has the
-  # documented shape either way.
+test_that("a consent refusal from the pinned build's flat hierarchy still gets its R ancestors", {
   fake <- structure(
     list(message = "picsure.errors.PicSureConsentDeniedError: consents do not cover this"),
     class = c("picsure.errors.PicSureConsentDeniedError",
@@ -292,8 +277,6 @@ test_that("the pinned Python build's flatter hierarchy still maps cleanly", {
   expect_s3_class(err, "picsureConsentDeniedError")
   expect_s3_class(err, "picsureAuthorizationError")
 })
-
-# RL-12: the package's own argument validation raises picsureErrors
 
 test_that("argument validation raises a picsureValidationError, not a simpleError", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
@@ -337,11 +320,7 @@ test_that("argument validation raises a picsureValidationError, not a simpleErro
   }
 })
 
-test_that(".picsure_raw_message survives a condition reticulate cannot read", {
-  # A condition classed python.builtin.object whose Python object is missing:
-  # reticulate's `$` throws for it, so `conditionMessage()` throws too.
-  # Building an error message must not fail, or the researcher's message is
-  # replaced by reticulate's internals.
+test_that(".picsure_raw_message survives a python.builtin.object whose Python object is missing", {
   malformed <- structure(
     list(message = "the real message"),
     class = c("python.builtin.Exception", "python.builtin.object",

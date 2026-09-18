@@ -158,6 +158,21 @@ new_fake_picsure_py <- function() {
   )
 }
 
+# Fake of the `picsure` Python module as the R wrappers see it.
+#
+# Every callable records or returns plain R values, and `buildClause` and
+# `buildGenomicFilter` capture whatever arrived through `...` under `extra`,
+# so a test can tell "the wrapper forwarded min/max as unknown kwargs" from
+# "the wrapper absorbed them".
+#
+# `Platform` is only connect()'s name-to-label lookup table, derived from the
+# R-side enum so every member name resolves. It is not a stand-in for the
+# real enum and platforms() must not be tested against it. The real
+# `picsure.Platform` is a Python Enum whose `__members__` crosses the
+# reticulate boundary as an unconverted `mappingproxy`, which takes a
+# different branch of platforms() entirely. A conversion bug that broke every
+# real call once shipped green for that reason. platforms() is exercised
+# against a genuine Python enum in test-platforms-reticulate.R.
 fake_picsure_py <- function() {
   calls <- new.env(parent = emptyenv())
   calls$connect <- list()
@@ -182,10 +197,6 @@ fake_picsure_py <- function() {
         genomicFilters = genomicFilters
       )
     },
-    # `extra` holds whatever arrived through `...`, the way the fake
-    # `buildClause` does. Without it the fake silently swallowed unknown
-    # kwargs, so a test could not tell "the wrapper forwarded min/max as
-    # unknown kwargs" from "the wrapper absorbed them".
     buildGenomicFilter = function(key, values = NULL, ...) {
       list(kind = "genomic_filter", key = key, values = values, extra = list(...))
     },
@@ -220,18 +231,6 @@ fake_picsure_py <- function() {
     VariantSeverity = list(
       HIGH = "High Severity", MEDIUM = "Medium Severity", LOW = "Low Severity"
     ),
-    # `Platform` exists here only as connect()'s name -> label lookup table,
-    # for `picsure_py$Platform[[member$name]]`. It is deliberately NOT a
-    # stand-in for the real enum, and platforms() must never be tested
-    # against it: the real `picsure.Platform` is a Python Enum class whose
-    # `__members__` crosses the reticulate boundary as an unconverted
-    # `mappingproxy`, and this character vector takes a different branch of
-    # platforms() entirely. That is how a conversion bug that broke every
-    # real call shipped green. platforms() is exercised against a genuine
-    # Python enum in test-platforms-reticulate.R.
-    #
-    # Derived from the R-side enum so every member name resolves and the two
-    # cannot drift apart.
     Platform = vapply(picsure::Platform, function(m) m$label, character(1)),
 
     # Call recorder
@@ -239,12 +238,12 @@ fake_picsure_py <- function() {
   )
 }
 
-# Fake FacetSet: a mutable Python-like object recording the calls R wrappers
-# make. Its surface is exactly the Python FacetSet's, `$add(category, values)`,
-# `$view()`, `$clear(category)`, and deliberately nothing more. An earlier
-# version of this fake carried a `$remove()` member that Python has never had,
-# which let a broken `removeFacet()` pass its tests. Only add a member here
-# after checking it against `_models/facet.py` in the Python adapter.
+# Fake FacetSet, a mutable Python-like object recording the calls R wrappers
+# make. It has exactly the Python FacetSet's members, `$add(category, values)`,
+# `$view()`, and `$clear(category)`, and nothing more. An earlier version of
+# this fake carried a `$remove()` member that Python has never had, which let
+# a broken `removeFacet()` pass its tests. Only add a member here after
+# checking it against `_models/facet.py` in the Python adapter.
 new_fake_facet_set <- function(categories = c("study_ids", "data_source")) {
   state <- new.env(parent = emptyenv())
   state$entries <- list()  # list of list(key = ..., value = ...)

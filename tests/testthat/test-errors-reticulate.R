@@ -4,14 +4,18 @@
 # classed with the Python exception's whole MRO plus `python.builtin.object`
 # and `python.builtin.BaseException`, and it carries a `py_object` attribute
 # that reticulate's `$` and `[[` methods dereference. A hand-built condition
-# with those classes and no `py_object` cannot even be passed to `stop()`:
-# reticulate's `$` throws while `stop()` is reading `conditionMessage()`. So
-# the message-unwrapping and class-mapping in R/errors.R is only really
+# with those classes and no `py_object` cannot even be passed to `stop()`,
+# because reticulate's `$` throws while `stop()` reads `conditionMessage()`.
+# So the message unwrapping and class mapping in R/errors.R is only fully
 # exercised here, against exceptions raised by Python.
+#
+# The raw reticulate condition carries both plumbing layers, the class prefix
+# and the `py_last_error()` footer. One test below asserts that directly, so
+# the defect the unwrapping addresses stays visible.
 
 # Raises a named exception from the Python `picsure.errors` module.
 #
-# The structured consent errors take five constructor arguments; everything
+# The structured consent errors take five constructor arguments. Everything
 # else takes the message alone.
 picsure_raise <- function(name, message = "the human-readable message") {
   reticulate::py_run_string(
@@ -30,6 +34,11 @@ def _picsure_raise(name, message):
   reticulate::py$`_picsure_raise`(name, message)
 }
 
+# Whether the installed Python build defines the named exception class.
+#
+# The pinned Python build predates part of the hierarchy, so the mapping tests
+# assert only on the classes the installed build defines. Skipping absent
+# ones is what lets those tests outlive a pin bump in either direction.
 python_error_defines <- function(name) {
   isTRUE(tryCatch(
     reticulate::py_has_attr(reticulate::import("picsure.errors"), name),
@@ -55,8 +64,6 @@ test_that("a real Python exception reaches R without any Python plumbing", {
 test_that("the raw reticulate condition really does carry both plumbing layers", {
   skip_unless_python_module()
 
-  # The defect this fix addresses, asserted directly: without the unwrapping,
-  # this is the message an R user saw.
   raw <- tryCatch(picsure_raise("PicSureError", "Your token expired."), error = function(e) e)
 
   expect_true(startsWith(conditionMessage(raw), "picsure.errors.PicSureError: "))
@@ -105,9 +112,6 @@ test_that("each Python error class maps to its R condition class", {
     PicSureValidationError      = "picsureValidationError"
   )
 
-  # The pinned Python build predates part of the hierarchy, so only assert on
-  # the classes the installed build actually defines. Skipping absent ones is
-  # what lets this test outlive a pin bump in either direction.
   present <- names(expected)[vapply(names(expected), python_error_defines, logical(1))]
   expect_gt(length(present), 0L)
 

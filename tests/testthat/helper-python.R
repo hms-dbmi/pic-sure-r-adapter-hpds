@@ -1,14 +1,14 @@
 # Shared interpreter probe for the tests that cross the reticulate boundary.
 #
-# `inherits(picsure_py, "python.builtin.module")` cannot serve as the probe:
+# `inherits(picsure_py, "python.builtin.module")` cannot serve as the probe.
 # `import(delay_load = TRUE)` returns a proxy already carrying that class
 # before any interpreter exists, so the check passes and the test then dies on
 # its first attribute access with an opaque "Installation of Python not
 # found". Resolution has to be forced with `py_available(initialize = TRUE)`,
-# and that call can *throw* instead of returning FALSE — reticulate
-# provisions its own environment through uv, which errors out of
-# `uv_get_or_create_env()` when a pinned requirement will not resolve — so it
-# is wrapped and a throw counts as unavailable.
+# and that call can throw instead of returning FALSE. Reticulate provisions
+# its own environment through uv, which errors out of
+# `uv_get_or_create_env()` when a pinned requirement will not resolve, so the
+# call is wrapped and a throw counts as unavailable.
 #
 # The answer is memoized. Probing is slow, and each failed attempt reprints
 # reticulate's entire provisioning diagnostic.
@@ -63,9 +63,9 @@ python_status <- function() {
   )
 }
 
-# The message the one loud environment failure carries. It has to be
-# unmistakably about a missing interpreter rather than about disagreeing
-# enums, because those two causes were indistinguishable before.
+# The message the one loud environment failure carries. It has to say
+# plainly that the interpreter is missing rather than that the enums
+# disagree, because those two causes were indistinguishable before.
 python_unavailable_message <- function(status) {
   configured <- Sys.getenv("RETICULATE_PYTHON", unset = "")
   paste0(
@@ -100,10 +100,9 @@ python_module_unavailable_message <- function(status) {
   )
 }
 
-# Guard for the parity tests. The environment itself is asserted once, loudly,
-# by the first test in test-enums-parity.R; the individual comparisons skip so
-# a missing interpreter produces one clear failure instead of eight opaque
-# ones.
+# Guard for the parity tests. The first test in test-enums-parity.R asserts
+# the environment once, loudly. The individual comparisons skip, so a missing
+# interpreter produces one clear failure instead of eight opaque ones.
 skip_unless_python_parity <- function() {
   status <- python_status()
   if (!isTRUE(status$available) || !isTRUE(status$module)) {
