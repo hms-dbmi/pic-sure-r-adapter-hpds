@@ -22,7 +22,7 @@
 #'   `picsure.connect()` call. Unknown keys raise a `picsureError` with the
 #'   list of valid keys. Every one of them defaults to the *platform's* own
 #'   setting rather than to a fixed value, and a `Platform` member and a URL
-#'   string resolve differently — see the "Defaults" section below.
+#'   string resolve differently. See the "Defaults" section below.
 #'   Supported keys:
 #'   \describe{
 #'     \item{`include_consents`}{Logical. When `TRUE`, `connect()` fetches the
@@ -91,7 +91,7 @@
 #' `os.environ`, which CPython snapshots when the interpreter starts.
 #' Reticulate runs that interpreter inside the R process, so
 #' `Sys.setenv(PICSURE_SSL_VERIFY = "false")` is picked up only while Python
-#' has not started yet — after the first call that provisions it, the change
+#' has not started yet. After the first call that provisions it, the change
 #' is invisible to Python. Use the R options instead, which are read on every
 #' `connect()` call:
 #'
@@ -211,21 +211,20 @@ connect <- function(platform, token = "", ...) {
   with_picsure_error(do.call(picsure_py$connect, kwargs))
 }
 
-# Reads an R option and validates it, or returns NULL when it is unset.
-#
-# `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE` are read by the Python adapter
-# through `os.environ`, which CPython snapshots into a dict when the
-# interpreter starts and never refreshes. Reticulate embeds that interpreter
-# in the R process, so `Sys.setenv()` reaches Python only while Python has not
-# started yet -- once the first call has provisioned it, a later
-# `Sys.setenv(PICSURE_SSL_VERIFY = "false")` changes the process environment
-# and Python does not see it. (The Python adapter itself reads the variables at
-# call time, not at import; the interpreter's start is the boundary, not
-# `import picsure`.)
-#
-# These options are the R-level equivalent, and they are read here, per call,
-# so setting one takes effect on the next connect() regardless of when the
-# interpreter came up.
+#' Read an R option and validate it.
+#'
+#' `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE` are read by the Python adapter
+#' through `os.environ`, which CPython snapshots when the interpreter starts.
+#' Reticulate embeds that interpreter in the R process, so `Sys.setenv()`
+#' reaches Python only before the first call has provisioned it. The R options
+#' are read here on every call, so setting one takes effect on the next
+#' `connect()` regardless of when the interpreter came up.
+#'
+#' @param name Option name, for example `"picsure.ssl_verify"`.
+#' @param check Validator called as `check(value, name)`. It returns the value
+#'   or signals a `picsureValidationError`.
+#' @return The validated option value, or `NULL` when the option is unset.
+#' @noRd
 .picsure_option_default <- function(name, check) {
   value <- getOption(name, NULL)
   if (is.null(value)) {
@@ -234,7 +233,12 @@ connect <- function(platform, token = "", ...) {
   check(value, name)
 }
 
-# TLS verification: TRUE/FALSE, or a path to a CA bundle.
+#' Validate a `verify` option value.
+#'
+#' @param value `TRUE`, `FALSE`, or a path to a CA bundle as a single string.
+#' @param name Option name used in the error message.
+#' @return `value` unchanged.
+#' @noRd
 .picsure_check_verify <- function(value, name) {
   if (is.logical(value) && length(value) == 1L && !is.na(value)) {
     return(value)
@@ -251,6 +255,12 @@ connect <- function(platform, token = "", ...) {
   )))
 }
 
+#' Validate a logical flag option value.
+#'
+#' @param value `TRUE` or `FALSE`.
+#' @param name Option name used in the error message.
+#' @return `value` unchanged.
+#' @noRd
 .picsure_check_flag <- function(value, name) {
   if (is.logical(value) && length(value) == 1L && !is.na(value)) {
     return(value)

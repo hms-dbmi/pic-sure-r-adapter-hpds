@@ -106,10 +106,6 @@ test_that("connect() rejects unknown extra kwargs with a helpful message", {
   expect_match(msg, "supports_genomic", fixed = TRUE)
 })
 
-# The pinned Python connect() still accepts resource_uuid for backwards
-# compatibility: it stores it on the session and never routes by it. This
-# wrapper refuses it rather than forwarding a value that cannot affect the
-# result.
 test_that("connect() rejects resource_uuid, which no longer routes anything", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   err <- tryCatch(
@@ -207,8 +203,6 @@ test_that("connect() lets the caller override client_type", {
   expect_equal(recorded$client_type, "PYTHON_ADAPTER")
 })
 
-# RL-18: R options for the two settings Python also reads from the environment
-
 test_that("connect() forwards options(picsure.ssl_verify) as the verify kwarg", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
@@ -270,9 +264,6 @@ test_that("neither kwarg is sent when the option is unset, so Python's default s
 })
 
 test_that("the options are read on every call, not cached", {
-  # The reason these exist: Python snapshots os.environ when the interpreter
-  # starts, so Sys.setenv() after the first call is invisible to it. An option
-  # read per call is not.
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
 

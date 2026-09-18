@@ -23,7 +23,7 @@ authenticated platforms. Defaults to `""`.}
 `picsure.connect()` call. Unknown keys raise a `picsureError` with the
 list of valid keys. Every one of them defaults to the *platform's* own
 setting rather than to a fixed value, and a `Platform` member and a URL
-string resolve differently — see the "Defaults" section below.
+string resolve differently. See the "Defaults" section below.
 Supported keys:
 \describe{
   \item{`include_consents`}{Logical. When `TRUE`, `connect()` fetches the
@@ -109,7 +109,7 @@ session <- picsure::connect(
 `os.environ`, which CPython snapshots when the interpreter starts.
 Reticulate runs that interpreter inside the R process, so
 `Sys.setenv(PICSURE_SSL_VERIFY = "false")` is picked up only while Python
-has not started yet — after the first call that provisions it, the change
+has not started yet. After the first call that provisions it, the change
 is invisible to Python. Use the R options instead, which are read on every
 `connect()` call:
 
