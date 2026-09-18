@@ -169,8 +169,8 @@ The test checks:
    `Platform`: R member names match Python member names, and each
    member's `$name` and `$value` match.
 2. For `Platform`: every dataclass field on the Python
-   `PlatformConfig` (`url`, `resource_uuid`, `label`,
-   `include_consents`, `requires_auth`) is mirrored on the R member.
+   `PlatformConfig` (`url`, `label`, `include_consents`, `requires_auth`,
+   `supports_genomic`) is mirrored on the R member.
 3. The set of public `Enum` subclasses exported by the Python package
    exactly equals `c("PhenotypicFilterType", "GroupOperator", "Platform",
    "QueryType")`. **If you add a new enum in Python, this test fails

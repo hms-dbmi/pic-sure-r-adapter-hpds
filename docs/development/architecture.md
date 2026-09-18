@@ -138,8 +138,8 @@ Notes on the gotchas the wrappers actually encode:
   arrive as native R data frames via reticulate's pandas converter.
 - The `Platform` R member carries both the Python `value` shape (a
   named list mirroring the Python `PlatformConfig` dataclass) and
-  flat fields (`url`, `resource_uuid`, `label`, `include_consents`,
-  `requires_auth`) so R users can read fields either way without a
+  flat fields (`url`, `label`, `include_consents`, `requires_auth`,
+  `supports_genomic`) so R users can read fields either way without a
   reticulate proxy hop.
 
 ## Error model
