@@ -103,9 +103,11 @@
   `mappingproxy`, a type reticulate has no converter for, so iterating it
   failed with "cannot coerce type 'environment' to vector of type 'list'" on
   every call. The mapping is now copied into a `dict` and converted
-  explicitly. The test double that hid this (a plain character vector of
-  labels, a shape Python never produces) has been replaced by tests that build
-  a genuine Python enum through reticulate.
+  explicitly. `platforms()` is now covered by tests that build a genuine
+  Python enum through reticulate. The test double that hid the bug, a plain
+  character vector of labels, is still in place: it is documented as
+  `connect()`'s name-to-label lookup table and no longer stands in for the
+  enum.
 
 - Enum parity against the Python adapter now fails loudly, and once, when no
   Python interpreter is available, naming the interpreter it looked for and
