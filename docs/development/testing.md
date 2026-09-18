@@ -164,7 +164,10 @@ Three workflows under [`.github/workflows/`](../../.github/workflows/):
 - [`check.yml`](../../.github/workflows/check.yml) — `rcmdcheck` with
   `--no-manual --as-cran`, on a freshly built tarball, across a matrix of
   R 4.1, 4.3, 4.4 on `ubuntu-latest`, plus R 4.4 on
-  `macos-latest`. Runs on PRs and pushes to `main`.
+  `macos-latest`. Runs on every pull request and on pushes to `main` and
+  `pic_sure_api_rewrite`. The concurrency group is keyed on the pull request
+  number when there is one and on the ref otherwise, so a push run and a pull
+  request run for the same branch never cancel each other.
   After the check it runs `covr::package_coverage` and enforces an
   **80% coverage floor** (with `R/zzz.R` excluded). `R/zzz.R` is
   exercised by `library()` itself rather than by tests.
@@ -220,5 +223,6 @@ The test checks:
    `supports_genomic`) is mirrored on the R member.
 3. The set of public `Enum` subclasses exported by the Python package
    exactly equals `c("PhenotypicFilterType", "GroupOperator", "Platform",
-   "QueryType")`. **If you add a new enum in Python, this test fails
+   "QueryType", "VariantFrequency", "GenomicFilterKey", "VariantSeverity")`.
+   **If you add a new enum in Python, this test fails
    until you mirror it in `R/enums.R` and add it to this list.**
