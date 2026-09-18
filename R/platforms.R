@@ -16,16 +16,7 @@
 #'   platforms with attached connection details.
 #' @export
 platforms <- function() {
-  with_picsure_error({
-    members <- picsure_py$Platform
-    if (is.null(members)) {
-      .picsure_reject(
-        "picsure_py$Platform is NULL; reticulate bindings may not be initialized.",
-        class = NULL
-      )
-    }
-    .platform_labels(.py_enum_members(members))
-  })
+  with_picsure_error(.platform_labels(.py_enum_members(picsure_py$Platform)))
 }
 
 #' Read the display label of each member of a converted Platform enum.

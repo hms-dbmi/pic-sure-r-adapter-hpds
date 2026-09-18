@@ -27,14 +27,3 @@ test_that(".py_enum_members leaves non-Python input alone", {
   expect_identical(picsure:::.py_enum_members(members), members)
   expect_identical(picsure:::.py_enum_members(c("Demo")), "Demo")
 })
-
-test_that("platforms() surfaces a missing Platform binding as an error", {
-  fake <- fake_picsure_py()
-  fake$Platform <- NULL
-  testthat::local_mocked_bindings(picsure_py = fake)
-
-  err <- tryCatch(picsure::platforms(), error = function(e) e)
-  expect_s3_class(err, "picsureError")
-  expect_s3_class(err, "error")
-  expect_false(inherits(err, "picsureConnectionError"))
-})

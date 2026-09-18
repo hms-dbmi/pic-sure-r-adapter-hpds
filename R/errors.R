@@ -482,15 +482,15 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
 # its own rather than prefixing it with the name of an internal helper.
 # Recovering an enclosing frame instead would not be safe here:
 # `with_picsure_error()` is invoked from places where the nearest frame is
-# package plumbing and not the call the researcher wrote, inside
-# `removeFacet()`'s restore `tryCatch` and inside the block form in
-# `platforms()`, so a recovered call would sometimes name a `tryCatch`
-# internal, and the message Python wrote is written to stand on its own. The
-# shared argument checkers meet the same problem from the other end and
-# solve it differently: each takes the call as a parameter defaulted to its
-# own caller's, so the wrapper's call reaches the condition without anything
-# being recovered from the stack here. The Python origin stays reachable on
-# `$py_cause` and `$python_class`, and through `reticulate::py_last_error()`.
+# package plumbing and not the call the researcher wrote, such as inside
+# `removeFacet()`'s restore `tryCatch`, so a recovered call would sometimes
+# name a `tryCatch` internal, and the message Python wrote is written to
+# stand on its own. The shared argument checkers meet the same problem from
+# the other end and solve it differently: each takes the call as a parameter
+# defaulted to its own caller's, so the wrapper's call reaches the condition
+# without anything being recovered from the stack here. The Python origin
+# stays reachable on `$py_cause` and `$python_class`, and through
+# `reticulate::py_last_error()`.
 .picsure_error_from_python <- function(py_cause) {
   condition <- picsureError(
     .picsure_with_python_detail(.picsure_python_message(py_cause), py_cause),
