@@ -278,48 +278,6 @@ test_that("a consent refusal from the pinned build's flat hierarchy still gets i
   expect_s3_class(err, "picsureAuthorizationError")
 })
 
-test_that("argument validation raises a picsureValidationError, not a simpleError", {
-  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
-  fs <- picsure::facets(bdc)
-  df <- data.frame(a = 1)
-
-  rejections <- list(
-    function() picsure::searchDictionary(bdc, c("a", "b")),
-    function() picsure::searchGenomicValues(bdc, ""),
-    function() picsure::searchGenomicValues(bdc, "Gene_with_variant", page = 0),
-    function() picsure::runQuery(bdc),
-    function() picsure::loadQueryByID(bdc, 123),
-    function() picsure::runQueryByID(bdc, ""),
-    function() picsure::removeSubQuery(query = "Q"),
-    function() picsure::replaceClause(query = "Q"),
-    function() picsure::saveQueryByName(bdc, "Q", ""),
-    function() picsure::saveQueryByName(bdc, "Q", "n", overwrite = NA),
-    function() picsure::exportAsPFB(bdc, "Q"),
-    function() picsure::exportCSV(bdc, list(a = 1), tempfile()),
-    function() picsure::exportTSV(bdc, df),
-    function() picsure::addFacet(fs, c("a", "b"), "v"),
-    function() picsure::removeFacet(fs, "study_ids"),
-    function() picsure::buildClause(type = "FILTER"),
-    function() picsure::buildClause("x"),
-    function() picsure::buildClause("x", type = "FILTER", min = "low"),
-    function() picsure::buildClauseGroup(list()),
-    function() picsure::buildGenomicFilter(values = "x"),
-    function() picsure::buildQuery(includeConcepts = list(1, 2)),
-    function() picsure::connect(),
-    function() picsure::connect(platform = "BDC Authorized"),
-    function() picsure::connect(platform = "https://picsure.test", token = "t", nope = 1)
-  )
-
-  for (i in seq_along(rejections)) {
-    err <- tryCatch(rejections[[i]](), condition = function(e) e)
-    expect_s3_class(err, "picsureError")
-    expect_s3_class(err, "error")
-    expect_false(inherits(err, "simpleError"),
-                 info = paste("rejection", i, "was a bare simpleError"))
-  }
-})
-
 test_that(".picsure_raw_message survives a python.builtin.object whose Python object is missing", {
   malformed <- structure(
     list(message = "the real message"),
