@@ -31,11 +31,11 @@ test_that(".platform_labels passes a character vector of labels straight through
   expect_null(names(result))
 })
 
-test_that(".platform_members leaves non-Python input alone", {
+test_that(".py_enum_members leaves non-Python input alone", {
   members <- list(DEMO = list(value = list(label = "Demo")))
 
-  expect_identical(picsure:::.platform_members(members), members)
-  expect_identical(picsure:::.platform_members(c("Demo")), "Demo")
+  expect_identical(picsure:::.py_enum_members(members), members)
+  expect_identical(picsure:::.py_enum_members(c("Demo")), "Demo")
 })
 
 test_that("platforms() surfaces a missing Platform binding as an error", {

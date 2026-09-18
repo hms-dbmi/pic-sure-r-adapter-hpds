@@ -42,9 +42,9 @@ test_that("a Python enum's __members__ reaches R as an unconverted mappingproxy"
   )
 })
 
-test_that(".platform_members converts a mappingproxy to a plain named R list", {
+test_that(".py_enum_members converts a mappingproxy to a plain named R list", {
   skip_unless_python_interpreter()
-  members <- picsure:::.platform_members(py_platform_enum())
+  members <- picsure:::.py_enum_members(py_platform_enum())
 
   expect_true(is.list(members))
   expect_false(inherits(members, "python.builtin.object"))

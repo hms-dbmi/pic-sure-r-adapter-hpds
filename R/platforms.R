@@ -24,37 +24,13 @@ platforms <- function() {
         class = "picsureConnectionError"
       ))
     }
-    .platform_labels(.platform_members(members))
+    .platform_labels(.py_enum_members(members))
   })
-}
-
-#' Convert a Python `Platform` enum class into a plain R list of its members.
-#'
-#' `Platform.__members__` is a `mappingproxy`, which reticulate cannot
-#' convert. `py_to_r()` hands the proxy back unchanged, and iterating it from
-#' R fails with "cannot coerce type 'environment' to vector of type 'list'".
-#' Copying the proxy into a real `dict` first gives reticulate a type it does
-#' convert.
-#'
-#' @param platform_enum The Python enum class. An already-converted named
-#'   list or a character vector of labels is returned untouched.
-#' @return A named list of members, or the non-Python input unchanged.
-#' @noRd
-.platform_members <- function(platform_enum) {
-  if (!inherits(platform_enum, "python.builtin.object")) {
-    return(platform_enum)
-  }
-  mapping <- platform_enum$`__members__`
-  if (inherits(mapping, "python.builtin.object")) {
-    builtins <- reticulate::import_builtins()
-    mapping <- reticulate::py_to_r(builtins$dict(mapping))
-  }
-  as.list(mapping)
 }
 
 #' Read the display label of each member of a converted Platform enum.
 #'
-#' @param members The named list `.platform_members()` produces, or a plain
+#' @param members The named list `.py_enum_members()` produces, or a plain
 #'   character vector of labels.
 #' @return An unnamed character vector of labels.
 #' @noRd

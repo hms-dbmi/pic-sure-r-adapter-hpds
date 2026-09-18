@@ -193,29 +193,43 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
   value
 }
 
-#' List the member names of a Python enum class.
+#' Convert a Python enum class's member map into a named R list.
 #'
 #' `names()` on a Python enum class is not the member list. It reports every
 #' attribute, and for an enum that mixes in `str` that includes all 47 string
 #' methods, so `count`, `index`, `format`, and `strip` look like members.
 #' VariantFrequency, GenomicFilterKey, and VariantSeverity all mix in `str`.
 #' Only `__members__` is the member map. It is a mappingproxy, which
-#' reticulate cannot convert, so it is copied into a real dict first.
+#' reticulate cannot convert: `py_to_r()` hands the proxy back unchanged and
+#' iterating it from R fails with "cannot coerce type 'environment' to vector
+#' of type 'list'". Copying it into a real dict first gives reticulate a type
+#' it does convert.
 #'
-#' @param enum_obj The Python enum class, or the named R list that stands in
-#'   for one in the unit tests.
-#' @return A character vector of member names.
+#' @param enum_obj The Python enum class. Anything that is not a Python
+#'   object (the named list or character vector a unit test stands in with)
+#'   is returned untouched.
+#' @return A named list of members, or the non-Python input unchanged.
 #' @noRd
-.py_enum_member_names <- function(enum_obj) {
+.py_enum_members <- function(enum_obj) {
   if (!inherits(enum_obj, "python.builtin.object")) {
-    return(names(enum_obj))
+    return(enum_obj)
   }
   mapping <- enum_obj$`__members__`
   if (inherits(mapping, "python.builtin.object")) {
     builtins <- reticulate::import_builtins()
     mapping <- reticulate::py_to_r(builtins$dict(mapping))
   }
-  names(mapping)
+  as.list(mapping)
+}
+
+#' List the member names of a Python enum class.
+#'
+#' @param enum_obj The Python enum class, or the named R list that stands in
+#'   for one in the unit tests.
+#' @return A character vector of member names.
+#' @noRd
+.py_enum_member_names <- function(enum_obj) {
+  names(.py_enum_members(enum_obj))
 }
 
 #' Fetch one member of a Python enum class by exact member name.
