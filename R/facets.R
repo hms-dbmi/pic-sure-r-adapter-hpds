@@ -115,6 +115,12 @@ facet_values_after_removal <- function(view, key, value) {
 #' chaining. Every entry under `key` matching `value` is dropped; removing a
 #' value that was never added leaves the FacetSet unchanged.
 #'
+#' The Python FacetSet has no per-value removal, so the category is rebuilt:
+#' the survivors are computed first, the category is cleared, and the
+#' survivors are added back. If adding them back fails, the original
+#' selection is restored before the error is raised, so a failed removal
+#' never leaves the category empty.
+#'
 #' @param facet_set A FacetSet from [`facets()`][picsure::facets].
 #' @param key Facet key. Exactly one category, as for
 #'   [`addFacet()`][picsure::addFacet].
@@ -135,12 +141,18 @@ removeFacet <- function(facet_set, key, value) {
       "`value` is required. Pass the facet value (or vector of values) to remove."
     ))
   }
-  with_picsure_error({
-    retained <- facet_values_after_removal(facet_set$view(), key, value)
-    facet_set$clear(key)
-    if (length(retained) > 0L) {
-      facet_set$add(key, as.list(retained))
-    }
-  })
+  view <- with_picsure_error(facet_set$view())
+  original <- as.character(unlist(view[[key]], use.names = FALSE))
+  retained <- facet_values_after_removal(view, key, value)
+  with_picsure_error(facet_set$clear(key))
+  if (length(retained) > 0L) {
+    tryCatch(
+      with_picsure_error(facet_set$add(key, as.list(retained))),
+      error = function(e) {
+        try(facet_set$add(key, as.list(original)), silent = TRUE)
+        stop(e)
+      }
+    )
+  }
   invisible(facet_set)
 }

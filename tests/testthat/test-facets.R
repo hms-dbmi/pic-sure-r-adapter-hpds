@@ -201,3 +201,73 @@ test_that("a missing or empty value is a package error", {
     expect_s3_class(err, "picsureValidationError")
   }
 })
+
+test_that("removeFacet() re-raises a failure from view() as picsureError", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  fs <- picsure::facets(bdc)
+  fs$view <- function() {
+    stop(structure(
+      list(message = "facet view unavailable"),
+      class = c("python.builtin.Exception", "error", "condition")
+    ))
+  }
+
+  err <- tryCatch(
+    picsure::removeFacet(fs, "study_ids", "phs000007"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "facet view unavailable", fixed = TRUE)
+})
+
+test_that("removeFacet() restores the original selection when re-adding the survivors fails", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  fs <- picsure::facets(bdc)
+  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200", "phs000286"))
+
+  real_add <- fs$add
+  add_calls <- 0L
+  fs$add <- function(key, value) {
+    add_calls <<- add_calls + 1L
+    if (add_calls == 1L) {
+      stop(structure(
+        list(message = "add rejected"),
+        class = c("python.builtin.Exception", "error", "condition")
+      ))
+    }
+    real_add(key, value)
+  }
+
+  err <- tryCatch(
+    picsure::removeFacet(fs, "study_ids", "phs000200"),
+    error = function(e) e
+  )
+
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "add rejected", fixed = TRUE)
+  expect_equal(add_calls, 2L)
+  expect_equal(fs$view()[["study_ids"]], c("phs000007", "phs000200", "phs000286"))
+})
+
+test_that("removeFacet() still raises the re-add failure when the restore also fails", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  fs <- picsure::facets(bdc)
+  picsure::addFacet(fs, "study_ids", c("phs000007", "phs000200"))
+  fs$add <- function(key, value) {
+    stop(structure(
+      list(message = "add rejected"),
+      class = c("python.builtin.Exception", "error", "condition")
+    ))
+  }
+
+  err <- tryCatch(
+    picsure::removeFacet(fs, "study_ids", "phs000200"),
+    error = function(e) e
+  )
+
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "add rejected", fixed = TRUE)
+})

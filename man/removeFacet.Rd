@@ -22,6 +22,13 @@ Mutates the underlying Python FacetSet and returns the same handle for
 chaining. Every entry under `key` matching `value` is dropped; removing a
 value that was never added leaves the FacetSet unchanged.
 }
+\details{
+The Python FacetSet has no per-value removal, so the category is rebuilt:
+the survivors are computed first, the category is cleared, and the
+survivors are added back. If adding them back fails, the original
+selection is restored before the error is raised, so a failed removal
+never leaves the category empty.
+}
 \examples{
 \dontrun{
 fs <- picsure::facets(bdc)
