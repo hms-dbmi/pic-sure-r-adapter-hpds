@@ -12,7 +12,7 @@ knitr::opts_chunk$set(eval = FALSE, collapse = TRUE, comment = "#>")
 ```
 
 `picsure::searchDictionary()` returns matching dictionary entries as a data frame.
-`picsure::facets()` narrows a search to a subset — by dataset, by variable
+`picsure::facets()` narrows a search to a subset, by dataset or by variable
 type.
 
 ## Plain search

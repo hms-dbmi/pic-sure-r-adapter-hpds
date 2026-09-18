@@ -12,7 +12,7 @@ tier runs nightly and on demand.
 | [`tests/testthat/`](../../tests/testthat/)                      | Unit tests. One `test-<module>.R` per `R/<module>.R`.                                                            |
 | [`tests/testthat/helper-mocks.R`](../../tests/testthat/helper-mocks.R) | Fakes for the Python `picsure` module and the `Session` and `FacetSet` it returns. Loaded automatically by testthat. |
 | [`tests/testthat/helper-python.R`](../../tests/testthat/helper-python.R) | The shared interpreter probe. Forces reticulate to resolve rather than trusting the `delay_load` module proxy, memoizes the answer, and owns the guards the reticulate-boundary tests call. |
-| [`tests/testthat/helper-options.R`](../../tests/testthat/helper-options.R) | `with_picsure_options(new, code)` — evaluates `code` with `new` options in force and restores the previous values, "unset" included. |
+| [`tests/testthat/helper-options.R`](../../tests/testthat/helper-options.R) | `with_picsure_options(new, code)` evaluates `code` with `new` options in force and restores the previous values, "unset" included. |
 | [`tests/testthat/test-*-reticulate.R`](../../tests/testthat/) | Tests that cross the real Python boundary, building genuine `picsure` objects instead of fakes. Skip cleanly without an interpreter. |
 | [`tests/testthat/integration/`](../../tests/testthat/integration/) | Live tests (`test-*-live.R`) that talk to a real PIC-SURE instance. Skipped unless `PICSURE_INTEGRATION=1`.    |
 | [`tests/testthat.R`](../../tests/testthat.R)                    | Entry point for `R CMD check`.                                                                                   |
@@ -35,26 +35,26 @@ wrapper reaches Python. Unit tests swap it with a fake via
 [`tests/testthat/helper-mocks.R`](../../tests/testthat/helper-mocks.R)
 provides:
 
-- `fake_picsure_py()` — a list standing in for the Python module. Exposes
+- `fake_picsure_py()` is a list standing in for the Python module. Exposes
   `connect`, `buildClause`, `buildClauseGroup`, `buildQuery`, and named lists
   for `PhenotypicFilterType`, `GroupOperator`, and `QueryType`. Records every
   call on `$.calls`. Its `Platform` member exists only as `connect()`'s
-  name-to-label lookup table and is **not** a stand-in for the real enum —
-  see the warning below.
+  name-to-label lookup table and is **not** a stand-in for the real enum.
+  See the warning below.
 - `new_fake_session(...)` — returned by `fake_picsure_py()$connect()`.
   Records calls to `searchDictionary`, `runQuery`, `exportAsPFB`,
   `exportCSV`, `exportTSV`, `loadQueryByID`, `runQueryByID`. Returns
   realistic shapes (a count-result list, a participant `data.frame`,
   etc.) keyed off the `type` argument.
 - `new_fake_facet_set()` — a mutable stand-in for the Python
-  `FacetSet`. Its surface is exactly the Python class's — `$add(key, value)`,
-  `$view()`, `$clear(category)` — and deliberately nothing more. An earlier
+  `FacetSet`. Its members are exactly the Python class's, `$add(key, value)`,
+  `$view()`, and `$clear(category)`, and deliberately nothing more. An earlier
   version carried a `$remove()` that Python has never defined, which is how a
   broken `removeFacet()` passed its tests. Only add a member here after
   checking it against `_models/facet.py` in the Python adapter.
 
 **A fake cannot test a conversion.** An R list answers to whatever member a
-wrapper happens to call, and an R vector is already an R vector — so both
+wrapper happens to call, and an R vector is already an R vector, so both
 `removeFacet()` (calling a `FacetSet.remove()` Python has never defined) and
 `platforms()` (iterating a `mappingproxy` reticulate cannot convert) shipped
 broken with green tests. Anything that depends on the shape Python actually
@@ -116,7 +116,7 @@ cosmetic:
   non-standard top-level files that CI never sees.
 - `R CMD build` derives the `Author` and `Maintainer` fields from
   `Authors@R`. A directory check does not, so it needs both spelled out in
-  `DESCRIPTION` — they are, and they must stay consistent with `Authors@R`
+  `DESCRIPTION`. They are, and they must stay consistent with `Authors@R`
   if that field changes.
 - `R CMD build` drops `LazyData` when there is no `data/` directory.
 
@@ -161,7 +161,7 @@ expensive and the live tier is read-only.
 
 Three workflows under [`.github/workflows/`](../../.github/workflows/):
 
-- [`check.yml`](../../.github/workflows/check.yml) — `rcmdcheck` with
+- [`check.yml`](../../.github/workflows/check.yml) runs `rcmdcheck` with
   `--no-manual --as-cran`, on a freshly built tarball, across a matrix of
   R 4.1, 4.3, 4.4 on `ubuntu-latest`, plus R 4.4 on
   `macos-latest`. Runs on every pull request and on pushes to `main` and
@@ -206,7 +206,7 @@ for and stating that parity was not verified; the individual comparisons
 then skip. So a run without Python produces one loud, well-named failure
 rather than eight opaque "Installation of Python not found" errors that
 looked like the enums themselves disagreeing. Do not soften that failure
-into a skip — an environment with no Python must not read as a clean run.
+into a skip. An environment with no Python must not read as a clean run.
 
 `inherits(picsure_py, "python.builtin.module")` is not a usable guard here:
 `import(delay_load = TRUE)` returns a proxy that already carries that class

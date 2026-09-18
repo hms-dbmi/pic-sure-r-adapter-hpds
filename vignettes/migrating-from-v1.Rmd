@@ -21,18 +21,18 @@ is gone; there are no deprecation shims. This page maps each v1 call to its
 |---|---|
 | `initializeSession(url, token)` | `connect(platform, token)` |
 | `bdc.initializeSession(url, token)` | `connect(platform = Platform$BDC_AUTHORIZED, token)` |
-| `bdc.setResource(session, "OPEN")` | `connect(platform = Platform$BDC_OPEN)` — no token needed |
+| `bdc.setResource(session, "OPEN")` | `connect(platform = Platform$BDC_OPEN)`, no token needed |
 | `bdc.searchPicsure(session, "sex")` | `searchDictionary(session, "sex")` |
-| `bdc.getStudies(session)` | no dedicated call — the deployment's datasets are a facet category: `fs <- facets(session); addFacet(fs, "dataset_id", ...)` |
+| `bdc.getStudies(session)` | no dedicated call. The deployment's datasets are a facet category: `fs <- facets(session); addFacet(fs, "dataset_id", ...)` |
 | `newQuery(session)` | no direct replacement — use `buildClause()` + `buildClauseGroup()` / `buildQuery()` |
 | `addClause(q, path, "FILTER", min = 18)` | `buildClause(keys = path, type = "FILTER", min = 18)` |
 | `addClause(q, path, "SELECT")` | `buildQuery(includeConcepts = path)` |
-| `deleteClause(q, path)` | (removed — rebuild the tree, or edit with `removeSubQuery()` / `replaceClause()`) |
+| `deleteClause(q, path)` | (removed. Rebuild the tree, or edit with `removeSubQuery()` / `replaceClause()`) |
 | `showQuery(q)` | (removed — queries are opaque Python handles) |
-| `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")` — returns a `CountResult`, not a number (see below) |
+| `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")`, which returns a `CountResult`, not a number (see below) |
 | `runQuery(q, "DATA_FRAME")` | `runQuery(session, query, type = "participant")` |
-| `getQueryByUUID(session, uuid)` | `loadQueryByID(session, query_id)` — rebuilds the saved query as a handle |
-| `getResultByQueryUUID(session, uuid)` | `runQueryByID(session, query_id, type = "count")` — fetches and runs in one call |
+| `getQueryByUUID(session, uuid)` | `loadQueryByID(session, query_id)`, which rebuilds the saved query as a handle |
+| `getResultByQueryUUID(session, uuid)` | `runQueryByID(session, query_id, type = "count")`, which fetches and runs in one call |
 
 New in 2.0.0, with no v1 equivalent:
 
@@ -44,7 +44,7 @@ New in 2.0.0, with no v1 equivalent:
 | `genomicConsequences()` | the offline variant-consequence vocabulary |
 | `exportAsPFB(session, query, path)` | runs the query and writes a PFB file |
 | `exportCSV(session, df, path)` / `exportTSV(...)` | write an already-materialized data frame; they do **not** re-run the query |
-| `platforms()` | the human-readable labels of the known platforms (display only — `connect()` does not accept them) |
+| `platforms()` | the human-readable labels of the known platforms (display only, since `connect()` does not accept them) |
 
 ## `runQuery()` returns a result object, not a number
 
@@ -143,7 +143,7 @@ tryCatch(
 ```
 
 Subclasses let you tell the kinds of failure apart. `picsureAuthError` means
-the server refused you — refresh the token; `picsureConnectionError` means no
+the server refused you, so refresh the token; `picsureConnectionError` means no
 usable response came back; `picsureQueryError` means the query itself was
 rejected; `picsureValidationError` means this package rejected an argument
 before any request was made. `?picsure::picsureError` has the full tree,

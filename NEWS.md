@@ -3,8 +3,8 @@
 - **Breaking:** `connect()` no longer accepts `resource_uuid`. PIC-SURE v3
   routes by URL path (`/hpds/auth` vs `/hpds/open`, chosen by the `Platform`
   member), so a resource UUID never selected anything. The Python adapter
-  still takes the argument for backwards compatibility — it stores it on the
-  session and ignores it — but forwarding a value that cannot affect the
+  still takes the argument for backwards compatibility, storing it on the
+  session and ignoring it. Forwarding a value that cannot affect the
   result is worse than refusing it, so this wrapper drops it from the
   accepted extras: passing it raises a `picsureValidationError` listing the
   valid ones.
@@ -27,7 +27,7 @@
   `tryCatch(picsureError = ...)` missed them; they are now
   `picsureValidationError`s. And the R side derives a condition's ancestry
   from its own table rather than from the installed Python exception's MRO,
-  so the hierarchy does not change shape when the pin moves — but how finely
+  so the hierarchy does not change shape when the pin moves. How finely
   the leaf is identified does. The currently pinned Python build is flatter:
   it defines `PicSureAuthError` but no `PicSureAuthenticationError`,
   `PicSureAuthorizationError`, `PicSureTLSError`, or `PicSureServerError`.
@@ -50,7 +50,7 @@
   option rather than failing later inside Python.
 
   They exist because the environment variables that used to be the only way
-  in — `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE` — work only if they are
+  in, `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE`, work only if they are
   set *before the Python interpreter starts*. CPython snapshots the
   environment into `os.environ` at startup and never refreshes it, and
   reticulate runs that interpreter inside the R process, so once the first
@@ -65,7 +65,7 @@
   default. All three are resolved per platform. For a `Platform` member each
   defaults to that member's own flag; for a **custom URL string**
   `requires_auth` defaults to `TRUE` while `include_consents` and
-  `supports_genomic` default to `FALSE`. The URL case matters — a
+  `supports_genomic` default to `FALSE`. The URL case matters. A
   consent-gated deployment reached by URL connects with an empty consent
   list, and since the consent list is what scopes dictionary results,
   `searchDictionary()` then returns every concept in the index instead of the
@@ -80,7 +80,7 @@
 
 - `platforms()` works against a real interpreter. It read the Python
   `Platform` enum's `__members__`, which crosses the reticulate boundary as a
-  `mappingproxy` — a type reticulate has no converter for — so iterating it
+  `mappingproxy`, a type reticulate has no converter for, so iterating it
   failed with "cannot coerce type 'environment' to vector of type 'list'" on
   every call. The mapping is now copied into a `dict` and converted
   explicitly. The test double that hid this (a plain character vector of
@@ -111,7 +111,7 @@
   typed from a declared schema rather than inferred from the rows that came
   back, so a search that matched nothing hands back the same column types as
   one that matched everything. Previously an empty dictionary result arrived
-  with every column character — `min`, `max`, and `allowFiltering` included —
+  with every column character, `min`, `max`, and `allowFiltering` included,
   and a `type = "timestamp"` query over numeric concepts alone handed back
   `TVAL_CHAR` as numeric. Columns the schema does not name (a participant
   result's concept-path columns, a deployment-specific dictionary field) are
@@ -129,7 +129,7 @@
   Tools that fetch a SHA directly resolve one, so `uv pip install` succeeded
   and the pin looked fine, but `reticulate` can fall back to fetching branches
   and tags and then resolving the SHA locally, which fails outright for a
-  commit no branch contains — and fails for good if the pull request is ever
+  commit no branch contains, and fails for good if the pull request is ever
   deleted. The pin now names the squash-merged commit on
   `pic_sure_api_rewrite`, whose source tree is identical.
 
