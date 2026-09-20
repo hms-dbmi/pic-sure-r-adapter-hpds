@@ -150,8 +150,21 @@ export PICSURE_INTEGRATION=1
 export PICSURE_TEST_PLATFORM=BDC_OPEN     # or another enum member name
 export PICSURE_TEST_TOKEN=...
 export PICSURE_TEST_REQUIRE_PATH='\\phs...\\...'
-Rscript -e 'testthat::test_local()'
+Rscript -e 'pkgload::load_all(".", quiet = TRUE)' \
+        -e 'testthat::test_dir("tests/testthat/integration", env = new.env(parent = asNamespace("picsure")))'
 ```
+
+`testthat::test_local()` does **not** reach this tier.
+`test_local()` is `test_dir("tests/testthat")`, which is not recursive, so
+it collects the 21 unit files and no `test-*-live.R`. The directory has to
+be named. The environment is a child of the package namespace rather than
+the namespace itself: the tests read internals through it, and testthat
+sources `helper-integration.R` into it, which a namespace refuses because it
+is locked.
+
+The same two lines are what
+[`tests/testthat.R`](../../tests/testthat.R) runs under `R CMD check` when
+`PICSURE_INTEGRATION=1`, and what the nightly workflow runs.
 
 The session is cached across tests in a single process (see
 `.live_session_cache` in `helper-integration.R`); connecting is
@@ -174,9 +187,12 @@ Three workflows under [`.github/workflows/`](../../.github/workflows/):
 - [`integration.yml`](../../.github/workflows/integration.yml) —
   nightly cron (`13 6 * * *`) plus manual `workflow_dispatch`. Sets
   `PICSURE_INTEGRATION=1` and the secrets `PICSURE_TEST_PLATFORM`,
-  `PICSURE_TEST_TOKEN`, `PICSURE_TEST_REQUIRE_PATH`, then runs
-  `testthat::test_local()`. On a scheduled failure it opens an issue
-  tagged `integration-failure`.
+  `PICSURE_TEST_TOKEN`, `PICSURE_TEST_REQUIRE_PATH`, then runs the unit
+  tier with `testthat::test_local()` and the integration tier with an
+  explicit `test_dir()` over `tests/testthat/integration`. Both are needed:
+  `test_local()` alone never descends into that directory, which is why the
+  job ran the unit tier nightly and called it integration. On a scheduled
+  failure it opens an issue tagged `integration-failure`.
 - [`pkgdown.yml`](../../.github/workflows/pkgdown.yml) — builds the
   pkgdown site in a read-only job on every pull request, push, release
   publish, and `workflow_dispatch`. A second job with write access deploys

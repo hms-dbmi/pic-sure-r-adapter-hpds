@@ -23,8 +23,17 @@ drop_nulls <- function(x) {
 #' number" is followed by the value that failed rather than leaving the
 #' caller to guess which of several arguments was wrong.
 #'
-#' @param value The rejected value.
-#' @return A character scalar describing `value`.
+#' Returns one string for any value, atomic or not. A one-column data frame
+#' and a function both arrive here with length 1, and each breaks a scalar
+#' result if treated as atomic: `is.na()` on a data frame returns one row per
+#' row of the frame, and `format()` on a function returns one string per
+#' deparsed line. Either way the rejection escapes as a base R
+#' condition-length error, or as a condition whose message is a vector, and
+#' the argument that was actually wrong goes unnamed.
+#'
+#' @param value The rejected value, of any type.
+#' @return A character scalar describing `value`, including for a non-atomic
+#'   value such as a data frame, a list, or a function.
 #' @keywords internal
 describe_argument_value <- function(value) {
   if (is.null(value)) {
@@ -44,10 +53,10 @@ describe_argument_value <- function(value) {
   if (is.character(value)) {
     return(sprintf("the string %s", encodeString(value, quote = "\"")))
   }
-  if (is.na(value)) {
+  if (is.atomic(value) && is.na(value)) {
     return(sprintf("%s NA", class(value)[[1L]]))
   }
-  sprintf("%s (%s)", format(value), class(value)[[1L]])
+  sprintf("%s (%s)", paste(format(value), collapse = " "), class(value)[[1L]])
 }
 
 #' Validate a single positive whole number.
@@ -60,15 +69,17 @@ describe_argument_value <- function(value) {
 #'
 #' @param value The value to validate.
 #' @param arg The argument's name, for the error message.
+#' @param call The call to report in the error, by default the caller's, so
+#'   the rejection names the wrapper the researcher invoked.
 #' @return `value` as an integer scalar.
 #' @keywords internal
-as_positive_whole_number <- function(value, arg) {
+as_positive_whole_number <- function(value, arg, call = sys.call(-1L)) {
   reject <- function(requirement) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf("`%s` must be %s; got %s.", arg, requirement,
               describe_argument_value(value)),
-      call = NULL
-    ))
+      call = call
+    )
   }
   if (is.null(value) || length(value) != 1L || !is.numeric(value)) {
     reject("a single positive whole number")
@@ -101,18 +112,20 @@ as_positive_whole_number <- function(value, arg) {
 #'
 #' @param value The value to validate, or NULL.
 #' @param arg The argument's name, for the error message.
+#' @param call The call to report in the error, by default the caller's, so
+#'   the rejection names the wrapper the researcher invoked.
 #' @return `value` unchanged.
 #' @keywords internal
-check_optional_number <- function(value, arg) {
+check_optional_number <- function(value, arg, call = sys.call(-1L)) {
   if (is.null(value)) {
     return(NULL)
   }
   reject <- function(requirement) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf("`%s` must be %s; got %s.", arg, requirement,
               describe_argument_value(value)),
-      call = NULL
-    ))
+      call = call
+    )
   }
   if (length(value) != 1L || !is.numeric(value)) {
     reject("a single number, or NULL")
@@ -132,18 +145,20 @@ check_optional_number <- function(value, arg) {
 #' @param value The value to validate.
 #' @param arg The argument's name, for the error message.
 #' @param hint Optional sentence appended to the error message.
+#' @param call The call to report in the error, by default the caller's, so
+#'   the rejection names the wrapper the researcher invoked.
 #' @return `value` unchanged.
 #' @keywords internal
-as_single_string <- function(value, arg, hint = NULL) {
+as_single_string <- function(value, arg, hint = NULL, call = sys.call(-1L)) {
   reject <- function(requirement) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       paste0(
         sprintf("`%s` must be %s; got %s.", arg, requirement,
                 describe_argument_value(value)),
         if (is.null(hint)) "" else paste0(" ", hint)
       ),
-      call = NULL
-    ))
+      call = call
+    )
   }
   if (is.null(value) || length(value) != 1L || !is.character(value)) {
     reject("a single non-empty character string")
@@ -152,6 +167,35 @@ as_single_string <- function(value, arg, hint = NULL) {
     reject("a single non-empty character string")
   }
   value
+}
+
+#' Validate a single TRUE or FALSE.
+#'
+#' The package's only logical-scalar check. `NA`, a length-2 logical, a
+#' number, and the string `"TRUE"` are all rejected, so a flag is never
+#' silently coerced into one. Used for `connect()`'s `dev_mode` setting,
+#' which can arrive as an argument or as an R option, and for
+#' `saveQueryByName()`'s `overwrite`.
+#'
+#' @param value The value to validate.
+#' @param label How the value is named in the error message, already
+#'   formatted. Argument sites pass a backticked name such as
+#'   `` "`overwrite`" ``. A setting that can also come from an R option
+#'   passes `"options(picsure.dev_mode)"` when the option supplied it, which
+#'   is why this takes a rendered label rather than a bare argument name.
+#' @param call The call to report in the error, by default the caller's, so
+#'   the rejection names the wrapper the researcher invoked.
+#' @return `value` unchanged.
+#' @keywords internal
+as_single_flag <- function(value, label, call = sys.call(-1L)) {
+  if (is.logical(value) && length(value) == 1L && !is.na(value)) {
+    return(value)
+  }
+  .picsure_reject(
+    sprintf("%s must be TRUE or FALSE; got %s.", label,
+            describe_argument_value(value)),
+    call = call
+  )
 }
 
 #' Resolve a string OR a typed enum member to its string identifier.
@@ -168,27 +212,30 @@ as_single_string <- function(value, arg, hint = NULL) {
 #'   (e.g. `"PhenotypicFilterType"`).
 #' @param field For members, which field to extract: `"name"` (default)
 #'   or `"value"`.
+#' @param call The call to report in the error, by default the caller's, so
+#'   the rejection names the wrapper the researcher invoked.
 #' @return NULL if `value` is NULL; otherwise a character scalar.
 #' @keywords internal
-as_enum_string <- function(value, expected_subclass, enum_name, field = "name") {
+as_enum_string <- function(value, expected_subclass, enum_name, field = "name",
+                           call = sys.call(-1L)) {
   if (is.null(value)) return(NULL)
   if (inherits(value, "picsure_enum_member")) {
     if (!inherits(value, expected_subclass)) {
-      stop(picsureError(
+      .picsure_reject(
         sprintf("Expected a %s member, got %s.", enum_name, format(value)),
-        class = "picsureValidationError"
-      ))
+        call = call
+      )
     }
     return(value[[field]])
   }
   if (!is.character(value) || length(value) != 1L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf(
         "%s value must be a single string or %s member; got %s.",
         enum_name, enum_name, describe_argument_value(value)
       ),
-      call = NULL
-    ))
+      call = call
+    )
   }
   value
 }
@@ -252,14 +299,17 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
   enum_obj$`__members__`[[name]]
 }
 
-#' Resolve a case-insensitive string OR a typed enum member against a
-#' Python enum proxy.
+#' Resolve a case-insensitive string OR a typed enum member to the Python
+#' enum's own spelling of the member name.
 #'
 #' The R API accepts strings like "FILTER", "and", or members like
-#' [`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]
-#' and maps them to the Python enum member at call time. Resolution goes
-#' through the enum's `__members__` map, so only real members can be
-#' returned.
+#' [`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType].
+#' Resolution goes through the enum's `__members__` map, so only a real
+#' member name can come back. This is the single place the package decides
+#' what an enum-shaped argument means: a wrapper that needs both the Python
+#' member and a decision of its own about which member was asked for calls
+#' this once and uses the answer for both, rather than resolving twice by
+#' two rules.
 #'
 #' @param value NULL, a single string, or a `picsure_enum_member`.
 #' @param enum_obj The Python enum proxy (or a named list in tests).
@@ -267,11 +317,17 @@ as_enum_string <- function(value, expected_subclass, enum_name, field = "name") 
 #' @param expected_subclass The required `picsure_*` subclass for member
 #'   inputs. Members of other subclasses are rejected before any proxy
 #'   lookup happens.
-#' @return NULL if value is NULL; otherwise the corresponding enum member.
+#' @param call The call to report in the error, by default the caller's, so
+#'   the rejection names the wrapper the researcher invoked. Threaded on to
+#'   `as_enum_string()` as well, so a member of the wrong enum and an
+#'   unknown member name report the same call.
+#' @return NULL if `value` is NULL; otherwise the member name as the enum
+#'   itself spells it.
 #' @keywords internal
-to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
-  s <- as_enum_string(value, expected_subclass, enum_name = enum_name, field = "name")
-  # as_enum_string returns NULL for NULL value; skip the proxy lookup.
+resolve_enum_member_name <- function(value, enum_obj, enum_name, expected_subclass,
+                                     call = sys.call(-1L)) {
+  s <- as_enum_string(value, expected_subclass, enum_name = enum_name,
+                      field = "name", call = call)
   if (is.null(s)) return(NULL)
   valid <- .py_enum_member_names(enum_obj)
   match_idx <- which(valid == s)
@@ -279,24 +335,42 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
     match_idx <- which(tolower(valid) == tolower(s))
   }
   if (length(match_idx) == 0L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf(
         "%s value '%s' is not one of: %s",
         enum_name, s, paste(valid, collapse = ", ")
       ),
-      call = NULL
-    ))
+      call = call
+    )
   }
   if (length(match_idx) > 1L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       sprintf(
         "%s value '%s' matches %d members case-insensitively (%s); pass the exact member name.",
         enum_name, s, length(match_idx), paste(valid[match_idx], collapse = ", ")
       ),
-      call = NULL
-    ))
+      call = call
+    )
   }
-  .py_enum_member(enum_obj, valid[[match_idx]])
+  valid[[match_idx]]
+}
+
+#' Resolve a case-insensitive string OR a typed enum member against a
+#' Python enum proxy.
+#'
+#' `resolve_enum_member_name()` decides which member was asked for; this
+#' fetches it. A caller that also needs the name should resolve the name
+#' itself and use [`.py_enum_member()`] rather than call both.
+#'
+#' @inheritParams resolve_enum_member_name
+#' @return NULL if value is NULL; otherwise the corresponding enum member.
+#' @keywords internal
+to_py_enum <- function(value, enum_obj, enum_name, expected_subclass,
+                       call = sys.call(-1L)) {
+  name <- resolve_enum_member_name(value, enum_obj, enum_name, expected_subclass,
+                                   call = call)
+  if (is.null(name)) return(NULL)
+  .py_enum_member(enum_obj, name)
 }
 
 #' Column types of a dictionary-search result.
@@ -343,10 +417,25 @@ to_py_enum <- function(value, enum_obj, enum_name, expected_subclass) {
 )
 
 #' Column types of a genomic value-search result.
+#'
+#' This one mirrors an inline Python literal, not a module constant. The
+#' pinned adapter builds the frame as `pd.DataFrame({"value": [...]})` at the
+#' end of `search_genomic_values()` in
+#' `picsure/_services/genomic_search.py`, so there is no importable name to
+#' compare against and the only call that produces the frame goes over the
+#' network. No live drift guard is possible, unlike the dictionary and
+#' consequence schemas, which `test-search-reticulate.R` checks against the
+#' pinned build. Read that Python function by hand when the pin moves: a
+#' renamed column would leave `apply_result_schema()` typing nothing, with no
+#' warning and no failing test.
 #' @noRd
 .GENOMIC_VALUES_RESULT_SCHEMA <- c(value = "character")
 
 #' Column types of the offline variant-consequence vocabulary.
+#'
+#' Guarded against the pinned build by `test-search-reticulate.R`, which can
+#' call `genomicConsequences()` directly because it reads bundled data and
+#' needs no session.
 #' @noRd
 .CONSEQUENCES_RESULT_SCHEMA <- c(severity = "character", consequence = "character")
 
@@ -385,6 +474,14 @@ apply_result_schema <- function(data, schema) {
 #' many values were lost, so a server that starts sending text where the
 #' schema expects a number is visible without breaking the call.
 #'
+#' An empty cell in a column the schema declares `"character"` reaches R as a
+#' floating-point `NaN`: `pandas.read_csv` infers an all-empty column as
+#' `float64`, and reticulate hands that across as a `numeric`. Those cells
+#' become `NA_character_` rather than the three-character string `"NaN"` that
+#' `as.character()` alone would produce, so a timeseries `TVAL_CHAR` reads as
+#' missing whether or not the rows happened to carry any text. Nothing is
+#' reported as lost, because `NaN` already satisfies `is.na()`.
+#'
 #' @param column The column as it arrived.
 #' @param type One of `"character"`, `"numeric"`, `"integer"`, `"logical"`,
 #'   `"list"`.
@@ -403,6 +500,9 @@ coerce_result_column <- function(column, type, name = "<unnamed>") {
       },
       character(1), USE.NAMES = FALSE
     )
+  }
+  if (identical(type, "character") && is.double(column)) {
+    column[is.nan(column)] <- NA_real_
   }
   coerced <- switch(
     type,

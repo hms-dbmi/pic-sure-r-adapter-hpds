@@ -38,21 +38,27 @@
 buildClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, ...) {
   if (missing(keys) || is.null(keys) || length(keys) == 0L ||
       !is.character(keys) || any(is.na(keys)) || any(!nzchar(keys))) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`keys` must be a non-empty character string or vector of concept paths."
-    ))
+    )
   }
   if (missing(type) || is.null(type)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`type` is required. One of \"FILTER\", \"REQUIRE\", \"ANYRECORD\" (case-insensitive)."
-    ))
+    )
   }
 
+  filter_type <- to_py_enum(
+    type, picsure_py$PhenotypicFilterType, "PhenotypicFilterType",
+    "picsure_phenotypic_filter_type"
+  )
+  min <- check_optional_number(min, "min")
+  max <- check_optional_number(max, "max")
   kwargs <- drop_nulls(list(
     keys       = keys,
-    type       = to_py_enum(type, picsure_py$PhenotypicFilterType, "PhenotypicFilterType", "picsure_phenotypic_filter_type"),
-    min        = check_optional_number(min, "min"),
-    max        = check_optional_number(max, "max"),
+    type       = filter_type,
+    min        = min,
+    max        = max,
     categories = categories,
     ...
   ))
@@ -84,9 +90,9 @@ buildClause <- function(keys, type, min = NULL, max = NULL, categories = NULL, .
 #' @export
 buildClauseGroup <- function(clauses, operator = "AND") {
   if (missing(clauses) || !is.list(clauses) || length(clauses) == 0L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`clauses` must be a non-empty list of clause or clause-group handles."
-    ))
+    )
   }
 
   with_picsure_error(picsure_py$buildClauseGroup(
@@ -125,21 +131,21 @@ buildClauseGroup <- function(clauses, operator = "AND") {
 buildGenomicFilter <- function(key, values = NULL, ...) {
   if (!missing(key) && inherits(key, "picsure_enum_member")) {
     if (!inherits(key, "picsure_genomic_filter_key")) {
-      stop(.picsure_invalid_argument(sprintf(
+      .picsure_reject(sprintf(
         "`key` must be a GenomicFilterKey member or a non-empty character scalar; got %s.",
         format(key)
-      )))
+      ))
     }
     key <- key$value
   } else if (missing(key) || is.null(key) || !is.character(key) ||
              length(key) != 1L || is.na(key) || !nzchar(key)) {
-    stop(.picsure_invalid_argument(sprintf(
+    .picsure_reject(sprintf(
       paste0(
         "`key` must be a GenomicFilterKey member or a non-empty character scalar ",
         "(e.g. \"Gene_with_variant\"); got %s."
       ),
       describe_argument_value(if (missing(key)) NULL else key)
-    )))
+    ))
   }
   if (!is.null(values)) {
     if (inherits(values, "picsure_enum_member")) {
@@ -191,9 +197,9 @@ buildGenomicFilter <- function(key, values = NULL, ...) {
 buildQuery <- function(phenotypicFilter = NULL, includeConcepts = NULL, genomicFilters = NULL) {
   if (!is.null(includeConcepts) &&
       (!is.character(includeConcepts) || any(is.na(includeConcepts)))) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`includeConcepts` must be a character vector of concept paths, or NULL."
-    ))
+    )
   }
 
   kwargs <- drop_nulls(list(

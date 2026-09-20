@@ -73,6 +73,43 @@ test_that("the timeseries schema types TVAL_CHAR the same whatever the data", {
   }
 })
 
+test_that("an empty TVAL_CHAR cell arrives as NA rather than the string NaN", {
+  skip_unless_python_module()
+
+  numeric_only <- parse_timeseries_csv(c(
+    "1,x,42.0,,2020-01-01T00:00:00Z",
+    "2,x,51.0,,2020-01-02T00:00:00Z"
+  ))
+  typed <- picsure:::apply_result_schema(numeric_only, picsure:::.TIMESERIES_RESULT_SCHEMA)
+
+  expect_type(typed$TVAL_CHAR, "character")
+  expect_identical(typed$TVAL_CHAR, c(NA_character_, NA_character_))
+  expect_false(any(typed$TVAL_CHAR %in% "NaN", na.rm = TRUE))
+})
+
+test_that("an empty cell reads the same whether the column parsed as text or as float", {
+  skip_unless_python_module()
+
+  numeric_only <- picsure:::apply_result_schema(
+    parse_timeseries_csv(c("1,x,42.0,,2020-01-01T00:00:00Z")),
+    picsure:::.TIMESERIES_RESULT_SCHEMA
+  )
+  text_only <- picsure:::apply_result_schema(
+    parse_timeseries_csv(c("1,x,,F,2020-01-01T00:00:00Z")),
+    picsure:::.TIMESERIES_RESULT_SCHEMA
+  )
+  mixed <- picsure:::apply_result_schema(
+    parse_timeseries_csv(c("1,x,42.0,,2020-01-01T00:00:00Z",
+                           "2,y,,F,2020-01-02T00:00:00Z")),
+    picsure:::.TIMESERIES_RESULT_SCHEMA
+  )
+
+  expect_identical(numeric_only$TVAL_CHAR, NA_character_)
+  expect_identical(text_only$TVAL_CHAR, "F")
+  expect_identical(mixed$TVAL_CHAR, c(NA_character_, "F"))
+  expect_identical(is.na(numeric_only$TVAL_CHAR), is.na(mixed$TVAL_CHAR)[[1L]])
+})
+
 test_that("runQuery(type = 'timestamp') types a real parsed result end to end", {
   skip_unless_python_module()
 
@@ -84,8 +121,11 @@ test_that("runQuery(type = 'timestamp') types a real parsed result end to end", 
   result <- picsure::runQuery(bdc, list(kind = "clause"), type = "timestamp")
 
   expect_type(result$TVAL_CHAR, "character")
+  expect_identical(result$TVAL_CHAR, NA_character_)
   expect_type(result$NVAL_NUM, "double")
+  expect_identical(result$NVAL_NUM, 42)
   expect_type(result$PATIENT_NUM, "integer")
+  expect_identical(result$PATIENT_NUM, 1L)
 })
 
 test_that("the timestamp schema applies whether type came as a string or a member", {
@@ -98,10 +138,10 @@ test_that("the timestamp schema applies whether type came as a string or a membe
   bdc$runQueryByID <- function(...) numeric_only
 
   for (type in list("timestamp", "TIMESTAMP", picsure::QueryType$TIMESTAMP)) {
-    expect_type(picsure::runQuery(bdc, list(kind = "clause"), type = type)$TVAL_CHAR,
-                "character")
-    expect_type(picsure::runQueryByID(bdc, "an-id", type = type)$TVAL_CHAR,
-                "character")
+    expect_identical(picsure::runQuery(bdc, list(kind = "clause"), type = type)$TVAL_CHAR,
+                     NA_character_)
+    expect_identical(picsure::runQueryByID(bdc, "an-id", type = type)$TVAL_CHAR,
+                     NA_character_)
   }
 })
 

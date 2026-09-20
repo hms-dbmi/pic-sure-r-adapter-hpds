@@ -128,12 +128,55 @@ _dict_extra = pd.DataFrame({
 })
 
 test_that("the dictionary schema matches the pinned Python adapter's column list", {
-  skip_unless_python_module("picsure._services.search")
-  search <- reticulate::import("picsure._services.search")
+  skip_unless_python_module()
 
-  with_values    <- as.character(search$`_COLUMNS_WITH_VALUES`)
-  without_values <- as.character(search$`_COLUMNS_WITHOUT_VALUES`)
+  anchor <- "picsure._services.search"
+  importable <- python_module_importable(anchor)
 
-  expect_identical(names(picsure:::.DICTIONARY_RESULT_SCHEMA), with_values)
-  expect_identical(setdiff(with_values, without_values), "values")
+  expect_true(
+    importable,
+    info = paste0(
+      "The pinned Python build has an interpreter and imports picsure, but ",
+      anchor, " is gone. That module is a private subpackage the adapter is ",
+      "free to rename, and it is the only live anchor ",
+      ".DICTIONARY_RESULT_SCHEMA in R/utils_coerce.R has. Skipping here ",
+      "rather than failing would turn the guard off and leave the run green, ",
+      "with the schema back in the unguarded category and a renamed column ",
+      "silently typing nothing. Re-anchor this test on wherever the adapter ",
+      "now builds the dictionary column list. Until then the schema has to ",
+      "be read against the Python source by hand, the way ",
+      "docs/development/pinned-python-build.md section 7 already prescribes ",
+      "for .GENOMIC_VALUES_RESULT_SCHEMA."
+    )
+  )
+
+  if (importable) {
+    search <- reticulate::import(anchor)
+
+    with_values    <- as.character(search$`_COLUMNS_WITH_VALUES`)
+    without_values <- as.character(search$`_COLUMNS_WITHOUT_VALUES`)
+
+    expect_identical(names(picsure:::.DICTIONARY_RESULT_SCHEMA), with_values)
+    expect_identical(setdiff(with_values, without_values), "values")
+  }
+})
+
+test_that("the consequences schema matches the pinned Python adapter's column list", {
+  skip_unless_python_module()
+  consequences <- reticulate::import("picsure")$genomicConsequences()
+
+  expect_s3_class(consequences, "data.frame")
+  expect_gt(nrow(consequences), 0L)
+  expect_identical(
+    names(consequences), names(picsure:::.CONSEQUENCES_RESULT_SCHEMA),
+    info = paste0(
+      "genomicConsequences() in the pinned Python build returns columns ",
+      paste(names(consequences), collapse = ", "),
+      " while .CONSEQUENCES_RESULT_SCHEMA in R/utils_coerce.R declares ",
+      paste(names(picsure:::.CONSEQUENCES_RESULT_SCHEMA), collapse = ", "),
+      ". apply_result_schema() types only the columns both sides name, so a ",
+      "renamed column silently stops being typed rather than failing. Bring ",
+      "the schema back into line with the Python column list."
+    )
+  )
 })

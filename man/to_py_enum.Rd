@@ -5,7 +5,7 @@
 \title{Resolve a case-insensitive string OR a typed enum member against a
 Python enum proxy.}
 \usage{
-to_py_enum(value, enum_obj, enum_name, expected_subclass)
+to_py_enum(value, enum_obj, enum_name, expected_subclass, call = sys.call(-1L))
 }
 \arguments{
 \item{value}{NULL, a single string, or a `picsure_enum_member`.}
@@ -17,15 +17,18 @@ to_py_enum(value, enum_obj, enum_name, expected_subclass)
 \item{expected_subclass}{The required `picsure_*` subclass for member
 inputs. Members of other subclasses are rejected before any proxy
 lookup happens.}
+
+\item{call}{The call to report in the error, by default the caller's, so
+the rejection names the wrapper the researcher invoked. Threaded on to
+`as_enum_string()` as well, so a member of the wrong enum and an
+unknown member name report the same call.}
 }
 \value{
 NULL if value is NULL; otherwise the corresponding enum member.
 }
 \description{
-The R API accepts strings like "FILTER", "and", or members like
-[`picsure::PhenotypicFilterType$FILTER`][picsure::PhenotypicFilterType]
-and maps them to the Python enum member at call time. Resolution goes
-through the enum's `__members__` map, so only real members can be
-returned.
+`resolve_enum_member_name()` decides which member was asked for; this
+fetches it. A caller that also needs the name should resolve the name
+itself and use [`.py_enum_member()`] rather than call both.
 }
 \keyword{internal}

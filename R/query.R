@@ -60,20 +60,23 @@
 #' @export
 runQuery <- function(session, query, type = "count", ...) {
   if (missing(query) || is.null(query)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery."
-    ))
+    )
   }
 
+  type_name <- resolve_enum_member_name(
+    type, picsure_py$QueryType, "QueryType", "picsure_query_type"
+  )
   kwargs <- drop_nulls(list(
     query = query,
-    type  = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type"),
+    type  = if (is.null(type_name)) NULL else .py_enum_member(picsure_py$QueryType, type_name),
     ...
   ))
 
   apply_query_result_schema(
     with_picsure_error(do.call(session$runQuery, kwargs)),
-    type
+    type_name
   )
 }
 
@@ -86,12 +89,16 @@ runQuery <- function(session, query, type = "count", ...) {
 #' arrived.
 #'
 #' @param result Whatever the Python `runQuery` call returned.
-#' @param type The requested query type, as a string or `QueryType` member.
-#' @return `result`, retyped when `type` is `"timestamp"`.
+#' @param type_name The requested query type as the Python `QueryType` enum
+#'   spells the member, already resolved by `resolve_enum_member_name()`, or
+#'   `NULL` when the caller named no type and Python's own default applied.
+#'   Taking the resolved name rather than the raw argument is what keeps one
+#'   query type from being decided twice by two rules: the wrapper resolves
+#'   against `__members__`, and this reads the answer.
+#' @return `result`, retyped when the query type is the timeseries one.
 #' @noRd
-apply_query_result_schema <- function(result, type) {
-  requested <- as_enum_string(type, "picsure_query_type", "QueryType", field = "name")
-  if (is.null(requested) || !identical(toupper(requested), "TIMESTAMP")) {
+apply_query_result_schema <- function(result, type_name) {
+  if (is.null(type_name) || !identical(toupper(type_name), "TIMESTAMP")) {
     return(result)
   }
   apply_result_schema(result, .TIMESERIES_RESULT_SCHEMA)
@@ -151,12 +158,13 @@ runQueryByID <- function(session, query_id, type = "count") {
   if (missing(query_id)) query_id <- NULL
   as_single_string(query_id, "query_id", hint = "It is the saved query's UUID.")
 
+  type_name <- resolve_enum_member_name(
+    type, picsure_py$QueryType, "QueryType", "picsure_query_type"
+  )
+  query_type <- if (is.null(type_name)) NULL else .py_enum_member(picsure_py$QueryType, type_name)
   apply_query_result_schema(
-    with_picsure_error(session$runQueryByID(
-      query_id,
-      type = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type")
-    )),
-    type
+    with_picsure_error(session$runQueryByID(query_id, type = query_type)),
+    type_name
   )
 }
 
@@ -177,14 +185,14 @@ runQueryByID <- function(session, query_id, type = "count") {
 #' @export
 removeSubQuery <- function(query, target) {
   if (missing(query) || is.null(query)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query` is required. Pass the clause, clause-group, or query handle to edit."
-    ))
+    )
   }
   if (missing(target) || is.null(target)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`target` is required. Pass the clause or clause-group handle to remove."
-    ))
+    )
   }
   with_picsure_error(picsure_py$removeSubQuery(query, target))
 }
@@ -206,9 +214,9 @@ replaceClause <- function(query, target, replacement) {
   if (missing(query) || is.null(query) ||
       missing(target) || is.null(target) ||
       missing(replacement) || is.null(replacement)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query`, `target`, and `replacement` are all required."
-    ))
+    )
   }
   with_picsure_error(picsure_py$replaceClause(query, target, replacement))
 }
@@ -238,17 +246,12 @@ replaceClause <- function(query, target, replacement) {
 #' @export
 saveQueryByName <- function(session, query, name, overwrite = FALSE) {
   if (missing(query) || is.null(query)) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery."
-    ))
+    )
   }
   if (missing(name)) name <- NULL
   as_single_string(name, "name")
-  if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
-    stop(.picsure_invalid_argument(sprintf(
-      "`overwrite` must be a single logical (TRUE or FALSE); got %s.",
-      describe_argument_value(overwrite)
-    )))
-  }
+  as_single_flag(overwrite, "`overwrite`")
   with_picsure_error(session$saveQueryByName(query, name, overwrite = overwrite))
 }

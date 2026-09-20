@@ -4,7 +4,7 @@
 \alias{as_single_string}
 \title{Validate a single non-empty string.}
 \usage{
-as_single_string(value, arg, hint = NULL)
+as_single_string(value, arg, hint = NULL, call = sys.call(-1L))
 }
 \arguments{
 \item{value}{The value to validate.}
@@ -12,6 +12,9 @@ as_single_string(value, arg, hint = NULL)
 \item{arg}{The argument's name, for the error message.}
 
 \item{hint}{Optional sentence appended to the error message.}
+
+\item{call}{The call to report in the error, by default the caller's, so
+the rejection names the wrapper the researcher invoked.}
 }
 \value{
 `value` unchanged.

@@ -30,30 +30,24 @@ facets <- function(session) {
 #'
 #' A facet entry selects values inside one category. The Python FacetSet's
 #' `add(category, values)` takes a single category and a vector of values, so
-#' a vector of values is fine and a vector of keys is not. Checking length
-#' first keeps a length-2 key out of `is.na(key)` inside an `||`, which base R
-#' rejects with a condition-length error that does not name the argument.
+#' a vector of values is fine and a vector of keys is not. This is
+#' `as_single_string()` plus the sentence that says so; the length-before-
+#' content order that keeps a length-2 key out of `is.na(key)` inside an
+#' `||` lives there.
 #'
 #' @param key The value passed as `key`.
 #' @param call The call to report in the error, by default the caller's.
 #' @return `key` unchanged.
 #' @noRd
 .check_facet_key <- function(key, call = sys.call(-1L)) {
-  if (is.null(key) || length(key) != 1L || !is.character(key) ||
-      is.na(key) || !nzchar(key)) {
-    stop(.picsure_invalid_argument(
-      sprintf(
-        paste0(
-          "`key` must be a single facet category name; got %s. A facet entry ",
-          "selects values inside one category, so pass one key (e.g. ",
-          "\"dataset_id\" or \"data_type\") and give the vector to `value`."
-        ),
-        describe_argument_value(key)
-      ),
-      call = call
-    ))
-  }
-  key
+  as_single_string(
+    key, "key",
+    hint = paste0(
+      "A facet entry selects values inside one category, so pass one key ",
+      "(e.g. \"dataset_id\" or \"data_type\") and give the vector to `value`."
+    ),
+    call = call
+  )
 }
 
 #' Add an entry to a FacetSet.
@@ -82,9 +76,9 @@ addFacet <- function(facet_set, key, value) {
   if (missing(key)) key <- NULL
   .check_facet_key(key)
   if (missing(value) || is.null(value) || length(value) == 0L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`value` is required. Pass the facet value (or vector of values) to add."
-    ))
+    )
   }
   for (v in value) {
     with_picsure_error(facet_set$add(key, v))
@@ -138,9 +132,9 @@ removeFacet <- function(facet_set, key, value) {
   if (missing(key)) key <- NULL
   .check_facet_key(key)
   if (missing(value) || is.null(value) || length(value) == 0L) {
-    stop(.picsure_invalid_argument(
+    .picsure_reject(
       "`value` is required. Pass the facet value (or vector of values) to remove."
-    ))
+    )
   }
   view <- with_picsure_error(facet_set$view())
   original <- as.character(unlist(view[[key]], use.names = FALSE))

@@ -335,7 +335,23 @@ test_that("saveQueryByName validates name and overwrite", {
   expect_error(picsure::saveQueryByName(session, "Q", ""),  "non-empty")
   expect_error(picsure::saveQueryByName(session, "Q", NA_character_), "non-empty")
   expect_error(picsure::saveQueryByName(session, "Q", "Cohort", overwrite = NA),
-               "single logical")
+               "TRUE or FALSE")
+})
+
+test_that("saveQueryByName rejects every non-scalar-logical overwrite", {
+  session <- new_fake_session()
+
+  for (value in list(NULL, NA, NA_character_, "TRUE", "yes", 1, 0,
+                     c(TRUE, FALSE), logical(0), list(TRUE))) {
+    err <- tryCatch(
+      picsure::saveQueryByName(session, "Q", "Cohort", overwrite = value),
+      condition = function(e) e
+    )
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`overwrite`", fixed = TRUE)
+  }
+
+  expect_length(session$.calls$saveQueryByName, 0L)
 })
 
 test_that("runQuery(type = 'timestamp') applies the timeseries schema", {
@@ -359,6 +375,25 @@ test_that("runQuery(type = 'timestamp') applies the timeseries schema", {
   expect_type(result$NVAL_NUM, "double")
   expect_type(result$TVAL_CHAR, "character")
   expect_type(result$TIMESTAMP, "character")
+})
+
+test_that("one type argument decides the Python call and the schema together", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  forwarded <- NULL
+  bdc$runQuery <- function(...) {
+    forwarded <<- list(...)$type
+    data.frame(
+      PATIENT_NUM = c("1", "2"), TVAL_CHAR = c(NA_real_, NA_real_),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  result <- picsure::runQuery(bdc, list(kind = "clause"), type = "TiMeStAmP")
+
+  expect_equal(forwarded, fake_picsure_py()$QueryType$TIMESTAMP)
+  expect_type(result$PATIENT_NUM, "integer")
+  expect_type(result$TVAL_CHAR, "character")
 })
 
 test_that("a non-timestamp result keeps its server-driven column types", {

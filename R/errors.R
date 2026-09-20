@@ -15,14 +15,22 @@
 #     `tryCatch(picsureError = ...)` missed them. They are now
 #     `picsureValidationError`s, which are `picsureError`s.
 #
-# The class hierarchy mirrors the Python one so a handler written against
-# either language reads the same. The R side owns its own ancestry. A mapped
-# Python class is expanded through `.PICSURE_CONDITION_PARENTS` rather than
-# by copying the installed Python build's MRO, so the R hierarchy keeps its
-# shape when the pinned Python commit moves.
+# The class hierarchy mirrors the shape the Python adapter is moving to, so a
+# handler written against either language reads the same once the pin catches
+# up. It runs ahead of the pinned build in two places. Pinned
+# `PicSureConsentDeniedError` derives straight from `PicSureError`, while R
+# already places `picsureConsentDeniedError` under `picsureAuthorizationError`
+# and so under `picsureAuthError`. Pinned `PicSureConsentLookupError` derives
+# straight from `PicSureConnectionError`, while R already inserts
+# `picsureServerError` between the two. The R side owns its own ancestry. A
+# mapped Python class is expanded through `.PICSURE_CONDITION_PARENTS` rather
+# than by copying the installed Python build's MRO, so the R hierarchy keeps
+# its shape when the pinned Python commit moves.
 
-# Ancestors of each condition class, most specific first, excluding
-# `picsureError`, which every one of them carries.
+# The immediate parent of each condition class, or `character()` for a root.
+# One name per row, never a chain: `.picsure_condition_ancestors()` walks the
+# rows to build the full ancestry, so a row and the tree below can never
+# disagree. `picsureError` is carried by every condition and named by no row.
 #
 #   picsureError
 #   |- picsureAuthError                  server answered and refused
@@ -41,15 +49,30 @@
 # locally-detected one (malformed, expired) is an authentication error. Both
 # are `picsureAuthError`s, which is the class to catch when the fix is to
 # refresh the token.
+#
+# This table's names are the key set the other two condition tables draw
+# from. Every value in `.PICSURE_PY_CONDITION_CLASSES` and every value in
+# `.PICSURE_ERROR_TYPE_CLASSES` must appear as a name here, because
+# `.picsure_condition_classes()` passes the chosen class through
+# `match.arg(class, names(.PICSURE_CONDITION_PARENTS))`. A value with no row
+# here does not fail at load time or in any wrapper: it fails when the
+# backend first raises that error, and it fails by replacing the
+# researcher's message with `match.arg()`'s "'arg' should be one of ..." on
+# a bare `simpleError`, which `tryCatch(picsureError = ...)` does not catch.
+# Adding a class to either table therefore means adding a row here too.
+# `test-errors.R` guards that subset relation for both tables. The reverse
+# does not hold: a name here with no Python class mapped to it is
+# legitimate, and several are, because the R hierarchy runs ahead of the
+# pinned build.
 .PICSURE_CONDITION_PARENTS <- list(
   picsureAuthError           = character(),
   picsureAuthenticationError = "picsureAuthError",
   picsureAuthorizationError  = "picsureAuthError",
-  picsureConsentDeniedError  = c("picsureAuthorizationError", "picsureAuthError"),
+  picsureConsentDeniedError  = "picsureAuthorizationError",
   picsureConnectionError     = character(),
   picsureTLSError            = "picsureConnectionError",
   picsureServerError         = "picsureConnectionError",
-  picsureConsentLookupError  = c("picsureServerError", "picsureConnectionError"),
+  picsureConsentLookupError  = "picsureServerError",
   picsureQueryError          = character(),
   picsureValidationError     = character()
 )
@@ -79,11 +102,85 @@
 
 # Backend `errorType` strings to R condition class, for a Python build whose
 # exception class does not name the refinement. A fallback behind the
-# class-vector lookup above.
+# class-vector lookup above, and a forward bridge rather than a live path.
+#
+# This is the third condition table and the odd one out. The two above are
+# keyed by names this package owns: R condition classes, and the Python
+# exception classes reticulate puts in a condition's class vector. `errorType`
+# is neither. It is a field in the JSON body the PIC-SURE server sends, which
+# the Python adapter reads and stores on the exception as `error_type`. This
+# is the only place in `R/` that knows a server wire-format field at all, and
+# that is why its keys look nothing like the keys of the table above it.
+#
+# Against the currently pinned Python build it is unreachable. The only two
+# exception classes that carry an `error_type` are `PicSureConsentDeniedError`
+# and `PicSureConsentLookupError`, both already keys in
+# `.PICSURE_PY_CONDITION_CLASSES`, and both set from the same branch of the
+# adapter that chose the class. So the class-vector lookup always matches
+# first and this table is consulted only for a condition a test fabricates.
+#
+# It is kept anyway, for the build where a server refinement arrives on an
+# exception class the map does not know. Such a build would otherwise give a
+# bare `picsureError`, and this table turns it into the leaf the server
+# named. It costs one lookup on an error path. Its values are covered by the
+# ancestry-row guard in `test-errors.R`, the same as the table above.
 .PICSURE_ERROR_TYPE_CLASSES <- c(
   consent_denied        = "picsureConsentDeniedError",
   consent_lookup_failed = "picsureConsentLookupError"
 )
+
+# Walks `.PICSURE_CONDITION_PARENTS` from one class up to its root.
+#
+# Returns the ancestors most specific first, excluding `picsureError`, which
+# every condition carries. Deriving the chain rather than storing it is what
+# keeps a row from disagreeing with the tree: a leaf added under
+# `picsureServerError` inherits `picsureConnectionError` whether or not
+# whoever added it thought to say so.
+#
+# A row naming more than one parent, a parent with no row of its own, and a
+# cycle are all bad edits, and each stops the walk with a message naming the
+# row rather than producing a condition whose ancestry is wrong or hanging.
+.picsure_condition_ancestors <- function(class) {
+  ancestors <- character()
+  current <- class
+  repeat {
+    parent <- .PICSURE_CONDITION_PARENTS[[current]]
+    if (length(parent) == 0L) {
+      return(ancestors)
+    }
+    if (length(parent) > 1L) {
+      stop(sprintf(
+        paste0(
+          "Condition class '%s' names %d parents in .PICSURE_CONDITION_PARENTS. ",
+          "Each row names one immediate parent, or character() for a root; ",
+          "the rest of the chain is derived."
+        ),
+        current, length(parent)
+      ), call. = FALSE)
+    }
+    if (!parent %in% names(.PICSURE_CONDITION_PARENTS)) {
+      stop(sprintf(
+        paste0(
+          "Condition class '%s' names the parent '%s', which ",
+          ".PICSURE_CONDITION_PARENTS has no row for. Add a row for it, or ",
+          "correct the parent name."
+        ),
+        current, parent
+      ), call. = FALSE)
+    }
+    if (parent %in% c(class, ancestors)) {
+      stop(sprintf(
+        paste0(
+          "Condition class '%s' is its own ancestor through '%s' in ",
+          ".PICSURE_CONDITION_PARENTS. The rows must form a tree."
+        ),
+        class, parent
+      ), call. = FALSE)
+    }
+    ancestors <- c(ancestors, parent)
+    current <- parent
+  }
+}
 
 # Expands a condition class to the full vector `structure()` should carry.
 #
@@ -97,7 +194,7 @@
     return(base)
   }
   class <- match.arg(class, names(.PICSURE_CONDITION_PARENTS))
-  unique(c(class, .PICSURE_CONDITION_PARENTS[[class]], base))
+  unique(c(class, .picsure_condition_ancestors(class), base))
 }
 
 #' Construct a picsureError condition.
@@ -156,7 +253,10 @@
 #' token rejection arrives as an authorization error while a locally-detected
 #' one (malformed, expired) arrives as an authentication error. That is why
 #' `picsureAuthError`, not either leaf, is the class to catch for token
-#' trouble.
+#' trouble. Note that `picsureAuthError` also catches
+#' `picsureConsentDeniedError`, which no token refresh will clear, so a
+#' handler that refreshes and retries should test for
+#' `picsureConsentDeniedError` first and give up on it rather than retry.
 #'
 #' **What the pinned Python build distinguishes.** The R side derives
 #' ancestry from its own table rather than from the installed Python
@@ -164,14 +264,25 @@
 #' build. What varies is how finely the leaf is identified. The pinned Python
 #' adapter has a flatter hierarchy. It defines `PicSureAuthError` but none of
 #' `PicSureAuthenticationError`, `PicSureAuthorizationError`,
-#' `PicSureTLSError`, or `PicSureServerError`. Against that build a
-#' server-side refusal arrives as a plain `picsureAuthError` and a transport
-#' failure as a plain `picsureConnectionError`. The authentication-versus-
-#' authorization and TLS-versus-5xx splits start arriving once the pin moves
-#' to a build that defines those classes. `picsureConsentDeniedError`,
+#' `PicSureTLSError`, or `PicSureServerError`.
+#'
+#' Against that build a server-side token refusal arrives as a plain
+#' `picsureAuthError` and a transport failure as a plain
+#' `picsureConnectionError`. `picsureTLSError` never arrives at all, and
+#' neither `picsureAuthenticationError` nor `picsureAuthorizationError`
+#' arrives as the leaf that identifies a condition. Those three start
+#' arriving once the pin moves to a build that defines the matching Python
+#' classes.
+#'
+#' Everything else in the tree arrives today. `picsureConsentDeniedError`,
 #' `picsureConsentLookupError`, `picsureQueryError`, and
-#' `picsureValidationError` are distinguished on the pinned build today, as
-#' are the `picsureValidationError`s this package raises itself.
+#' `picsureValidationError` are identified as leaves on the pinned build, as
+#' are the `picsureValidationError`s this package raises itself, and each
+#' carries the ancestors the R table gives it. That is how
+#' `picsureServerError` reaches a handler on the pinned build: not as a leaf,
+#' but on every `picsureConsentLookupError`, which the table places beneath
+#' it. `picsureAuthorizationError` and `picsureAuthError` reach a handler the
+#' same way, on every `picsureConsentDeniedError`.
 #' @examples
 #' \dontrun{
 #' tryCatch(
@@ -200,14 +311,30 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
   )
 }
 
-# Builds the condition for an argument this package rejected itself.
-#
-# `call` defaults to the call of the wrapper that rejected the argument, so
-# the error reports `searchGenomicValues(...)` rather than this helper.
-.picsure_invalid_argument <- function(message, call = sys.call(-1L)) {
-  condition <- picsureError(message, class = "picsureValidationError")
+#' Raise the error for an argument this package rejected itself.
+#'
+#' Builds the condition and raises it in one step. A site written
+#' `stop(picsureError(...))` forces its argument inside `stop`'s own frame,
+#' so the condition records the `stop(...)` expression and the researcher
+#' reads the constructor rather than the function they called. Raising from
+#' here leaves the wrapper's frame one step up, so a rejection in
+#' `buildQuery()`'s own body reports `buildQuery(...)`.
+#'
+#' @param message The user-facing message.
+#' @param class The specialized condition class, `"picsureValidationError"`
+#'   unless a caller names another. `NULL` for a plain `picsureError`.
+#' @param call The call to report. Defaults to the caller's, which is the
+#'   wrapper the researcher invoked when the check sits in that wrapper's own
+#'   body. A shared validator in `R/utils_coerce.R` takes the same default in
+#'   its own frame and threads it down here, so a rejection raised from a
+#'   helper names the wrapper too. `NULL` is for the frames that genuinely
+#'   are not a call anyone made, chiefly the Python error boundary.
+#' @return Never returns.
+#' @noRd
+.picsure_reject <- function(message, class = "picsureValidationError", call = sys.call(-1L)) {
+  condition <- picsureError(message, class = class)
   condition$call <- call
-  condition
+  stop(condition)
 }
 
 # Reads the Python exception class name off a reticulate condition.
@@ -238,6 +365,11 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
 }
 
 # Picks the R condition class for a Python exception, most specific first.
+#
+# The class vector decides whenever it can, and on the pinned build it always
+# can for the two classes that carry an `error_type`, so the `errorType`
+# branch below is the forward bridge described at
+# `.PICSURE_ERROR_TYPE_CLASSES` and not a live path here.
 .picsure_condition_class_for <- function(py_cause) {
   mapped <- .PICSURE_PY_CONDITION_CLASSES[class(py_cause)]
   mapped <- mapped[!is.na(mapped)]
@@ -344,12 +476,29 @@ picsureError <- function(message, py_cause = NULL, class = NULL) {
   )
 }
 
+# Builds the picsureError for a Python exception caught at the boundary.
+#
+# The condition carries no `call`, so R prints the Python-crafted message on
+# its own rather than prefixing it with the name of an internal helper.
+# Recovering an enclosing frame instead would not be safe here:
+# `with_picsure_error()` is invoked from places where the nearest frame is
+# package plumbing and not the call the researcher wrote, such as inside
+# `removeFacet()`'s restore `tryCatch`, so a recovered call would sometimes
+# name a `tryCatch` internal, and the message Python wrote is written to
+# stand on its own. The shared argument checkers meet the same problem from
+# the other end and solve it differently: each takes the call as a parameter
+# defaulted to its own caller's, so the wrapper's call reaches the condition
+# without anything being recovered from the stack here. The Python origin
+# stays reachable on `$py_cause` and `$python_class`, and through
+# `reticulate::py_last_error()`.
 .picsure_error_from_python <- function(py_cause) {
-  picsureError(
+  condition <- picsureError(
     .picsure_with_python_detail(.picsure_python_message(py_cause), py_cause),
     py_cause = py_cause,
     class    = .picsure_condition_class_for(py_cause)
   )
+  condition$call <- NULL
+  condition
 }
 
 #' Wrap a Python call so Python exceptions surface as picsureErrors.

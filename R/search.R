@@ -16,9 +16,13 @@
 #'   fixed by the dictionary schema whether or not the search matched
 #'   anything: `conceptPath`, `name`, `display`, `description`, `dataType`,
 #'   `studyId`, and `studyAcronym` are character, `min` and `max` numeric,
-#'   `allowFiltering` logical, and `values` and `meta` list columns. A search
-#'   that matched nothing returns a zero-row frame with those same types, so
-#'   arithmetic on `min` / `max` behaves the same either way.
+#'   `allowFiltering` logical, and `meta` a list column. `values` is a list
+#'   column too, and is present only when `include_values = TRUE`; with
+#'   `include_values = FALSE` the adapter never builds it and the returned
+#'   frame has no such column. The rest of the column set and its types are
+#'   the same either way. A search that matched nothing returns a zero-row
+#'   frame with those same types, so arithmetic on `min` / `max` behaves the
+#'   same either way.
 #' @examples
 #' \dontrun{
 #' bdc <- picsure::connect(platform = "BDC Authorized", token = my_token)
@@ -28,10 +32,10 @@
 #' @export
 searchDictionary <- function(session, term = "", facets = NULL, include_values = TRUE, ...) {
   if (is.null(term) || length(term) != 1L || !is.character(term) || is.na(term)) {
-    stop(.picsure_invalid_argument(sprintf(
+    .picsure_reject(sprintf(
       "`term` must be a single string (empty string is OK to fetch all); got %s.",
       describe_argument_value(term)
-    )))
+    ))
   }
 
   kwargs <- drop_nulls(list(
@@ -73,11 +77,13 @@ searchGenomicValues <- function(session, genomicConceptPath, query = "", page = 
     genomicConceptPath, "genomicConceptPath",
     hint = "For example \"Gene_with_variant\"."
   )
+  page <- as_positive_whole_number(page, "page")
+  size <- as_positive_whole_number(size, "size")
   kwargs <- drop_nulls(list(
     genomicConceptPath = genomicConceptPath,
     query              = query,
-    page               = as_positive_whole_number(page, "page"),
-    size               = as_positive_whole_number(size, "size"),
+    page               = page,
+    size               = size,
     ...
   ))
   apply_result_schema(

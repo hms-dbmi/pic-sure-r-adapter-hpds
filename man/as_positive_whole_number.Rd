@@ -4,12 +4,15 @@
 \alias{as_positive_whole_number}
 \title{Validate a single positive whole number.}
 \usage{
-as_positive_whole_number(value, arg)
+as_positive_whole_number(value, arg, call = sys.call(-1L))
 }
 \arguments{
 \item{value}{The value to validate.}
 
 \item{arg}{The argument's name, for the error message.}
+
+\item{call}{The call to report in the error, by default the caller's, so
+the rejection names the wrapper the researcher invoked.}
 }
 \value{
 `value` as an integer scalar.

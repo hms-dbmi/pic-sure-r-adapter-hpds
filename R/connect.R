@@ -12,7 +12,11 @@
 #'   [`Platform$BDC_AUTHORIZED`][picsure::Platform]) or a full URL string
 #'   for an unlisted deployment (e.g. `"https://my-picsure.example.com"`).
 #'   Human-readable label strings such as `"BDC Authorized"` are **not**
-#'   accepted and raise a `picsureError`.
+#'   accepted and raise a `picsureError`. A member is resolved against the
+#'   Python enum by its member name, which is the only unambiguous handle:
+#'   `Platform$BDC_AUTHORIZED` and `Platform$BDC_DEV_AUTHORIZED` share a
+#'   label, and `Platform$BDC_AUTHORIZED` and `Platform$BDC_OPEN` share a
+#'   URL, told apart by the `/hpds/auth` and `/hpds/open` backend paths.
 #' @param token Your personal PIC-SURE access token, obtained from the
 #'   "User Profile" tab of your PIC-SURE instance. Optional for open-access
 #'   platforms (`Platform$BDC_OPEN`, `Platform$BDC_DEV_OPEN`,
@@ -31,9 +35,16 @@
 #'       the studies the user may see. `TRUE` for the BDC authorized
 #'       `Platform` members, `FALSE` for every other member **and for a
 #'       custom URL string**.}
-#'     \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
-#'       unauthenticated mode against the open HPDS backend and no token is
-#'       asked for, even on an `_AUTHORIZED` member. When `TRUE`, a token is
+#'     \item{`requires_auth`}{Logical. When `FALSE`, neither this package nor
+#'       the Python adapter asks for a token, even on an `_AUTHORIZED`
+#'       member. It does not on its own move the session to the open HPDS
+#'       backend: the pinned adapter picks that backend only when neither
+#'       `requires_auth` nor `include_consents` is in force, and
+#'       `include_consents` still defaults to the member's own flag, which is
+#'       `TRUE` for the BDC authorized members. To connect anonymously
+#'       against the open backend on such a member, pass
+#'       `include_consents = FALSE` as well; otherwise `connect()` calls
+#'       PSAMA's consent endpoint with no token. When `TRUE`, a token is
 #'       required, even for a custom URL string. Defaults to `TRUE` for the
 #'       `_AUTHORIZED` members and for a custom URL string, `FALSE` for the
 #'       `_OPEN` members.}
@@ -58,19 +69,21 @@
 #'       bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
 #'       `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
 #'       verifying.}
-#'     \item{`timeout`}{Numeric. Per-request deadline in seconds for the data
-#'       operations the session performs: counts, participant downloads, and
-#'       export polls. Defaults to the Python adapter's ten minutes, because
-#'       a large dataset can take minutes to assemble server-side. The
-#'       connect-time validation request keeps its own short deadline.}
-#'     \item{`validate`}{Logical. When `TRUE` (the Python adapter's default),
-#'       `connect()` checks the token's shape and expiry locally, then sends
-#'       one request to confirm the deployment is reachable and accepts the
-#'       token. Pass `FALSE` for offline or mocked use; nothing is sent or
-#'       checked, so the returned session may not work.}
 #'   }
-#'   `timeout` and `validate` need a pinned Python adapter that accepts
-#'   them. An older pin rejects either as an unexpected keyword.
+#'   `timeout` and `validate` are **not accepted by this wrapper yet**. The
+#'   pinned Python adapter has no such parameters, so either one is rejected
+#'   up front like any other unknown key, with a `picsureValidationError`
+#'   naming it. Both arrive when the pin moves to a build that takes them.
+#'   `timeout` will be a number, the per-request deadline in seconds for the
+#'   data operations the session performs, counts, participant downloads, and
+#'   export polls, defaulting to the Python adapter's ten minutes, because a
+#'   large dataset can take minutes to assemble server-side; the connect-time
+#'   validation request will keep its own short deadline. `validate` will be
+#'   a logical: `TRUE`, the Python adapter's default, will make `connect()`
+#'   check the token's shape and expiry locally and then send one request to
+#'   confirm the deployment is reachable and accepts the token, and `FALSE`
+#'   will skip both for offline or mocked use, so that nothing is sent or
+#'   checked and the returned session may not work.
 #'
 #' @section Defaults:
 #' `include_consents`, `requires_auth`, and `supports_genomic` are all
@@ -118,9 +131,11 @@
 #' over the option, and both go through the same checks: `dev_mode` must be
 #' a single `TRUE` or `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a
 #' path string. A string that spells a boolean, such as `"false"`, is
-#' rejected rather than treated as a certificate path. Whenever verification
-#' ends up off, `connect()` emits a message naming the argument or option
-#' that turned it off.
+#' rejected rather than treated as a certificate path. When the `verify`
+#' argument or `options(picsure.ssl_verify)` turns verification off,
+#' `connect()` emits a message naming which of the two did it. Verification
+#' turned off Python-side through `PICSURE_SSL_VERIFY` is silent on the R
+#' side, one more reason to prefer the option.
 #' @return An opaque session object. Pass it as the first argument to
 #'   `picsure::searchDictionary()`, `picsure::runQuery()`, and friends.
 #' @examples
@@ -132,7 +147,7 @@
 connect <- function(platform, token = "", ...) {
   bad_platform_msg <- "`platform` is required. Pass a Platform member (e.g. picsure::Platform$BDC_AUTHORIZED) or a full URL string. See ?picsure::Platform."
   if (missing(platform) || is.null(platform)) {
-    stop(picsureError(bad_platform_msg, class = "picsureValidationError"))
+    .picsure_reject(bad_platform_msg)
   }
   # Track whether the platform is identifiably auth-required from R-side
   # info alone. For label strings or raw Python objects we can't tell
@@ -140,28 +155,18 @@ connect <- function(platform, token = "", ...) {
   requires_auth_known <- inherits(platform, "picsure_platform") &&
                          isTRUE(platform$requires_auth)
   if (inherits(platform, "picsure_enum_member")) {
-    if (!inherits(platform, "picsure_platform")) {
-      stop(picsureError(
-        sprintf("Expected a Platform member, got %s.", format(platform)),
-        class = "picsureValidationError"
-      ))
-    }
-    # Convert the R-side member to the Python Platform enum member by
-    # name. Going through the proxy avoids the URL/label ambiguity:
-    # BDC_AUTHORIZED and BDC_OPEN share a URL (distinguished by the
-    # /hpds/auth vs /hpds/open backend path); BDC_AUTHORIZED and
-    # BDC_DEV_AUTHORIZED share a label.
-    platform <- picsure_py$Platform[[platform$name]]
+    platform <- to_py_enum(platform, picsure_py$Platform, "Platform",
+                           "picsure_platform")
   } else if (is.character(platform)) {
     if (length(platform) != 1L || is.na(platform) || !nzchar(platform)) {
-      stop(picsureError(bad_platform_msg, class = "picsureValidationError"))
+      .picsure_reject(bad_platform_msg)
     }
     # Only URL strings are valid string platforms. Python's
     # resolve_platform rejects human-readable labels ("BDC Authorized"),
     # so catch them here with an R-side message rather than letting the
     # forwarded call fail deeper with a less specific error.
     if (!grepl("^https?://", platform, ignore.case = TRUE)) {
-      stop(picsureError(
+      .picsure_reject(
         sprintf(
           paste0(
             "%s is not a valid platform. Platform labels are not accepted; ",
@@ -170,27 +175,25 @@ connect <- function(platform, token = "", ...) {
             "See ?picsure::Platform."
           ),
           encodeString(platform, quote = "\"")
-        ),
-        class = "picsureValidationError"
-      ))
+        )
+      )
     }
   } else if (!inherits(platform, "python.builtin.object")) {
     # Reject logicals like NA, numerics, lists, etc.; accept only strings,
     # picsure_platform members, or Python objects (e.g. a reticulate-
     # wrapped Platform enum member).
-    stop(picsureError(bad_platform_msg, class = "picsureValidationError"))
+    .picsure_reject(bad_platform_msg)
   }
   extras <- list(...)
   unknown <- setdiff(names(extras), CONNECT_EXTRA_KWARGS)
   if (length(unknown) > 0) {
-    stop(picsureError(
+    .picsure_reject(
       sprintf(
         "Unknown argument(s) to connect(): %s. Valid extras: %s.",
         paste(sprintf("`%s`", unknown), collapse = ", "),
         paste(sprintf("`%s`", CONNECT_EXTRA_KWARGS), collapse = ", ")
-      ),
-      class = "picsureValidationError"
-    ))
+      )
+    )
   }
 
   if (!is.null(extras$requires_auth)) {
@@ -202,16 +205,14 @@ connect <- function(platform, token = "", ...) {
   # PlatformInfo) decides.
   if (is.null(token)) token <- ""
   if (!is.character(token) || length(token) != 1L || is.na(token)) {
-    stop(picsureError(
-      "`token` must be a single character string (use \"\" for open platforms).",
-      class = "picsureValidationError"
-    ))
+    .picsure_reject(
+      "`token` must be a single character string (use \"\" for open platforms)."
+    )
   }
   if (requires_auth_known && !nzchar(token)) {
-    stop(picsureError(
-      "`token` is required for this platform. Copy it from the 'User Profile' tab of PIC-SURE.",
-      class = "picsureValidationError"
-    ))
+    .picsure_reject(
+      "`token` is required for this platform. Copy it from the 'User Profile' tab of PIC-SURE."
+    )
   }
 
   # Identify this adapter to the backend audit log. Python's connect()
@@ -232,7 +233,7 @@ connect <- function(platform, token = "", ...) {
     ))
   }
   dev_mode <- .picsure_setting(
-    extras$dev_mode, "dev_mode", "picsure.dev_mode", .picsure_check_flag
+    extras$dev_mode, "dev_mode", "picsure.dev_mode", as_single_flag
   )
   extras$dev_mode <- dev_mode$value
 
@@ -257,28 +258,46 @@ connect <- function(platform, token = "", ...) {
 #' @param explicit The value passed to `connect()`, or `NULL`.
 #' @param arg_name The `connect()` argument name, used in messages.
 #' @param option_name The R option name, for example `"picsure.ssl_verify"`.
-#' @param check Validator called as `check(value, label)`. It returns the
-#'   value or signals a `picsureValidationError` that names `label`.
+#' @param check Validator called as `check(value, label, call)`. It returns
+#'   the value or signals a `picsureValidationError` that names `label`.
+#' @param call The call to report in a rejection, by default this function's
+#'   own caller. Threaded down to `check` because the validator's caller is
+#'   this helper rather than `connect()`, so leaving it to the validator's
+#'   own default would report an internal.
 #' @return A list with `value`, the validated setting or `NULL`, and
 #'   `source`, a phrase naming where it came from, or `NULL` when unset.
 #' @noRd
-.picsure_setting <- function(explicit, arg_name, option_name, check) {
+.picsure_setting <- function(explicit, arg_name, option_name, check,
+                             call = sys.call(-1L)) {
   if (!is.null(explicit)) {
     label <- sprintf("`%s`", arg_name)
-    return(list(value = check(explicit, label), source = sprintf("the %s argument", label)))
+    return(list(
+      value  = check(explicit, label, call = call),
+      source = sprintf("the %s argument", label)
+    ))
   }
   value <- getOption(option_name, NULL)
   if (is.null(value)) {
     return(list(value = NULL, source = NULL))
   }
   label <- sprintf("options(%s)", option_name)
-  list(value = check(value, label), source = label)
+  list(value = check(value, label, call = call), source = label)
 }
 
 #' Strings the Python adapter reads as booleans in `PICSURE_SSL_VERIFY`.
 #'
 #' The R side rejects them instead of forwarding them, because an explicit
 #' `verify` string reaches httpx as a certificate path.
+#'
+#' These two vectors mirror inline Python literals, not module constants.
+#' Both word lists are tuples written into the body of `_resolve_verify()` in
+#' `picsure/_transport/client.py`, so there is no importable name to compare
+#' them against and no live drift guard is possible, unlike
+#' `CONNECT_EXTRA_KWARGS` and the enums, which read the pinned build. Read
+#' that Python function by hand when the pin moves. A word Python starts
+#' accepting and R does not know is forwarded rather than rejected, httpx
+#' then treats it as a CA-bundle path, and a researcher asking to turn
+#' verification off gets a certificate-load error instead.
 #' @noRd
 .VERIFY_TRUE_STRINGS <- c("true", "1", "yes", "on")
 .VERIFY_FALSE_STRINGS <- c("false", "0", "no", "off")
@@ -289,55 +308,46 @@ connect <- function(platform, token = "", ...) {
 #'   A string that spells a boolean is rejected with a message saying which
 #'   logical to pass instead.
 #' @param label Name of the argument or option, used in the error message.
+#' @param call The call to report in the error. `.picsure_setting()` passes
+#'   `connect()`'s own call, because this validator's caller is that helper.
 #' @return `value` unchanged.
 #' @noRd
-.picsure_check_verify <- function(value, label) {
+.picsure_check_verify <- function(value, label, call = sys.call(-1L)) {
   if (is.logical(value) && length(value) == 1L && !is.na(value)) {
     return(value)
   }
   if (is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)) {
     spelled <- tolower(trimws(value))
     if (spelled %in% c(.VERIFY_TRUE_STRINGS, .VERIFY_FALSE_STRINGS)) {
-      stop(.picsure_invalid_argument(sprintf(
+      .picsure_reject(sprintf(
         paste0(
           "%s must be TRUE, FALSE, or a path to a CA bundle; got the string %s. ",
           "Pass the logical %s instead."
         ),
         label, encodeString(value, quote = "\""),
         if (spelled %in% .VERIFY_TRUE_STRINGS) "TRUE" else "FALSE"
-      )))
+      ), call = call)
     }
     return(value)
   }
-  stop(.picsure_invalid_argument(sprintf(
+  .picsure_reject(sprintf(
     paste0(
       "%s must be TRUE, FALSE, or a path to a CA bundle as a single ",
       "string; got %s."
     ),
     label, describe_argument_value(value)
-  )))
-}
-
-#' Validate a logical flag setting.
-#'
-#' @param value `TRUE` or `FALSE`.
-#' @param label Name of the argument or option, used in the error message.
-#' @return `value` unchanged.
-#' @noRd
-.picsure_check_flag <- function(value, label) {
-  if (is.logical(value) && length(value) == 1L && !is.na(value)) {
-    return(value)
-  }
-  stop(.picsure_invalid_argument(sprintf(
-    "%s must be TRUE or FALSE; got %s.", label,
-    describe_argument_value(value)
-  )))
+  ), call = call)
 }
 
 # Whitelist of optional kwargs forwarded through `...` to picsure_py$connect.
-# Names mirror the Python adapter's snake_case kwargs 1:1 — no R-side
-# translation. To bump: add the new kwarg here and to connect()'s @param block.
+# Names mirror the Python adapter's snake_case kwargs 1:1, no R-side
+# translation. Every name here must be one the pinned `picsure.connect()`
+# accepts: the list is what `connect()` prints as "Valid extras", and a name
+# Python refuses turns a clean R-side refusal into a Python unexpected-keyword
+# error. `test-connect-reticulate.R` reads the pinned signature and checks
+# both directions. To bump: add the new kwarg here and to connect()'s @param
+# block.
 CONNECT_EXTRA_KWARGS <- c(
   "include_consents", "requires_auth", "supports_genomic",
-  "client_type", "dev_mode", "verify", "timeout", "validate"
+  "client_type", "dev_mode", "verify"
 )

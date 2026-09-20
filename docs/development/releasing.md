@@ -6,10 +6,10 @@ This document is for maintainers cutting a new release of `picsure`.
 
 `picsure` follows [SemVer](https://semver.org/). The version lives in
 the [`DESCRIPTION`](../../DESCRIPTION) `Version:` field. The current
-value is `2.0.0` — the first full release of the rewritten adapter.
-By R packaging convention, a `*.9000` suffix marks an in-progress
-development track on top of the last released version; after releasing
-`2.0.0` you'd bump development to `2.0.0.9000` until the next release.
+value is `2.0.0.9000`: by R packaging convention a `*.9000` suffix marks
+an in-progress development track on top of the last released version, so
+this is the track above `2.0.0`, the first full release of the rewritten
+adapter. Drop the suffix when you cut the next release.
 
 The release tag is `v2.0.0` (cut from the `query_v3` branch); the only
 prior tag was `v1.0.0-alpha`. Confirm the next release tag with
@@ -27,18 +27,27 @@ maintainers before cutting.
 4. **Tests pass on the full matrix.** Push to a release branch and
    confirm `check.yml` is green across R 4.1 / 4.3 / 4.4 on Ubuntu
    and R 4.4 on macOS.
-5. **Integration tier passes.** Trigger
+5. **The pinned Python build is the one you mean to ship.** The
+   release inherits whatever `.PICSURE_PY_SPEC` in
+   [`R/zzz.R`](../../R/zzz.R) resolves to, because this package has no
+   HTTP code of its own. If the pin is moving as part of this release,
+   work through
+   [`pinned-python-build.md`](pinned-python-build.md) first; every site a
+   bump touches is listed there. If it is not moving, confirm the SHA is
+   still reachable from a branch upstream, since a squashed or rebased
+   branch can orphan it.
+6. **Integration tier passes.** Trigger
    [`integration.yml`](../../.github/workflows/integration.yml) via
    `workflow_dispatch` and confirm green.
-6. **`R CMD check --as-cran .` is clean** locally:
+7. **`R CMD check --as-cran .` is clean** locally:
    ```bash
    R CMD check --as-cran .
    ```
    The CI matrix already passes `--as-cran` (see
    [`check.yml`](../../.github/workflows/check.yml)), so this should
    be a confirmation step.
-7. **Vignettes knit.** `devtools::build_vignettes()` succeeds.
-8. **pkgdown site builds.** `pkgdown::build_site()` succeeds locally
+8. **Vignettes knit.** `devtools::build_vignettes()` succeeds.
+9. **pkgdown site builds.** `pkgdown::build_site()` succeeds locally
    (or rely on the `pkgdown.yml` workflow's PR build).
 
 ## Cutting the release

@@ -43,12 +43,13 @@ picsure_py <- NULL
 # merging instead of reusing the one from the PR, and confirm it with
 # `git branch -r --contains <sha>` before pinning it.
 #
-# Bumping the pinned ref requires:
-#   1. Re-running the full integration suite under VPN against a backend
-#      that ships the matching server protocol.
-#   2. Updating any wrapper signatures whose Python kwargs changed.
-#   3. Setting `.PICSURE_PY_TAG` when the new commit is one a release tag
-#      points at, and clearing it to NA_character_ otherwise.
+# Moving the pin touches more than this line. The checklist is
+# docs/development/pinned-python-build.md, which names every site and says
+# which ones a test catches and which have to be read against the Python
+# source by hand. Two facts belong here with the pin: the SHA must name a
+# commit reachable from a branch, for the reason above, and `.PICSURE_PY_TAG`
+# below is set when the new commit is one a release tag points at and left
+# NA_character_ otherwise.
 .PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@0eec30d062751396e006284e79c19110408e4a62"
 
 # Release tag that points at the pinned commit, or NA_character_ when no tag

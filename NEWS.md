@@ -31,10 +31,16 @@
   the leaf is identified does. The currently pinned Python build is flatter:
   it defines `PicSureAuthError` but no `PicSureAuthenticationError`,
   `PicSureAuthorizationError`, `PicSureTLSError`, or `PicSureServerError`.
-  Against it, a refusal is a plain `picsureAuthError` and a transport failure
-  a plain `picsureConnectionError`; the authentication-versus-authorization
-  and TLS-versus-5xx splits start arriving only once the pin is bumped to a
-  build that defines those classes.
+  Against it, a server-side token refusal is a plain `picsureAuthError` and a
+  transport failure a plain `picsureConnectionError`. `picsureTLSError` cannot
+  arrive at all yet, and `picsureAuthenticationError` and
+  `picsureAuthorizationError` cannot arrive as the leaf that identifies a
+  condition; those three start arriving only once the pin is bumped to a build
+  that defines the matching Python classes. The rest of the tree is live today,
+  ancestors included, so `picsureServerError` does reach a handler: not as a
+  leaf, but on every `picsureConsentLookupError`, which the R table places
+  beneath it, the same way `picsureAuthorizationError` comes along on every
+  `picsureConsentDeniedError`.
 
 - Two R options are now read on every `connect()` call and forwarded as
   call-time arguments. `picsure.ssl_verify` takes `TRUE`, `FALSE`, or the
@@ -50,9 +56,11 @@
   `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a path to a CA bundle. An
   unusable value, such as the string `"false"`, raises a
   `picsureValidationError` naming the argument or option and the logical to
-  pass, rather than failing later inside Python. When verification is off,
-  `connect()` prints a message naming the argument or option that turned it
-  off.
+  pass, rather than failing later inside Python. When the `verify` argument
+  or `options(picsure.ssl_verify)` turns verification off, `connect()` prints
+  a message naming which of the two did it. Verification turned off
+  Python-side through `PICSURE_SSL_VERIFY` is silent on the R side, one more
+  reason to prefer the option.
 
   They exist because the environment variables that used to be the only way
   in, `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE`, work only if they are
@@ -65,12 +73,16 @@
   interpreter's *start* is the boundary, not `import picsure`.) An option
   read on every `connect()` has no such window.
 
-- `connect()` forwards two new arguments to the Python adapter. `timeout` is
-  the per-request deadline in seconds for count, participant, and export
-  requests; the adapter's default is ten minutes. `validate = FALSE` skips
-  the connect-time reachability and token check, for offline or mocked use.
-  Both need a pinned Python adapter that accepts them; the current pin
-  rejects them as unexpected keywords until the pin moves.
+- `connect()` does not accept `timeout` or `validate` yet. The currently
+  pinned Python adapter has no such parameters, so either one is rejected up
+  front like any other unknown key, with a `picsureValidationError` naming
+  the argument and listing the extras that are valid. Both arrive when the
+  pin moves to a build that takes them: `timeout` will be the per-request
+  deadline in seconds for the data operations the session performs, counts,
+  participant downloads, and export polls, defaulting to the Python adapter's
+  ten minutes, and `validate = FALSE` will skip both the local token check
+  and the one request that confirms the deployment is reachable and accepts
+  the token, for offline or mocked use.
 
 - A missing token on an auth-required platform now raises
   `picsureValidationError` rather than `picsureAuthenticationError`, matching
@@ -101,9 +113,11 @@
   `mappingproxy`, a type reticulate has no converter for, so iterating it
   failed with "cannot coerce type 'environment' to vector of type 'list'" on
   every call. The mapping is now copied into a `dict` and converted
-  explicitly. The test double that hid this (a plain character vector of
-  labels, a shape Python never produces) has been replaced by tests that build
-  a genuine Python enum through reticulate.
+  explicitly. `platforms()` is now covered by tests that build a genuine
+  Python enum through reticulate. The test double that hid the bug, a plain
+  character vector of labels, is still in place: it is documented as
+  `connect()`'s name-to-label lookup table and no longer stands in for the
+  enum.
 
 - Enum parity against the Python adapter now fails loudly, and once, when no
   Python interpreter is available, naming the interpreter it looked for and

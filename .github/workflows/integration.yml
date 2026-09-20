@@ -30,8 +30,13 @@ jobs:
         with:
           needs: check
 
-      - name: Run integration tests
-        run: Rscript -e "testthat::test_local()"
+      - name: Run the unit tier
+        run: Rscript -e 'testthat::test_local()'
+
+      - name: Run the integration tier
+        run: |
+          Rscript -e 'pkgload::load_all(".", quiet = TRUE)' \
+                  -e 'testthat::test_dir("tests/testthat/integration", env = new.env(parent = asNamespace("picsure")))'
 
       - name: Open an issue on failure
         if: failure() && github.event_name == 'schedule'

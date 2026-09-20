@@ -11,7 +11,11 @@ connect(platform, token = "", ...)
 [`Platform$BDC_AUTHORIZED`][picsure::Platform]) or a full URL string
 for an unlisted deployment (e.g. `"https://my-picsure.example.com"`).
 Human-readable label strings such as `"BDC Authorized"` are **not**
-accepted and raise a `picsureError`.}
+accepted and raise a `picsureError`. A member is resolved against the
+Python enum by its member name, which is the only unambiguous handle:
+`Platform$BDC_AUTHORIZED` and `Platform$BDC_DEV_AUTHORIZED` share a
+label, and `Platform$BDC_AUTHORIZED` and `Platform$BDC_OPEN` share a
+URL, told apart by the `/hpds/auth` and `/hpds/open` backend paths.}
 
 \item{token}{Your personal PIC-SURE access token, obtained from the
 "User Profile" tab of your PIC-SURE instance. Optional for open-access
@@ -32,9 +36,16 @@ Supported keys:
     the studies the user may see. `TRUE` for the BDC authorized
     `Platform` members, `FALSE` for every other member **and for a
     custom URL string**.}
-  \item{`requires_auth`}{Logical. When `FALSE`, the session is opened in
-    unauthenticated mode against the open HPDS backend and no token is
-    asked for, even on an `_AUTHORIZED` member. When `TRUE`, a token is
+  \item{`requires_auth`}{Logical. When `FALSE`, neither this package nor
+    the Python adapter asks for a token, even on an `_AUTHORIZED`
+    member. It does not on its own move the session to the open HPDS
+    backend: the pinned adapter picks that backend only when neither
+    `requires_auth` nor `include_consents` is in force, and
+    `include_consents` still defaults to the member's own flag, which is
+    `TRUE` for the BDC authorized members. To connect anonymously
+    against the open backend on such a member, pass
+    `include_consents = FALSE` as well; otherwise `connect()` calls
+    PSAMA's consent endpoint with no token. When `TRUE`, a token is
     required, even for a custom URL string. Defaults to `TRUE` for the
     `_AUTHORIZED` members and for a custom URL string, `FALSE` for the
     `_OPEN` members.}
@@ -59,19 +70,21 @@ Supported keys:
     bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
     `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
     verifying.}
-  \item{`timeout`}{Numeric. Per-request deadline in seconds for the data
-    operations the session performs: counts, participant downloads, and
-    export polls. Defaults to the Python adapter's ten minutes, because
-    a large dataset can take minutes to assemble server-side. The
-    connect-time validation request keeps its own short deadline.}
-  \item{`validate`}{Logical. When `TRUE` (the Python adapter's default),
-    `connect()` checks the token's shape and expiry locally, then sends
-    one request to confirm the deployment is reachable and accepts the
-    token. Pass `FALSE` for offline or mocked use; nothing is sent or
-    checked, so the returned session may not work.}
 }
-`timeout` and `validate` need a pinned Python adapter that accepts
-them. An older pin rejects either as an unexpected keyword.}
+`timeout` and `validate` are **not accepted by this wrapper yet**. The
+pinned Python adapter has no such parameters, so either one is rejected
+up front like any other unknown key, with a `picsureValidationError`
+naming it. Both arrive when the pin moves to a build that takes them.
+`timeout` will be a number, the per-request deadline in seconds for the
+data operations the session performs, counts, participant downloads, and
+export polls, defaulting to the Python adapter's ten minutes, because a
+large dataset can take minutes to assemble server-side; the connect-time
+validation request will keep its own short deadline. `validate` will be
+a logical: `TRUE`, the Python adapter's default, will make `connect()`
+check the token's shape and expiry locally and then send one request to
+confirm the deployment is reachable and accepts the token, and `FALSE`
+will skip both for offline or mocked use, so that nothing is sent or
+checked and the returned session may not work.}
 }
 \value{
 An opaque session object. Pass it as the first argument to
@@ -136,9 +149,11 @@ An explicit `verify =` / `dev_mode =` argument to `connect()` always wins
 over the option, and both go through the same checks: `dev_mode` must be
 a single `TRUE` or `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a
 path string. A string that spells a boolean, such as `"false"`, is
-rejected rather than treated as a certificate path. Whenever verification
-ends up off, `connect()` emits a message naming the argument or option
-that turned it off.
+rejected rather than treated as a certificate path. When the `verify`
+argument or `options(picsure.ssl_verify)` turns verification off,
+`connect()` emits a message naming which of the two did it. Verification
+turned off Python-side through `PICSURE_SSL_VERIFY` is silent on the R
+side, one more reason to prefer the option.
 }
 
 \examples{

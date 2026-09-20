@@ -126,8 +126,31 @@ test_that("connect() rejects unknown extra kwargs with a helpful message", {
   expect_match(msg, "include_consents", fixed = TRUE)
   expect_match(msg, "requires_auth", fixed = TRUE)
   expect_match(msg, "supports_genomic", fixed = TRUE)
+})
+
+test_that("connect() rejects timeout, which the pinned build does not accept", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  err <- tryCatch(
+    picsure::connect(platform = "https://picsure.test", token = "tok", timeout = 60),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_s3_class(err, "picsureError")
+  msg <- conditionMessage(err)
+  expect_match(msg, "Unknown argument", fixed = TRUE)
   expect_match(msg, "timeout", fixed = TRUE)
-  expect_match(msg, "validate", fixed = TRUE)
+  expect_match(msg, "Valid extras", fixed = TRUE)
+  expect_false(grepl("unexpected keyword", msg, fixed = TRUE))
+})
+
+test_that("connect() rejects validate, which the pinned build does not accept", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  err <- tryCatch(
+    picsure::connect(platform = "https://picsure.test", token = "tok", validate = FALSE),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_match(conditionMessage(err), "validate", fixed = TRUE)
 })
 
 test_that("connect() rejects resource_uuid, which no longer routes anything", {
@@ -143,7 +166,7 @@ test_that("connect() rejects resource_uuid, which no longer routes anything", {
 })
 
 test_that("connect() forwards each whitelisted extra kwarg", {
-  for (key in c("include_consents", "requires_auth", "supports_genomic", "timeout", "validate")) {
+  for (key in c("include_consents", "requires_auth", "supports_genomic")) {
     fake <- fake_picsure_py()
     testthat::local_mocked_bindings(picsure_py = fake)
     args <- list(platform = "https://picsure.test", token = "tok")
@@ -180,6 +203,22 @@ test_that("connect() rejects a non-Platform member with a clear error", {
   )
   expect_s3_class(err, "picsureError")
   expect_match(err$message, "Platform", fixed = TRUE)
+})
+
+test_that("connect() rejects a Platform member the Python enum does not define", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+
+  unknown <- picsure::Platform$BDC_OPEN
+  unknown$name <- "NO_SUCH_MEMBER"
+
+  err <- tryCatch(
+    picsure::connect(platform = unknown, token = "tok"),
+    error = function(e) e
+  )
+  expect_s3_class(err, "picsureValidationError")
+  expect_s3_class(err, "picsureError")
+  expect_match(conditionMessage(err), "NO_SUCH_MEMBER", fixed = TRUE)
 })
 
 test_that("connect() accepts a full URL string platform", {
