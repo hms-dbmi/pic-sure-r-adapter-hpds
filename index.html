@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,9 +97,15 @@
 <span><span class="va">participants</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">query</span>, type <span class="op">=</span> <span class="st">"participant"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Genomic filters (authorized platforms)</span></span>
-<span><span class="va">gene_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="reference/buildGenomicFilter.html">buildGenomicFilter</a></span><span class="op">(</span><span class="st">"Gene_with_variant"</span>, values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BRCA1"</span>, <span class="st">"BRCA2"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">gene_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="reference/buildGenomicFilter.html">buildGenomicFilter</a></span><span class="op">(</span></span>
+<span>  <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="reference/GenomicFilterKey.html">GenomicFilterKey</a></span><span class="op">$</span><span class="va">GENE_WITH_VARIANT</span>, values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BRCA1"</span>, <span class="st">"BRCA2"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">rare_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="reference/buildGenomicFilter.html">buildGenomicFilter</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Variant_frequency_as_text"</span>, values <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="reference/VariantFrequency.html">VariantFrequency</a></span><span class="op">$</span><span class="va">RARE</span></span>
+<span>  <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="reference/GenomicFilterKey.html">GenomicFilterKey</a></span><span class="op">$</span><span class="va">VARIANT_FREQUENCY_AS_TEXT</span>,</span>
+<span>  values <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="reference/VariantFrequency.html">VariantFrequency</a></span><span class="op">$</span><span class="va">RARE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">severe_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="reference/buildGenomicFilter.html">buildGenomicFilter</a></span><span class="op">(</span></span>
+<span>  <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="reference/GenomicFilterKey.html">GenomicFilterKey</a></span><span class="op">$</span><span class="va">VARIANT_SEVERITY</span>, values <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="reference/VariantSeverity.html">VariantSeverity</a></span><span class="op">$</span><span class="va">HIGH</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">genomic_query</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="reference/buildQuery.html">buildQuery</a></span><span class="op">(</span>genomicFilters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">gene_filter</span>, <span class="va">rare_filter</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">genomic_count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">genomic_query</span>, type <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span></span>
@@ -181,7 +187,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -24,6 +24,7 @@ instead.
 | Package architecture | [`docs/development/architecture.md`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/docs/development/architecture.md) |
 | Testing | [`docs/development/testing.md`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/docs/development/testing.md) |
 | Releasing | [`docs/development/releasing.md`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/docs/development/releasing.md) |
+| Bumping the pinned Python build | [`docs/development/pinned-python-build.md`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/docs/development/pinned-python-build.md) |
 
 ## Local development setup
 

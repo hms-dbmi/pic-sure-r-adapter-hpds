@@ -11,20 +11,54 @@ patterns end-to-end.
 |----|----|
 | `initializeSession(url, token)` | `connect(platform, token)` |
 | `bdc.initializeSession(url, token)` | `connect(platform = Platform$BDC_AUTHORIZED, token)` |
-| `bdc.setResource(session, "OPEN")` | `connect(platform = Platform$BDC_OPEN, ...)` |
+| `bdc.setResource(session, "OPEN")` | `connect(platform = Platform$BDC_OPEN)`, no token needed |
 | `bdc.searchPicsure(session, "sex")` | `searchDictionary(session, "sex")` |
-| `bdc.getStudies(session)` | (removed — not yet re-exposed) |
+| `bdc.getStudies(session)` | no dedicated call. The deployment’s datasets are a facet category: `fs <- facets(session); addFacet(fs, "dataset_id", ...)` |
 | `newQuery(session)` | no direct replacement — use [`buildClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClause.md) + [`buildClauseGroup()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildClauseGroup.md) / [`buildQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/buildQuery.md) |
 | `addClause(q, path, "FILTER", min = 18)` | `buildClause(keys = path, type = "FILTER", min = 18)` |
 | `addClause(q, path, "SELECT")` | `buildQuery(includeConcepts = path)` |
-| `deleteClause(q, path)` | (removed — rebuild the tree) |
+| `deleteClause(q, path)` | (removed. Rebuild the tree, or edit with [`removeSubQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/removeSubQuery.md) / [`replaceClause()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/replaceClause.md)) |
 | `showQuery(q)` | (removed — queries are opaque Python handles) |
-| `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")` — returns a `CountResult` (use `$value` / `$cap`) |
+| `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")`, which returns a `CountResult`, not a number (see below) |
 | `runQuery(q, "DATA_FRAME")` | `runQuery(session, query, type = "participant")` |
-| `getResultByQueryUUID(session, uuid)` | (removed — query UUID APIs not yet re-exposed) |
-| `exportPFB(...)` (new) | `exportAsPFB(session, query, path)` |
-| `exportCSV(...)` (new) | `df <- runQuery(...); exportCSV(session, df, path)` |
-| `getQueryByUUID(session, uuid)` | (removed) |
+| `getQueryByUUID(session, uuid)` | `loadQueryByID(session, query_id)`, which rebuilds the saved query as a handle |
+| `getResultByQueryUUID(session, uuid)` | `runQueryByID(session, query_id, type = "count")`, which fetches and runs in one call |
+
+New in 2.0.0, with no v1 equivalent:
+
+| v2 | What it does |
+|----|----|
+| `saveQueryByName(session, query, name)` | submits the query and names it, returning its query ID |
+| `buildGenomicFilter(key, values)` | a variant filter for `buildQuery(genomicFilters = ...)` |
+| `searchGenomicValues(session, key)` | valid values for a genomic annotation key |
+| [`genomicConsequences()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/genomicConsequences.md) | the offline variant-consequence vocabulary |
+| `exportAsPFB(session, query, path)` | runs the query and writes a PFB file |
+| `exportCSV(session, df, path)` / `exportTSV(...)` | write an already-materialized data frame; they do **not** re-run the query |
+| [`platforms()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/platforms.md) | the human-readable labels of the known platforms (display only, since [`connect()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/connect.md) does not accept them) |
+
+## `runQuery()` returns a result object, not a number
+
+v1’s `"COUNT"` handed back a bare number.
+`runQuery(session, query, type = "count")` returns a `CountResult` with
+three fields: `$value` (the count, or `NULL` when the deployment
+obfuscated a small cohort), `$margin`, and `$cap`. Test for `NULL`
+before using it:
+
+``` r
+
+count <- picsure::runQuery(bdc, query, type = "count")
+if (is.null(count$value)) {
+  message("cohort too small to report exactly (cap ", count$cap, ")")
+} else {
+  message(count$value, " participants")
+}
+```
+
+The other result types are: `"participant"`, `"timestamp"`,
+`"vcf_excerpt"`, and `"aggregate_vcf_excerpt"` return a data frame;
+`"cross_count"` returns a named list of `CountResult`s keyed by concept
+path; `"variant_count"` returns a `CountResult`; `"variant_list"`
+returns a character vector.
 
 ## Worked example 1: simple count
 
@@ -93,8 +127,8 @@ query   <- picsure::buildClauseGroup(list(sex_filter, lung), operator = "AND")
 ## Error handling
 
 v1 emitted raw HTTP / R errors from `httr`. The 2.0.0 adapter emits
-`picsureError` with Python-crafted, researcher-facing messages. Catch
-the class if you need to:
+`picsureError` conditions carrying researcher-facing messages. Catching
+that one class still catches everything:
 
 ``` r
 
@@ -105,3 +139,58 @@ tryCatch(
   }
 )
 ```
+
+Subclasses let you tell the kinds of failure apart. `picsureAuthError`
+means the server refused you, so refresh the token;
+`picsureConnectionError` means no usable response came back;
+`picsureQueryError` means the query itself was rejected;
+`picsureValidationError` means the input was invalid, usually caught
+before any request was sent, though a server answer of HTTP 400 lands
+there too.
+[`?picsure::picsureError`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/picsureError.md)
+has the full tree and what each class means.
+
+``` r
+
+tryCatch(
+  picsure::runQuery(bdc, query),
+  picsureAuthError    = function(e) message("Token problem: ", conditionMessage(e)),
+  picsureQueryError   = function(e) message("Query rejected: ", conditionMessage(e)),
+  picsureError        = function(e) message("PIC-SURE error: ", conditionMessage(e))
+)
+```
+
+## Local and self-signed deployments
+
+v1 took `httr` options directly. In 2.0.0 the HTTP client lives in
+Python, so TLS verification and developer-mode instrumentation are set
+through R options that
+[`connect()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/connect.md)
+reads on every call. `picsure.ssl_verify` takes `TRUE`, `FALSE`, or the
+path to a CA bundle:
+
+``` r
+
+options(picsure.ssl_verify = FALSE)
+options(picsure.dev_mode   = TRUE)
+local <- picsure::connect(platform = "https://localhost", token = my_token)
+```
+
+Use the options rather than `Sys.setenv(PICSURE_SSL_VERIFY = ...)`:
+CPython snapshots the environment when the interpreter starts, and
+reticulate runs that interpreter inside the R process, so setting the
+environment variable after the first call that provisions Python has no
+effect.
+
+Note that a **custom URL** has no recorded consent policy the way
+`Platform$BDC_AUTHORIZED` does. When you connect by URL with a token and
+do not pass `include_consents`,
+[`connect()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/connect.md)
+asks PSAMA for your consents and turns scoping on if any come back. If
+it cannot tell, for example with `validate = FALSE`, it prints a
+warning, and the session carries an empty consent list, so
+[`searchDictionary()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchDictionary.md)
+returns every concept in the index rather than the ones your consents
+cover. Pass `include_consents = TRUE` when connecting by URL to a
+consent-gated deployment to fetch the list without relying on that
+check.

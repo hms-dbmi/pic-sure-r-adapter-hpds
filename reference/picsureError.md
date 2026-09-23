@@ -1,11 +1,15 @@
 # Construct a picsureError condition.
 
-Construct a picsureError condition.
+The base constructor for every error this package raises. \`class\`
+selects one of the specialized condition classes, whose ancestors are
+filled in automatically; the result always carries \`picsureError\`, so
+the documented \`tryCatch(picsureError = ...)\` handler catches all of
+them.
 
 ## Usage
 
 ``` r
-picsureError(message, py_cause = NULL)
+picsureError(message, py_cause = NULL, class = NULL)
 ```
 
 ## Arguments
@@ -13,18 +17,82 @@ picsureError(message, py_cause = NULL)
 - message:
 
   The user-facing error message. When the source is a Python
-  PicSureError, use the Python-crafted message verbatim — Python already
-  wrote it for researchers.
+  PicSureError, this is the Python-crafted message with reticulate's
+  class prefix and \`py_last_error()\` footer removed. Python already
+  wrote the sentence for researchers.
 
 - py_cause:
 
-  Optional; the original Python exception object. Stored on the
-  condition as \`\$py_cause\` for advanced debugging via
-  \`reticulate::py_last_error()\`.
+  Optional; the condition reticulate raised for the original Python
+  exception. Stored on the condition as \`\$py_cause\` so the Python
+  detail stays reachable (\`reticulate::py_last_error()\` still has the
+  traceback) without appearing in the default message.
+
+- class:
+
+  Optional; one specialized condition class to carry in addition to
+  \`picsureError\`. One of \`"picsureAuthError"\`,
+  \`"picsureAuthenticationError"\`, \`"picsureAuthorizationError"\`,
+  \`"picsureConsentDeniedError"\`, \`"picsureConnectionError"\`,
+  \`"picsureTLSError"\`, \`"picsureServerError"\`,
+  \`"picsureConsentLookupError"\`, \`"picsureQueryError"\`, or
+  \`"picsureValidationError"\`. Ancestor classes are added for you. Any
+  other value is an error.
 
 ## Value
 
-A condition of class \`c("picsureError", "error", "condition")\`.
+A condition inheriting \`c("picsureError", "error", "condition")\`, with
+\`\$py_cause\` and \`\$python_class\` describing the Python origin when
+there was one.
+
+## Condition hierarchy
+
+Every error this package raises inherits \`picsureError\`, so
+\`tryCatch(picsureError = ...)\` still catches all of them. The
+subclasses let you catch a kind of failure instead:
+
+
+    picsureError
+    |- picsureAuthError                  the server answered and refused
+    |  |- picsureAuthenticationError     the token itself (401, or detected here)
+    |  \- picsureAuthorizationError      token fine, account not permitted (403)
+    |     \- picsureConsentDeniedError   approved consents do not cover the data
+    |- picsureConnectionError            no usable response came back
+    |  |- picsureTLSError                the certificate was not trusted
+    |  \- picsureServerError             5xx
+    |     \- picsureConsentLookupError   server could not resolve consents (502)
+    |- picsureQueryError                 the server rejected the query
+    \- picsureValidationError            invalid input to a picsure function
+
+Catch \`picsureAuthError\` for "refresh the token and retry",
+\`picsureConnectionError\` for "the deployment is unreachable, back off
+and retry", \`picsureQueryError\` for "the query itself is wrong", and
+\`picsureValidationError\` for invalid input. Most validation errors are
+raised before any request is sent, by this package or by the Python
+adapter, but a server answer of HTTP 400, or any other 4xx that is not
+401, 403, 404, or 429, is a \`picsureValidationError\` too. A 404 is a
+\`picsureQueryError\`, and a 429 a \`picsureConnectionError\`. A token
+that is missing where one is required is a \`picsureValidationError\`,
+the same as any other rejected argument. PSAMA answers 403, not 401, for
+a bad token on \`/user/me\`, so a server-side token rejection arrives as
+an authorization error while a locally-detected one (malformed, expired)
+arrives as an authentication error. That is why \`picsureAuthError\`,
+not either leaf, is the class to catch for token trouble. Note that
+\`picsureAuthError\` also catches \`picsureConsentDeniedError\`, which
+no token refresh will clear, so a handler that refreshes and retries
+should test for \`picsureConsentDeniedError\` first and give up on it
+rather than retry.
+
+\*\*What the pinned Python build distinguishes.\*\* The R side derives
+ancestry from its own table rather than from the installed Python
+exception's MRO, so the tree above is the shape of the R conditions on
+any build. What varies with the build is how finely the leaf is
+identified. The pinned Python adapter defines a class for every node in
+the tree, and its own hierarchy matches the tree exactly, so every class
+above can arrive as the leaf that identifies a condition: a 401 as
+\`picsureAuthenticationError\`, a 403 as \`picsureAuthorizationError\`,
+an untrusted certificate as \`picsureTLSError\`, and a 5xx as
+\`picsureServerError\`.
 
 ## Examples
 
@@ -35,6 +103,12 @@ tryCatch(
   picsureError = function(e) {
     message("PIC-SURE error: ", conditionMessage(e))
   }
+)
+
+# An authentication problem specifically: refresh the token and retry.
+tryCatch(
+  picsure::searchDictionary(session, "sex"),
+  picsureAuthError = function(e) message("Token problem: ", conditionMessage(e))
 )
 } # }
 ```

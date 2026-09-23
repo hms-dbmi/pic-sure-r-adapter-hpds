@@ -11,7 +11,7 @@ chaining. If `value` is a vector of length &amp;gt; 1, adds one entry per value
 
     <a class="navbar-brand me-2" href="../index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,11 +62,16 @@ chaining. If `value` is a vector of length &gt; 1, adds one entry per value
 
 
 <dt id="arg-key">key<a class="anchor" aria-label="anchor" href="#arg-key"></a></dt>
-<dd><p>Facet key, e.g. `"study_ids"`.</p></dd>
+<dd><p>Facet category name, e.g. `"dataset_id"` or `"data_type"`.
+Exactly one category. A facet entry selects values inside a single
+category, so a vector of keys raises a `picsureError`. The valid
+category names come from the server, not from this package; a name the
+deployment does not publish raises a `picsureError` listing the ones it
+does.</p></dd>
 
 
 <dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
-<dd><p>Facet value (scalar or vector).</p></dd>
+<dd><p>Facet value, or a vector of values under the same `key`.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -78,8 +83,8 @@ chaining. If `value` is a vector of length &gt; 1, adds one entry per value
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="facets.html">facets</a></span><span class="op">(</span><span class="va">bdc</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">addFacet</span><span class="op">(</span><span class="va">fs</span>, <span class="st">"study_ids"</span>, <span class="st">"phs000007"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">addFacet</span><span class="op">(</span><span class="va">fs</span>, <span class="st">"study_ids"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"phs000200"</span>, <span class="st">"phs000286"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">addFacet</span><span class="op">(</span><span class="va">fs</span>, <span class="st">"dataset_id"</span>, <span class="st">"phs000007"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">addFacet</span><span class="op">(</span><span class="va">fs</span>, <span class="st">"dataset_id"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"phs000200"</span>, <span class="st">"phs000286"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -92,7 +97,7 @@ chaining. If `value` is a vector of length &gt; 1, adds one entry per value
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

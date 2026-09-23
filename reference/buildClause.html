@@ -13,7 +13,7 @@ query with [`buildQuery()`][picsure::buildQuery], or running via
 
     <a class="navbar-brand me-2" href="../index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,7 +74,10 @@ character scalar or character vector, e.g.
 
 
 <dt id="arg-min-max">min, max<a class="anchor" aria-label="anchor" href="#arg-min-max"></a></dt>
-<dd><p>Optional numeric bounds for continuous FILTER clauses.</p></dd>
+<dd><p>Optional numeric bounds for continuous FILTER clauses. Each
+must be a single finite number when supplied; `NA`, `Inf`, a string, and
+a vector raise a `picsureError`. The value's own numeric type is
+preserved, so an R integer still reaches Python as an `int`.</p></dd>
 
 
 <dt id="arg-categories">categories<a class="anchor" aria-label="anchor" href="#arg-categories"></a></dt>
@@ -118,7 +121,7 @@ output columns are not a clause type.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

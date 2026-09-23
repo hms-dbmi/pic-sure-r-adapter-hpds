@@ -11,7 +11,7 @@ variable the session has access to."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,15 @@ variable the session has access to.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">searchDictionary</span><span class="op">(</span><span class="va">session</span>, term <span class="op">=</span> <span class="st">""</span>, facets <span class="op">=</span> <span class="cn">NULL</span>, include_values <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">searchDictionary</span><span class="op">(</span></span>
+<span>  <span class="va">session</span>,</span>
+<span>  term <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  facets <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  include_values <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  page <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  page_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -75,6 +83,21 @@ When supplied, the server narrows results to variables inside the facets.</p></d
 the response. Set FALSE to omit them for a lighter payload.</p></dd>
 
 
+<dt id="arg-page">page<a class="anchor" aria-label="anchor" href="#arg-page"></a></dt>
+<dd><p>`NULL` (default) to return every match, or a zero-based page
+number to return that one page and nothing else. A single whole number,
+0 or greater. It is sent to Python as an integer, which the adapter
+requires, so `page = 0` works as well as `page = 0L`. A fractional,
+negative, or non-numeric value raises a `picsureValidationError`.</p></dd>
+
+
+<dt id="arg-page-size">page_size<a class="anchor" aria-label="anchor" href="#arg-page-size"></a></dt>
+<dd><p>`NULL` (default) for the Python adapter's 500 rows per
+request, or a single positive whole number. With `page` set, it is the
+size of the page returned. Without, it is how many rows each request of
+the walk fetches. Validated and sent as an integer, like `page`.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional keyword arguments forwarded to the Python
 `Session.searchDictionary()` call.</p></dd>
@@ -82,15 +105,38 @@ the response. Set FALSE to omit them for a lighter payload.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A `data.frame` of matching dictionary entries.</p>
+    <p>A `data.frame` of matching dictionary entries, with column types
+  fixed by the dictionary schema whether or not the search matched
+  anything: `conceptPath`, `name`, `display`, `description`, `dataType`,
+  `studyId`, and `studyAcronym` are character, `min` and `max` numeric,
+  `allowFiltering` logical, and `meta` a list column. `values` is a list
+  column too, and is present only when `include_values = TRUE`; with
+  `include_values = FALSE` the adapter never builds it and the returned
+  frame has no such column. The rest of the column set and its types are
+  the same either way. A search that matched nothing returns a zero-row
+  frame with those same types, so arithmetic on `min` / `max` behaves the
+  same either way. The Python adapter's paging metadata lives on the
+  pandas DataFrame's `.attrs`, which does not survive reticulate
+  conversion.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>With `page` left `NULL`, the Python adapter walks the server's result pages
+and returns every match in one data frame. That unpaged walk stops at
+100,000 concepts: a search matching more raises a
+`picsureValidationError` rather than loading them all. Read such a result
+a page at a time instead, `page = 0`, then `page = 1`, and so on, until a
+page comes back with fewer than `page_size` rows. Narrowing `term` or
+`facets` also brings the match count down.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">bdc</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="connect.html">connect</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="st">"BDC Authorized"</span>, token <span class="op">=</span> <span class="va">my_token</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">bdc</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="connect.html">connect</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="Platform.html">Platform</a></span><span class="op">$</span><span class="va">BDC_AUTHORIZED</span>, token <span class="op">=</span> <span class="va">my_token</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu">searchDictionary</span><span class="op">(</span><span class="va">bdc</span>, <span class="st">"sex"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu">searchDictionary</span><span class="op">(</span><span class="va">bdc</span>, <span class="st">""</span><span class="op">)</span>  <span class="co"># all variables</span></span></span>
+<span class="r-in"><span><span class="fu">picsure</span><span class="fu">::</span><span class="fu">searchDictionary</span><span class="op">(</span><span class="va">bdc</span>, <span class="st">""</span><span class="op">)</span>  <span class="co"># all variables, up to 100,000</span></span></span>
+<span class="r-in"><span><span class="va">first_page</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">searchDictionary</span><span class="op">(</span><span class="va">bdc</span>, <span class="st">""</span>, page <span class="op">=</span> <span class="fl">0</span>, page_size <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -103,7 +149,7 @@ the response. Set FALSE to omit them for a lighter payload.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

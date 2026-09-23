@@ -12,4 +12,4 @@ genomicConsequences()
 
 ## Value
 
-A data.frame with columns \`severity\` and \`consequence\`.
+A data.frame with character columns \`severity\` and \`consequence\`.

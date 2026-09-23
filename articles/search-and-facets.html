@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,7 +66,7 @@
     
 <p><code><a href="../reference/searchDictionary.html">picsure::searchDictionary()</a></code> returns matching dictionary
 entries as a data frame. <code><a href="../reference/facets.html">picsure::facets()</a></code> narrows a search
-to a subset — by study, by consent group, etc.</p>
+to a subset, by dataset or by variable type.</p>
 <div class="section level2">
 <h2 id="plain-search">Plain search<a class="anchor" aria-label="anchor" href="#plain-search"></a>
 </h2>
@@ -80,13 +80,22 @@ to a subset — by study, by consent group, etc.</p>
 <div class="section level2">
 <h2 id="build-a-facetset">Build a FacetSet<a class="anchor" aria-label="anchor" href="#build-a-facetset"></a>
 </h2>
+<p>The category names are published by the deployment you are connected
+to, not fixed by this package. Current PIC-SURE deployments serve
+<code>"dataset_id"</code> (the study or dataset, e.g. a dbGaP
+accession), <code>"data_type"</code> (<code>"categorical"</code> or
+<code>"continuous"</code>), and <code>"data_source"</code>, which the
+dictionary ETL creates for genomic and other metadata sources. Passing a
+name the server does not publish raises a <code>picsureError</code> that
+lists the ones it does.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/facets.html">facets</a></span><span class="op">(</span><span class="va">bdc</span><span class="op">)</span></span>
-<span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/addFacet.html">addFacet</a></span><span class="op">(</span><span class="va">fs</span>, <span class="st">"study_ids"</span>, <span class="st">"phs000007"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/addFacet.html">addFacet</a></span><span class="op">(</span><span class="va">fs</span>, <span class="st">"dataset_id"</span>, <span class="st">"phs000007"</span><span class="op">)</span></span>
+<span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/addFacet.html">addFacet</a></span><span class="op">(</span><span class="va">fs</span>, <span class="st">"data_type"</span>, <span class="st">"continuous"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/addFacet.html">addFacet()</a></code> accepts a vector of values to add several at
 once:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/addFacet.html">addFacet</a></span><span class="op">(</span><span class="va">fs</span>, <span class="st">"study_ids"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"phs000200"</span>, <span class="st">"phs000286"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/addFacet.html">addFacet</a></span><span class="op">(</span><span class="va">fs</span>, <span class="st">"dataset_id"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"phs000200"</span>, <span class="st">"phs000286"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Remove with <code>removeFacet(fs, key, value)</code>. Both functions
 mutate the underlying Python FacetSet and return it invisibly for
 chaining.</p>
@@ -144,7 +153,7 @@ offline:</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

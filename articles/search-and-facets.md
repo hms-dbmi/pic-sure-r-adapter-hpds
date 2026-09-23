@@ -3,7 +3,7 @@
 [`picsure::searchDictionary()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/searchDictionary.md)
 returns matching dictionary entries as a data frame.
 [`picsure::facets()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/facets.md)
-narrows a search to a subset — by study, by consent group, etc.
+narrows a search to a subset, by dataset or by variable type.
 
 ## Plain search
 
@@ -18,10 +18,19 @@ head(results)
 
 ## Build a FacetSet
 
+The category names are published by the deployment you are connected to,
+not fixed by this package. Current PIC-SURE deployments serve
+`"dataset_id"` (the study or dataset, e.g. a dbGaP accession),
+`"data_type"` (`"categorical"` or `"continuous"`), and `"data_source"`,
+which the dictionary ETL creates for genomic and other metadata sources.
+Passing a name the server does not publish raises a `picsureError` that
+lists the ones it does.
+
 ``` r
 
 fs <- picsure::facets(bdc)
-fs <- picsure::addFacet(fs, "study_ids", "phs000007")
+fs <- picsure::addFacet(fs, "dataset_id", "phs000007")
+fs <- picsure::addFacet(fs, "data_type", "continuous")
 ```
 
 [`addFacet()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/addFacet.md)
@@ -29,7 +38,7 @@ accepts a vector of values to add several at once:
 
 ``` r
 
-fs <- picsure::addFacet(fs, "study_ids", c("phs000200", "phs000286"))
+fs <- picsure::addFacet(fs, "dataset_id", c("phs000200", "phs000286"))
 ```
 
 Remove with `removeFacet(fs, key, value)`. Both functions mutate the

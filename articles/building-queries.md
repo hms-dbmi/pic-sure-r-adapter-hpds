@@ -131,23 +131,36 @@ platforms (BDC authorized, NHANES authorized) and are AND-combined with
 any phenotypic filter.
 
 Build a genomic filter with `buildGenomicFilter(key, values)`. `key` is
-the annotation name (e.g. `"Gene_with_variant"`,
-`"Variant_consequence_calculated"`, `"Variant_frequency_as_text"`).
-`values` is required - a character vector or `VariantFrequency` enum
-members.
+a `GenomicFilterKey` member (preferred) or the equivalent annotation
+string (validated — an unknown string errors with the list of valid
+keys). `values` is required — a character vector or `VariantFrequency`
+enum members.
 
 ``` r
 
 # Filter to BRCA1 or BRCA2 variants
 gene_filter <- picsure::buildGenomicFilter(
-  "Gene_with_variant",
+  picsure::GenomicFilterKey$GENE_WITH_VARIANT,
   values = c("BRCA1", "BRCA2")
 )
 
 # Filter to rare variants using the VariantFrequency enum
 rare_filter <- picsure::buildGenomicFilter(
-  "Variant_frequency_as_text",
+  picsure::GenomicFilterKey$VARIANT_FREQUENCY_AS_TEXT,
   values = picsure::VariantFrequency$RARE
+)
+```
+
+`Variant_severity` is a virtual key: `buildGenomicFilter` expands a
+`VariantSeverity` bucket (`HIGH`, `MEDIUM`, `LOW`) into the matching
+`Variant_consequence_calculated` values.
+
+``` r
+
+# High-severity variants
+severe_filter <- picsure::buildGenomicFilter(
+  picsure::GenomicFilterKey$VARIANT_SEVERITY,
+  values = picsure::VariantSeverity$HIGH
 )
 ```
 
@@ -170,9 +183,13 @@ combined_query <- picsure::buildQuery(
 )
 ```
 
-`VariantFrequency` members (`RARE`, `COMMON`, `NOVEL`) are coerced to
-their string value before the request is sent, so they are equivalent to
-passing the string `"Rare"`, `"Common"`, or `"Novel"` directly.
+`VariantFrequency` members (`RARE`, `COMMON`, `LOW_FREQUENCY`,
+`ULTRA_RARE`, and the deprecated `NOVEL`) are coerced to their string
+value before the request is sent, so `VariantFrequency$RARE` is
+equivalent to passing the string `"Rare"` directly. The members are a
+convenience rather than an allowlist:
+`searchGenomicValues(bdc, "Variant_frequency_as_text")` returns the
+values the deployment actually carries.
 
 ## Editing an existing query
 

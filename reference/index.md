@@ -79,7 +79,11 @@ parity with the Python API.
   : Logical operators for combining clauses in a group.
 - [`QueryType`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/QueryType.md)
   : Query result types for \`runQuery()\`.
+- [`GenomicFilterKey`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/GenomicFilterKey.md)
+  : Genomic annotation keys for \`buildGenomicFilter()\`.
 - [`VariantFrequency`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/VariantFrequency.md)
   : Variant population-frequency buckets.
+- [`VariantSeverity`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/VariantSeverity.md)
+  : Variant severity buckets for the virtual \`Variant_severity\` key.
 - [`Platform`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/Platform.md)
   : Known PIC-SURE deployment platforms.

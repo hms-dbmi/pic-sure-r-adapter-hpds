@@ -11,7 +11,7 @@ Python's `picsure.VariantFrequency`."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,11 +61,28 @@ Python's `picsure.VariantFrequency`.</p>
   <dt>`COMMON`</dt>
 <dd><p>Common variants.</p></dd>
 
+  <dt>`LOW_FREQUENCY`</dt>
+<dd><p>Low-frequency variants.</p></dd>
+
+  <dt>`ULTRA_RARE`</dt>
+<dd><p>Ultra-rare variants.</p></dd>
+
   <dt>`NOVEL`</dt>
-<dd><p>Novel variants.</p></dd>
+<dd><p>Novel variants. Deprecated in the Python adapter: it is
+    absent from every annotation set observed on a PIC-SURE deployment,
+    and is kept only so existing code keeps working. Prefer a value
+    returned by `searchGenomicValues()`.</p></dd>
 
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The members are a convenience, not an allowlist. The real vocabulary is
+whatever the deployment's variant annotations carry, so
+`searchGenomicValues(session, "Variant_frequency_as_text")` is the
+authoritative list, and `buildGenomicFilter()` accepts any string for this
+key.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -86,7 +103,7 @@ Python's `picsure.VariantFrequency`.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

@@ -29,7 +29,10 @@ buildClause(keys, type, min = NULL, max = NULL, categories = NULL, ...)
 
 - min, max:
 
-  Optional numeric bounds for continuous FILTER clauses.
+  Optional numeric bounds for continuous FILTER clauses. Each must be a
+  single finite number when supplied; \`NA\`, \`Inf\`, a string, and a
+  vector raise a \`picsureError\`. The value's own numeric type is
+  preserved, so an R integer still reaches Python as an \`int\`.
 
 - categories:
 

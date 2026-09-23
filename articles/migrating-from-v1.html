@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,7 +91,9 @@ patterns end-to-end.</p>
 </tr>
 <tr class="odd">
 <td><code>bdc.setResource(session, "OPEN")</code></td>
-<td><code>connect(platform = Platform$BDC_OPEN, ...)</code></td>
+<td>
+<code>connect(platform = Platform$BDC_OPEN)</code>, no token
+needed</td>
 </tr>
 <tr class="even">
 <td><code>bdc.searchPicsure(session, "sex")</code></td>
@@ -99,7 +101,9 @@ patterns end-to-end.</p>
 </tr>
 <tr class="odd">
 <td><code>bdc.getStudies(session)</code></td>
-<td>(removed — not yet re-exposed)</td>
+<td>no dedicated call. The deployment’s datasets are a facet category:
+<code>fs &lt;- facets(session); addFacet(fs, "dataset_id", ...)</code>
+</td>
 </tr>
 <tr class="even">
 <td><code>newQuery(session)</code></td>
@@ -117,7 +121,8 @@ patterns end-to-end.</p>
 </tr>
 <tr class="odd">
 <td><code>deleteClause(q, path)</code></td>
-<td>(removed — rebuild the tree)</td>
+<td>(removed. Rebuild the tree, or edit with
+<code><a href="../reference/removeSubQuery.html">removeSubQuery()</a></code> / <code><a href="../reference/replaceClause.html">replaceClause()</a></code>)</td>
 </tr>
 <tr class="even">
 <td><code>showQuery(q)</code></td>
@@ -126,40 +131,106 @@ patterns end-to-end.</p>
 <tr class="odd">
 <td><code>runQuery(q, "COUNT")</code></td>
 <td>
-<code>runQuery(session, query, type = "count")</code> — returns a
-<code>CountResult</code> (use <code>$value</code> /
-<code>$cap</code>)</td>
+<code>runQuery(session, query, type = "count")</code>, which returns
+a <code>CountResult</code>, not a number (see below)</td>
 </tr>
 <tr class="even">
 <td><code>runQuery(q, "DATA_FRAME")</code></td>
 <td><code>runQuery(session, query, type = "participant")</code></td>
 </tr>
 <tr class="odd">
-<td><code>getResultByQueryUUID(session, uuid)</code></td>
-<td>(removed — query UUID APIs not yet re-exposed)</td>
+<td><code>getQueryByUUID(session, uuid)</code></td>
+<td>
+<code>loadQueryByID(session, query_id)</code>, which rebuilds the
+saved query as a handle</td>
 </tr>
 <tr class="even">
+<td><code>getResultByQueryUUID(session, uuid)</code></td>
 <td>
-<code>exportPFB(...)</code> (new)</td>
-<td><code>exportAsPFB(session, query, path)</code></td>
+<code>runQueryByID(session, query_id, type = "count")</code>, which
+fetches and runs in one call</td>
+</tr>
+</tbody>
+</table>
+<p>New in 2.0.0, with no v1 equivalent:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>v2</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>saveQueryByName(session, query, name)</code></td>
+<td>submits the query and names it, returning its query ID</td>
+</tr>
+<tr class="even">
+<td><code>buildGenomicFilter(key, values)</code></td>
+<td>a variant filter for
+<code>buildQuery(genomicFilters = ...)</code>
+</td>
 </tr>
 <tr class="odd">
-<td>
-<code>exportCSV(...)</code> (new)</td>
-<td><code>df &lt;- runQuery(...); exportCSV(session, df, path)</code></td>
+<td><code>searchGenomicValues(session, key)</code></td>
+<td>valid values for a genomic annotation key</td>
 </tr>
 <tr class="even">
-<td><code>getQueryByUUID(session, uuid)</code></td>
-<td>(removed)</td>
+<td><code><a href="../reference/genomicConsequences.html">genomicConsequences()</a></code></td>
+<td>the offline variant-consequence vocabulary</td>
+</tr>
+<tr class="odd">
+<td><code>exportAsPFB(session, query, path)</code></td>
+<td>runs the query and writes a PFB file</td>
+</tr>
+<tr class="even">
+<td>
+<code>exportCSV(session, df, path)</code> /
+<code>exportTSV(...)</code>
+</td>
+<td>write an already-materialized data frame; they do
+<strong>not</strong> re-run the query</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/platforms.html">platforms()</a></code></td>
+<td>the human-readable labels of the known platforms (display only,
+since <code><a href="../reference/connect.html">connect()</a></code> does not accept them)</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section level2">
+<h2 id="runquery-returns-a-result-object-not-a-number">
+<code>runQuery()</code> returns a result object, not a number<a class="anchor" aria-label="anchor" href="#runquery-returns-a-result-object-not-a-number"></a>
+</h2>
+<p>v1’s <code>"COUNT"</code> handed back a bare number.
+<code>runQuery(session, query, type = "count")</code> returns a
+<code>CountResult</code> with three fields: <code>$value</code> (the
+count, or <code>NULL</code> when the deployment obfuscated a small
+cohort), <code>$margin</code>, and <code>$cap</code>. Test for
+<code>NULL</code> before using it:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">query</span>, type <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">count</span><span class="op">$</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"cohort too small to report exactly (cap "</span>, <span class="va">count</span><span class="op">$</span><span class="va">cap</span>, <span class="st">")"</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="va">count</span><span class="op">$</span><span class="va">value</span>, <span class="st">" participants"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>The other result types are: <code>"participant"</code>,
+<code>"timestamp"</code>, <code>"vcf_excerpt"</code>, and
+<code>"aggregate_vcf_excerpt"</code> return a data frame;
+<code>"cross_count"</code> returns a named list of
+<code>CountResult</code>s keyed by concept path;
+<code>"variant_count"</code> returns a <code>CountResult</code>;
+<code>"variant_list"</code> returns a character vector.</p>
+</div>
+<div class="section level2">
 <h2 id="worked-example-1-simple-count">Worked example 1: simple count<a class="anchor" aria-label="anchor" href="#worked-example-1-simple-count"></a>
 </h2>
 <p><strong>v1:</strong></p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">bdc.initializeSession</span><span class="op">(</span></span>
 <span>  url   <span class="op">=</span> <span class="st">"https://picsure.biodatacatalyst.nhlbi.nih.gov/"</span>,</span>
 <span>  token <span class="op">=</span> <span class="va">my_token</span></span>
@@ -171,7 +242,7 @@ patterns end-to-end.</p>
 <span><span class="op">)</span></span>
 <span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">q</span>, <span class="st">"COUNT"</span><span class="op">)</span></span></code></pre></div>
 <p><strong>v2:</strong></p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bdc</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/connect.html">connect</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="fu">picsure</span><span class="fu">::</span><span class="va"><a href="../reference/Platform.html">Platform</a></span><span class="op">$</span><span class="va">BDC_AUTHORIZED</span>, token <span class="op">=</span> <span class="va">my_token</span><span class="op">)</span></span>
 <span><span class="va">age_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildClause.html">buildClause</a></span><span class="op">(</span></span>
 <span>  <span class="st">"\\phs000001\\pht000001\\phv00000005\\age\\"</span>,</span>
@@ -184,13 +255,13 @@ patterns end-to-end.</p>
 <h2 id="worked-example-2-pull-rows">Worked example 2: pull rows<a class="anchor" aria-label="anchor" href="#worked-example-2-pull-rows"></a>
 </h2>
 <p><strong>v1:</strong></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">bdc.newQuery</span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
 <span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">bdc.addClause</span><span class="op">(</span><span class="va">q</span>, <span class="va">sex_path</span>, <span class="st">"FILTER"</span>, categories <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"male"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu">bdc.addClause</span><span class="op">(</span><span class="va">q</span>, <span class="va">bmi_path</span>, <span class="st">"SELECT"</span><span class="op">)</span></span>
 <span><span class="va">rows</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">q</span>, <span class="st">"DATA_FRAME"</span><span class="op">)</span></span></code></pre></div>
 <p><strong>v2:</strong></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sex_filter</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildClause.html">buildClause</a></span><span class="op">(</span><span class="va">sex_path</span>, type <span class="op">=</span> <span class="st">"FILTER"</span>, categories <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"male"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">query</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildQuery.html">buildQuery</a></span><span class="op">(</span>phenotypicFilter <span class="op">=</span> <span class="va">sex_filter</span>, includeConcepts <span class="op">=</span> <span class="va">bmi_path</span><span class="op">)</span></span>
 <span><span class="va">rows</span>  <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">query</span>, type <span class="op">=</span> <span class="st">"participant"</span><span class="op">)</span></span></code></pre></div>
@@ -199,7 +270,7 @@ patterns end-to-end.</p>
 <h2 id="worked-example-3-nested-andor">Worked example 3: nested AND/OR<a class="anchor" aria-label="anchor" href="#worked-example-3-nested-andor"></a>
 </h2>
 <p>There’s no v1 equivalent — v1 query construction was flat. In v2:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">copd</span>    <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildClause.html">buildClause</a></span><span class="op">(</span><span class="va">copd_path</span>,   type <span class="op">=</span> <span class="st">"FILTER"</span>, categories <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">asthma</span>  <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildClause.html">buildClause</a></span><span class="op">(</span><span class="va">asthma_path</span>, type <span class="op">=</span> <span class="st">"FILTER"</span>, categories <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">lung</span>    <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/buildClauseGroup.html">buildClauseGroup</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">copd</span>, <span class="va">asthma</span><span class="op">)</span>, operator <span class="op">=</span> <span class="st">"OR"</span><span class="op">)</span></span>
@@ -209,15 +280,61 @@ patterns end-to-end.</p>
 <h2 id="error-handling">Error handling<a class="anchor" aria-label="anchor" href="#error-handling"></a>
 </h2>
 <p>v1 emitted raw HTTP / R errors from <code>httr</code>. The 2.0.0
-adapter emits <code>picsureError</code> with Python-crafted,
-researcher-facing messages. Catch the class if you need to:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+adapter emits <code>picsureError</code> conditions carrying
+researcher-facing messages. Catching that one class still catches
+everything:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
 <span>  <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">query</span><span class="op">)</span>,</span>
 <span>  picsureError <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"PIC-SURE error: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Subclasses let you tell the kinds of failure apart.
+<code>picsureAuthError</code> means the server refused you, so refresh
+the token; <code>picsureConnectionError</code> means no usable response
+came back; <code>picsureQueryError</code> means the query itself was
+rejected; <code>picsureValidationError</code> means the input was
+invalid, usually caught before any request was sent, though a server
+answer of HTTP 400 lands there too. <code><a href="../reference/picsureError.html">?picsure::picsureError</a></code>
+has the full tree and what each class means.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
+<span>  <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/runQuery.html">runQuery</a></span><span class="op">(</span><span class="va">bdc</span>, <span class="va">query</span><span class="op">)</span>,</span>
+<span>  picsureAuthError    <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Token problem: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  picsureQueryError   <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Query rejected: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  picsureError        <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"PIC-SURE error: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="local-and-self-signed-deployments">Local and self-signed deployments<a class="anchor" aria-label="anchor" href="#local-and-self-signed-deployments"></a>
+</h2>
+<p>v1 took <code>httr</code> options directly. In 2.0.0 the HTTP client
+lives in Python, so TLS verification and developer-mode instrumentation
+are set through R options that <code><a href="../reference/connect.html">connect()</a></code> reads on every
+call. <code>picsure.ssl_verify</code> takes <code>TRUE</code>,
+<code>FALSE</code>, or the path to a CA bundle:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>picsure.ssl_verify <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>picsure.dev_mode   <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">local</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/connect.html">connect</a></span><span class="op">(</span>platform <span class="op">=</span> <span class="st">"https://localhost"</span>, token <span class="op">=</span> <span class="va">my_token</span><span class="op">)</span></span></code></pre></div>
+<p>Use the options rather than
+<code>Sys.setenv(PICSURE_SSL_VERIFY = ...)</code>: CPython snapshots the
+environment when the interpreter starts, and reticulate runs that
+interpreter inside the R process, so setting the environment variable
+after the first call that provisions Python has no effect.</p>
+<p>Note that a <strong>custom URL</strong> has no recorded consent
+policy the way <code>Platform$BDC_AUTHORIZED</code> does. When you
+connect by URL with a token and do not pass
+<code>include_consents</code>, <code><a href="../reference/connect.html">connect()</a></code> asks PSAMA for
+your consents and turns scoping on if any come back. If it cannot tell,
+for example with <code>validate = FALSE</code>, it prints a warning, and
+the session carries an empty consent list, so
+<code><a href="../reference/searchDictionary.html">searchDictionary()</a></code> returns every concept in the index
+rather than the ones your consents cover. Pass
+<code>include_consents = TRUE</code> when connecting by URL to a
+consent-gated deployment to fetch the list without relying on that
+check.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -230,7 +347,7 @@ researcher-facing messages. Catch the class if you need to:</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -11,7 +11,7 @@ platform members."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">picsure</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,11 @@ platform members.</p>
 [`Platform$BDC_AUTHORIZED`][picsure::Platform]) or a full URL string
 for an unlisted deployment (e.g. `"https://my-picsure.example.com"`).
 Human-readable label strings such as `"BDC Authorized"` are **not**
-accepted and raise a `picsureError`.</p></dd>
+accepted and raise a `picsureError`. A member is resolved against the
+Python enum by its member name, which is the only unambiguous handle:
+`Platform$BDC_AUTHORIZED` and `Platform$BDC_DEV_AUTHORIZED` share a
+label, and `Platform$BDC_AUTHORIZED` and `Platform$BDC_OPEN` share a
+URL, told apart by the `/hpds/auth` and `/hpds/open` backend paths.</p></dd>
 
 
 <dt id="arg-token">token<a class="anchor" aria-label="anchor" href="#arg-token"></a></dt>
@@ -76,30 +80,90 @@ authenticated platforms. Defaults to `""`.</p></dd>
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Optional keyword arguments forwarded to the Python
 `picsure.connect()` call. Unknown keys raise a `picsureError` with the
-list of valid keys. Supported keys:</p><dl><dt>`resource_uuid`</dt>
-<dd><p>UUID of a specific PIC-SURE resource to connect
-    to; overrides the platform default.</p></dd>
-
-  <dt>`include_consents`</dt>
-<dd><p>Logical. When `TRUE`, the session retrieves
-    the user's consent metadata from the auth service. Defaults to the
-    Python adapter's choice (currently `TRUE`).</p></dd>
+list of valid keys. `include_consents`, `requires_auth`, and
+`supports_genomic` default to the *platform's* own setting rather than
+to a fixed value, and a `Platform` member and a URL string resolve
+differently. See the "Defaults" section below.
+Supported keys:</p><dl><dt>`include_consents`</dt>
+<dd><p>Logical. When `TRUE`, `connect()` fetches the
+    user's approved consent identifiers from PSAMA and the session sends
+    them on every dictionary call, which is what scopes search results to
+    the studies the user may see. `TRUE` for the BDC authorized
+    `Platform` members and `FALSE` for every other member. For a custom
+    URL string it is detected rather than fixed; see the "Defaults"
+    section below. It cannot be `TRUE` together with
+    `requires_auth = FALSE`, because the consent list is read from an
+    authenticated PSAMA endpoint.</p></dd>
 
   <dt>`requires_auth`</dt>
-<dd><p>Logical. When `FALSE`, the session is opened in
-    unauthenticated mode (only useful for open resources). Defaults to
-    the Python adapter's choice (currently `TRUE`).</p></dd>
+<dd><p>Logical. When `FALSE`, neither this package nor
+    the Python adapter asks for a token, and the session uses the open
+    HPDS backend. On a consent-scoped member such as
+    `Platform$BDC_AUTHORIZED`, `include_consents` still defaults to the
+    member's own `TRUE`, and the Python adapter refuses that combination
+    with a `picsureValidationError`, so pass `include_consents = FALSE`
+    as well to connect anonymously there. When `TRUE`, a token is
+    required, even for a custom URL string. Defaults to `TRUE` for the
+    `_AUTHORIZED` members and for a custom URL string, `FALSE` for the
+    `_OPEN` members.</p></dd>
 
   <dt>`supports_genomic`</dt>
 <dd><p>Logical. Whether genomic operations
     (`searchGenomicValues()`, genomic-filtered queries) are permitted.
-    Defaults to the platform's own flag (`TRUE` only for BDC authorized
-    platforms); pass `TRUE` for a custom URL that serves genomic data.</p></dd>
+    `TRUE` for `Platform$BDC_AUTHORIZED`, `Platform$BDC_DEV_AUTHORIZED`,
+    `Platform$BDC_PREDEV_AUTHORIZED`, and
+    `Platform$NHANES_AUTHORIZED`; `FALSE` for the `_OPEN` members and
+    for a custom URL string. Pass `TRUE` for a custom URL that serves
+    genomic data.</p></dd>
 
   <dt>`client_type`</dt>
 <dd><p>Identifier sent to the backend audit log as the
-    `X-Client-Type` header. Defaults to `"R_ADAPTER"`; you should not
-    normally need to override it.</p></dd>
+    `X-Client-Type` header. Defaults to `"R_ADAPTER"` (this wrapper sets
+    it; the Python adapter's own default is `"PYTHON_ADAPTER"`). You
+    should not normally need to override it.</p></dd>
+
+  <dt>`dev_mode`</dt>
+<dd><p>Logical. Enables the Python adapter's developer-mode
+    instrumentation (per-call event capture). Defaults to
+    `getOption("picsure.dev_mode")`, then to the `PICSURE_DEV_MODE`
+    environment variable read Python-side, then to off.</p></dd>
+
+  <dt>`verify`</dt>
+<dd><p>TLS certificate verification. `TRUE` verifies (the
+    Python adapter's default); `FALSE` disables it (self-signed /
+    local-dev deployments only); a string is treated as a path to a CA
+    bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
+    `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
+    verifying.</p></dd>
+
+  <dt>`timeout`</dt>
+<dd><p>A single positive number of seconds. Defaults to the
+    Python adapter's ten minutes, because a large dataset can take
+    minutes to assemble server-side. It is the deadline for each request
+    the session makes for a data operation, such as a count or a
+    download. Participant and timestamp queries and
+    [`exportAsPFB()`][picsure::exportAsPFB] run as server jobs, and for
+    those it is also the overall budget for submitting the job and
+    waiting on it, measured from just before the submit. The final
+    status poll and the download after it each get their own deadline
+    of the same length, so such a call can still run past `timeout` end
+    to end. A job still running when the budget is spent raises a
+    `picsureConnectionError`. The connect-time check below keeps its own
+    deadline of 15 seconds, so a mistyped host fails fast whatever
+    `timeout` is.</p></dd>
+
+  <dt>`validate`</dt>
+<dd><p>A single `TRUE` or `FALSE`. `TRUE`, the default,
+    makes `connect()` check the token's shape and expiry locally and
+    then send one `GET /psama/user/me` request to confirm the deployment
+    is reachable and accepts the token. A connection with no token sends
+    `GET /picsure/system/status` instead, and a deployment reporting
+    `ONE OR MORE COMPONENTS DEGRADED` connects with a warning. `FALSE`
+    skips those checks, that request, and the consent-scoping probe a
+    custom URL string would
+    otherwise get, for offline or mocked use, so the returned session
+    may not work. A consent-scoped platform still fetches its consent
+    list either way.</p></dd>
 
 
 </dl></dd>
@@ -115,6 +179,65 @@ list of valid keys. Supported keys:</p><dl><dt>`resource_uuid`</dt>
     <p>On the first call of the R session, reticulate provisions an isolated
 Python environment containing the `picsure` Python package. This may take
 a few seconds the first time; subsequent calls reuse the cached env.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="defaults">Defaults<a class="anchor" aria-label="anchor" href="#defaults"></a></h2>
+
+
+<p>`include_consents`, `requires_auth`, and `supports_genomic` are all
+`NULL` here and resolved Python-side by `resolve_platform()`. There is no
+single default value for any of them:</p>
+<p>- For a `Platform` member, each one defaults to that member's own flag.
+  `Platform$BDC_AUTHORIZED` is consent-scoped, auth-required, and
+  genomic-capable; `Platform$NHANES_AUTHORIZED` is auth-required and
+  genomic-capable but **not** consent-scoped; the `_OPEN` members are none
+  of the three.
+- For a **custom URL string**, `requires_auth` defaults to `TRUE` and
+  `supports_genomic` to `FALSE`. `include_consents` has no fixed default:
+  when you pass none, and a token is required and `validate` is `TRUE`,
+  `connect()` asks PSAMA for the account's consents and turns scoping on
+  if any come back, saying so in a message.</p>
+<p>The URL case is the one that can still bite. When the probe cannot answer,
+because `validate = FALSE`, PSAMA does not serve the consents route, or
+the account has no consents, the session connects with an **empty
+consent list** and the Python adapter prints a warning naming
+`include_consents=True`. Because the consent list is what scopes
+dictionary results, `searchDictionary()` then returns every concept in the
+index rather than the ones your consents cover. Pass
+`include_consents = TRUE` explicitly when connecting to a consent-gated
+deployment by URL, which fetches the list without relying on the probe:</p>
+<div class="sourceCode"><pre><code><span></span>
+<span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu">picsure</span><span class="fu">::</span><span class="fu"><a href="../reference/connect.html">connect</a></span><span class="op">(</span></span>
+<span>  platform         <span class="op">=</span> <span class="st">"https://my-picsure.example.com"</span>,</span>
+<span>  token            <span class="op">=</span> <span class="va">my_token</span>,</span>
+<span>  include_consents <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+
+    </div>
+    <div class="section level2">
+    <h2 id="settings-from-an-r-session">Settings from an R session<a class="anchor" aria-label="anchor" href="#settings-from-an-r-session"></a></h2>
+
+
+<p>`PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE` are read out of Python's
+`os.environ`, which CPython snapshots when the interpreter starts.
+Reticulate runs that interpreter inside the R process, so
+`Sys.setenv(PICSURE_SSL_VERIFY = "false")` is picked up only while Python
+has not started yet. After the first call that provisions it, the change
+is invisible to Python. Use the R options instead, which are read on every
+`connect()` call:</p>
+<div class="sourceCode"><pre><code><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>picsure.ssl_verify <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>   <span class="co"># or a path to a CA bundle</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>picsure.dev_mode  <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+
+<p>An explicit `verify =` / `dev_mode =` argument to `connect()` always wins
+over the option, and both go through the same checks: `dev_mode` must be
+a single `TRUE` or `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a
+path string. A string that spells a boolean, such as `"false"`, is
+rejected rather than treated as a certificate path. When the `verify`
+argument or `options(picsure.ssl_verify)` turns verification off,
+`connect()` emits a message naming which of the two did it. Verification
+turned off Python-side through `PICSURE_SSL_VERIFY` is silent on the R
+side, one more reason to prefer the option.</p>
     </div>
 
     <div class="section level2">
@@ -134,7 +257,7 @@ a few seconds the first time; subsequent calls reuse the cached env.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

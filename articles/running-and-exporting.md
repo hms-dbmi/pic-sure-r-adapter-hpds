@@ -65,6 +65,21 @@ head(participants)
 timeseries <- picsure::runQuery(bdc, full_query, type = "timestamp")
 ```
 
+Participant and timestamp queries run as jobs on the server: the adapter
+submits the query, waits for it to finish, and then downloads the rows.
+The wait is bounded by the session’s `timeout`, ten minutes unless you
+set another when connecting, and a query still running when it runs out
+raises a `picsureConnectionError`. For a large cohort, raise it:
+
+``` r
+
+bdc <- picsure::connect(
+  platform = picsure::Platform$BDC_AUTHORIZED,
+  token    = my_token,
+  timeout  = 1800
+)
+```
+
 ## Variant query types
 
 Queries built with
@@ -97,10 +112,9 @@ runs the query and writes the PFB file in a single call:
 picsure::exportAsPFB(bdc, full_query, "~/cohort.pfb")
 ```
 
-PFB export requires the Python `picsure[pfb]` optional dependency. If
-the Python env was provisioned without it,
-[`exportAsPFB()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportAsPFB.md)
-raises a `picsureError` pointing you at the install hint.
+The server builds the PFB file and the adapter writes it to disk as it
+arrives, so no PFB library needs to be installed. Reading the file back
+is a separate step, for which any Avro reader works.
 
 [`exportCSV()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportCSV.md)
 and

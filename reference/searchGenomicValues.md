@@ -35,11 +35,13 @@ searchGenomicValues(
 
 - page:
 
-  1-based page number.
+  1-based page number. A single positive whole number; a fractional or
+  non-numeric value raises a \`picsureError\` rather than being silently
+  truncated or turned into \`NA\`.
 
 - size:
 
-  Page size (values per call).
+  Page size (values per call). Same validation as \`page\`.
 
 - ...:
 
@@ -47,6 +49,6 @@ searchGenomicValues(
 
 ## Value
 
-A data.frame with a single \`value\` column. (The Python adapter's
-pagination metadata lives on the DataFrame's \`.attrs\` and does not
-survive reticulate conversion; paginate via \`page\`/\`size\`.)
+A data.frame with a single character \`value\` column. (The Python
+adapter's pagination metadata lives on the DataFrame's \`.attrs\` and
+does not survive reticulate conversion; paginate via \`page\`/\`size\`.)

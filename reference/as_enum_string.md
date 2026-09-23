@@ -8,7 +8,13 @@ Members are required to match \`expected_subclass\` to prevent passing a
 ## Usage
 
 ``` r
-as_enum_string(value, expected_subclass, enum_name, field = "name")
+as_enum_string(
+  value,
+  expected_subclass,
+  enum_name,
+  field = "name",
+  call = sys.call(-1L)
+)
 ```
 
 ## Arguments
@@ -31,6 +37,11 @@ as_enum_string(value, expected_subclass, enum_name, field = "name")
 
   For members, which field to extract: \`"name"\` (default) or
   \`"value"\`.
+
+- call:
+
+  The call to report in the error, by default the caller's, so the
+  rejection names the wrapper the researcher invoked.
 
 ## Value
 
