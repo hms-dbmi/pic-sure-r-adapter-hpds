@@ -34,8 +34,8 @@ and that reasoning belongs next to the pin rather than here.
   `NA_character_` otherwise.
 - [`tests/testthat/test-zzz.R`](../../tests/testthat/test-zzz.R): four
   assertions carry the pin. Three of them break on any bump:
-  - "Python dependency pin parses as the consent-routing adapter direct
-    reference" names the repository URL and the exact SHA.
+  - "Python dependency pin parses as a direct reference to the upstream
+    adapter commit" names the repository URL and the exact SHA.
   - ".picsure_pinned_sha reads the commit off the dependency spec" names the
     exact SHA again.
   - "a hatch-vcs version built from the pinned commit is recognized as a
