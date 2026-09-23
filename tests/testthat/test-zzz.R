@@ -63,8 +63,12 @@ test_that("a hatch-vcs version built from the pinned commit is recognized as a m
   expect_false(startsWith(pinned, picsure:::.picsure_build_sha("2.0.1.dev11+ga023f367")))
 })
 
-test_that(".PICSURE_PY_TAG is NA while the pinned commit carries no release tag", {
-  expect_true(is.na(picsure:::.PICSURE_PY_TAG))
+test_that(".PICSURE_PY_TAG names the release tag at the pinned commit", {
+  expect_identical(picsure:::.PICSURE_PY_TAG, "v3.0.0")
+  expect_identical(
+    picsure:::.picsure_pin_verdict("3.0.0", picsure:::.picsure_pinned_sha(), picsure:::.PICSURE_PY_TAG),
+    "match"
+  )
 })
 
 test_that(".picsure_pinned_tag prefers a recorded tag over the spec", {

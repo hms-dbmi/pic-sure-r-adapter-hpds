@@ -1,7 +1,7 @@
 # picsure 2.0.0.9000
 
-- The pinned Python adapter moves to `70d5679`, the merge of its PR #35
-  into `main`. Current PIC-SURE servers refuse participant,
+- The pinned Python adapter moves to its v3.0.0 release (`70d5679`, the
+  merge of its PR #35 into `main`). Current PIC-SURE servers refuse participant,
   timestamp, and PFB queries on the synchronous query route with HTTP 400,
   so under the old pin `runQuery(type = "participant")`,
   `runQuery(type = "timestamp")`, and their `runQueryByID()` equivalents

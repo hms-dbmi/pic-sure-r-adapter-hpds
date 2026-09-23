@@ -17,10 +17,10 @@ The bridge lives in [`R/zzz.R`](../../R/zzz.R). The relevant moves:
   `picsure_py$PhenotypicFilterType`, etc.).
 - `.onLoad()` calls `reticulate::py_require(.PICSURE_PY_SPEC)` to
   declare the Python dependency. The spec is a PEP 508 direct
-  reference (the Python package is not yet on PyPI) pinned to an
-  immutable commit SHA on the upstream `pic_sure_api_rewrite` branch.
-  `@main` is pre-rewrite and 404s at `connect()` against the rewrite
-  gateway, so it must not be used here; the comment in `R/zzz.R` says
+  reference pinned to an immutable commit SHA, the Python v3.0.0
+  release commit, with `.PICSURE_PY_TAG` recording the tag. Python
+  releases before v3.0.0 404 at `connect()` against the new gateway,
+  so they must not be used here; the comment in `R/zzz.R` says
   why a pull-request head is never a valid pin, and
   [`pinned-python-build.md`](pinned-python-build.md) is the checklist of
   every site a bump touches.

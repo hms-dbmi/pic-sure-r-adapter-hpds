@@ -17,19 +17,18 @@ picsure_py <- NULL
 #
 # Installed directly from the upstream GitHub repository via PEP 508
 # direct-reference syntax (resolved by uv under `reticulate::py_require`).
-# `pic-sure-python-adapter-hpds` is not yet on PyPI.
+# The same build is published to PyPI as `picsure` 3.0.0, but the git
+# reference names the exact commit, which an index version cannot.
 #
-# This R rewrite branch REQUIRES the Python rewrite line: the R adapter has no
-# HTTP code of its own, so backend compatibility is whatever this ref resolves
-# to. `@main` is pre-rewrite (discovers resources via /picsure/info/resources
-# and 404s at connect() on the rewrite gateway) — it MUST NOT be used here.
-# This tracks the Python branch carrying the corrected rewrite gateway paths
-# (the /picsure prefix, /picsure/dictionary/*, versioned open queries, etc.).
+# The R adapter has no HTTP code of its own, so backend compatibility is
+# whatever this ref resolves to. Python releases before v3.0.0 discover
+# resources via /picsure/info/resources and 404 at connect() on the new
+# gateway, so they must not be used here.
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
-# earlier drift (R silently pinned at pre-rewrite @main) went unnoticed. This
-# SHA is on the Python `main` branch, the merge commit of PR #35, which
-# brought the whole `pic_sure_api_rewrite` branch into `main`.
+# earlier drift (R silently pinned at a pre-rewrite @main) went unnoticed.
+# This SHA is the Python v3.0.0 release commit, the merge of PR #35 into
+# `main`.
 #
 # The SHA must name a commit reachable from a branch, never a pull-request
 # head. GitHub publishes PR heads under refs/pull/<n>/head, so `uv pip
@@ -57,7 +56,7 @@ picsure_py <- NULL
 # version with no commit suffix, so the pin check needs the tag to recognize
 # such a build as the pinned one. Set it alongside the SHA whenever the pin
 # moves to a tagged commit.
-.PICSURE_PY_TAG <- NA_character_
+.PICSURE_PY_TAG <- "v3.0.0"
 
 # Records whether the pinned-build check has already run, so its report is
 # emitted at most once per session.
