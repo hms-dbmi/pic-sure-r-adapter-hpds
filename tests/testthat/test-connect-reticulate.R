@@ -57,7 +57,7 @@ test_that("every whitelisted connect() extra is accepted by the pinned build", {
 test_that("the connect() extras pending a pin bump are listed exactly when the pin allows", {
   skip_unless_python_module()
 
-  pending_pin_bump <- c("timeout", "validate")
+  pending_pin_bump <- character()
   accepted <- connect_parameter_names()
 
   listed_early <- intersect(setdiff(pending_pin_bump, accepted),

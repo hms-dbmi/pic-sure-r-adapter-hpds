@@ -35,10 +35,15 @@ test_that("a missing token on an auth-required Platform member is a picsureValid
 test_that("requires_auth = FALSE on an auth-required member does not demand a token", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
-  picsure::connect(platform = picsure::Platform$BDC_AUTHORIZED, requires_auth = FALSE)
+  picsure::connect(
+    platform = picsure::Platform$BDC_AUTHORIZED,
+    requires_auth = FALSE,
+    include_consents = FALSE
+  )
   recorded <- fake$.calls$connect[[1]]
   expect_identical(recorded$token, "")
   expect_identical(recorded$requires_auth, FALSE)
+  expect_identical(recorded$include_consents, FALSE)
 })
 
 test_that("requires_auth = TRUE on a URL string demands a token in R", {
@@ -128,29 +133,65 @@ test_that("connect() rejects unknown extra kwargs with a helpful message", {
   expect_match(msg, "supports_genomic", fixed = TRUE)
 })
 
-test_that("connect() rejects timeout, which the pinned build does not accept", {
-  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  err <- tryCatch(
-    picsure::connect(platform = "https://picsure.test", token = "tok", timeout = 60),
-    error = function(e) e
-  )
-  expect_s3_class(err, "picsureValidationError")
-  expect_s3_class(err, "picsureError")
-  msg <- conditionMessage(err)
-  expect_match(msg, "Unknown argument", fixed = TRUE)
-  expect_match(msg, "timeout", fixed = TRUE)
-  expect_match(msg, "Valid extras", fixed = TRUE)
-  expect_false(grepl("unexpected keyword", msg, fixed = TRUE))
+test_that("connect() forwards timeout to Python as a double", {
+  for (value in list(60, 60L, 0.5)) {
+    fake <- fake_picsure_py()
+    testthat::local_mocked_bindings(picsure_py = fake)
+    picsure::connect(platform = "https://picsure.test", token = "tok", timeout = value)
+    forwarded <- fake$.calls$connect[[1]]$timeout
+    expect_type(forwarded, "double")
+    expect_identical(forwarded, as.double(value))
+  }
 })
 
-test_that("connect() rejects validate, which the pinned build does not accept", {
-  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
-  err <- tryCatch(
-    picsure::connect(platform = "https://picsure.test", token = "tok", validate = FALSE),
-    error = function(e) e
-  )
-  expect_s3_class(err, "picsureValidationError")
-  expect_match(conditionMessage(err), "validate", fixed = TRUE)
+test_that("connect() sends no timeout when none is given, so Python's default stands", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  picsure::connect(platform = "https://picsure.test", token = "tok")
+  recorded <- fake$.calls$connect[[1]]
+  expect_false("timeout" %in% names(recorded))
+  expect_false("validate" %in% names(recorded))
+})
+
+test_that("connect() rejects a timeout that is not a single positive finite number", {
+  for (value in list("abc", "60", -5, 0, NA_real_, NaN, Inf, c(10, 20), TRUE, list(60))) {
+    fake <- fake_picsure_py()
+    testthat::local_mocked_bindings(picsure_py = fake)
+    err <- tryCatch(
+      picsure::connect(platform = "https://picsure.test", token = "tok", timeout = value),
+      error = function(e) e
+    )
+    label <- paste(deparse(value), collapse = "")
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`timeout`", fixed = TRUE, info = label)
+    expect_identical(deparse(conditionCall(err)[[1L]]), "picsure::connect", info = label)
+    expect_length(fake$.calls$connect, 0L)
+  }
+})
+
+test_that("connect() forwards validate as a logical", {
+  for (value in c(TRUE, FALSE)) {
+    fake <- fake_picsure_py()
+    testthat::local_mocked_bindings(picsure_py = fake)
+    picsure::connect(platform = "https://picsure.test", token = "tok", validate = value)
+    expect_identical(fake$.calls$connect[[1]]$validate, value)
+  }
+})
+
+test_that("connect() rejects a validate that is not a single TRUE or FALSE", {
+  for (value in list("FALSE", "false", 0, 1L, NA, c(TRUE, FALSE), logical(0))) {
+    fake <- fake_picsure_py()
+    testthat::local_mocked_bindings(picsure_py = fake)
+    err <- tryCatch(
+      picsure::connect(platform = "https://picsure.test", token = "tok", validate = value),
+      error = function(e) e
+    )
+    label <- paste(deparse(value), collapse = "")
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`validate` must be TRUE or FALSE",
+                 fixed = TRUE, info = label)
+    expect_length(fake$.calls$connect, 0L)
+  }
 })
 
 test_that("connect() rejects resource_uuid, which no longer routes anything", {
@@ -166,15 +207,22 @@ test_that("connect() rejects resource_uuid, which no longer routes anything", {
 })
 
 test_that("connect() forwards each whitelisted extra kwarg", {
-  for (key in c("include_consents", "requires_auth", "supports_genomic")) {
+  values <- list(
+    include_consents = "value-for-test",
+    requires_auth    = "value-for-test",
+    supports_genomic = "value-for-test",
+    timeout          = 42,
+    validate         = FALSE
+  )
+  for (key in names(values)) {
     fake <- fake_picsure_py()
     testthat::local_mocked_bindings(picsure_py = fake)
     args <- list(platform = "https://picsure.test", token = "tok")
-    args[[key]] <- "value-for-test"
+    args[[key]] <- values[[key]]
     do.call(picsure::connect, args)
     expect_equal(
       fake$.calls$connect[[1]][[key]],
-      "value-for-test",
+      values[[key]],
       info = sprintf("kwarg %s should be forwarded", key)
     )
   }

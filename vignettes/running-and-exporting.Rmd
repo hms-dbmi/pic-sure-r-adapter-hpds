@@ -65,6 +65,20 @@ head(participants)
 timeseries <- picsure::runQuery(bdc, full_query, type = "timestamp")
 ```
 
+Participant and timestamp queries run as jobs on the server: the adapter
+submits the query, waits for it to finish, and then downloads the rows.
+The wait is bounded by the session's `timeout`, ten minutes unless you set
+another when connecting, and a query still running when it runs out raises
+a `picsureConnectionError`. For a large cohort, raise it:
+
+```{r}
+bdc <- picsure::connect(
+  platform = picsure::Platform$BDC_AUTHORIZED,
+  token    = my_token,
+  timeout  = 1800
+)
+```
+
 ## Variant query types
 
 Queries built with `buildGenomicFilter()` define four additional result types in
