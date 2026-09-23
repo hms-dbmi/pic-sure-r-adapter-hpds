@@ -74,6 +74,38 @@ describe_argument_value <- function(value) {
 #' @return `value` as an integer scalar.
 #' @keywords internal
 as_positive_whole_number <- function(value, arg, call = sys.call(-1L)) {
+  as_bounded_whole_number(value, arg, minimum = 1L, call = call)
+}
+
+#' Validate a single non-negative whole number.
+#'
+#' The same checks as [as_positive_whole_number()], except that 0 is
+#' accepted. For zero-based positions such as `searchDictionary()`'s `page`.
+#'
+#' @param value The value to validate.
+#' @param arg The argument's name, for the error message.
+#' @param call The call to report in the error, by default the caller's, so
+#'   the rejection names the wrapper the researcher invoked.
+#' @return `value` as an integer scalar.
+#' @keywords internal
+as_nonnegative_whole_number <- function(value, arg, call = sys.call(-1L)) {
+  as_bounded_whole_number(value, arg, minimum = 0L, call = call)
+}
+
+#' Validate a single whole number no smaller than `minimum`.
+#'
+#' The shared body of [as_positive_whole_number()] and
+#' [as_nonnegative_whole_number()]. Returns an integer, so reticulate hands
+#' Python an `int` rather than the `float` a bare R number becomes.
+#'
+#' @param value The value to validate.
+#' @param arg The argument's name, for the error message.
+#' @param minimum The smallest accepted value, 0 or 1.
+#' @param call The call to report in the error.
+#' @return `value` as an integer scalar.
+#' @keywords internal
+as_bounded_whole_number <- function(value, arg, minimum, call) {
+  kind <- if (minimum >= 1L) "positive" else "non-negative"
   reject <- function(requirement) {
     .picsure_reject(
       sprintf("`%s` must be %s; got %s.", arg, requirement,
@@ -82,10 +114,10 @@ as_positive_whole_number <- function(value, arg, call = sys.call(-1L)) {
     )
   }
   if (is.null(value) || length(value) != 1L || !is.numeric(value)) {
-    reject("a single positive whole number")
+    reject(sprintf("a single %s whole number", kind))
   }
   if (is.na(value)) {
-    reject("a single positive whole number")
+    reject(sprintf("a single %s whole number", kind))
   }
   if (!is.finite(value)) {
     reject("a finite number")
@@ -93,8 +125,8 @@ as_positive_whole_number <- function(value, arg, call = sys.call(-1L)) {
   if (value != trunc(value)) {
     reject("a whole number, with no fractional part")
   }
-  if (value < 1) {
-    reject("a positive number, 1 or greater")
+  if (value < minimum) {
+    reject(sprintf("a %s number, %d or greater", kind, minimum))
   }
   if (value > .Machine$integer.max) {
     reject(sprintf("at most %d", .Machine$integer.max))

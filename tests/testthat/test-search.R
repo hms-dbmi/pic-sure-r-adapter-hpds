@@ -102,3 +102,61 @@ test_that("searchDictionary() types the columns it knows and leaves the rest", {
   expect_type(result$unknownField, "character")
   expect_identical(names(result), c("conceptPath", "min", "max", "allowFiltering", "unknownField"))
 })
+
+test_that("searchDictionary() sends no page or page_size unless given", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  picsure::searchDictionary(bdc, "age")
+
+  call <- bdc$.calls$searchDictionary[[1]]
+  expect_false("page" %in% names(call))
+  expect_false("page_size" %in% names(call))
+})
+
+test_that("searchDictionary() forwards page and page_size as integers", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  picsure::searchDictionary(bdc, "", page = 0, page_size = 100)
+  picsure::searchDictionary(bdc, "", page = 3L, page_size = 2.0)
+
+  first <- bdc$.calls$searchDictionary[[1]]
+  expect_identical(first$page, 0L)
+  expect_identical(first$page_size, 100L)
+  second <- bdc$.calls$searchDictionary[[2]]
+  expect_identical(second$page, 3L)
+  expect_identical(second$page_size, 2L)
+})
+
+test_that("searchDictionary() rejects a page that is not a whole number, 0 or greater", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  for (value in list(-1, 1.5, "0", NA_real_, Inf, c(0, 1), TRUE)) {
+    label <- paste(deparse(value), collapse = "")
+    err <- tryCatch(picsure::searchDictionary(bdc, "", page = value), error = function(e) e)
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`page`", fixed = TRUE, info = label)
+    expect_identical(deparse(conditionCall(err)[[1L]]), "picsure::searchDictionary",
+                     info = label)
+  }
+  expect_length(bdc$.calls$searchDictionary, 0L)
+})
+
+test_that("searchDictionary() rejects a page_size that is not a positive whole number", {
+  fake <- fake_picsure_py()
+  testthat::local_mocked_bindings(picsure_py = fake)
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  for (value in list(0, -10, 2.5, "100", NA_integer_, 3e9, c(10, 20))) {
+    label <- paste(deparse(value), collapse = "")
+    err <- tryCatch(picsure::searchDictionary(bdc, "", page_size = value), error = function(e) e)
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`page_size`", fixed = TRUE, info = label)
+  }
+  expect_length(bdc$.calls$searchDictionary, 0L)
+})

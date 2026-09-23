@@ -150,6 +150,23 @@ test_that("as_positive_whole_number rejects a value too large for an R integer",
   expect_match(conditionMessage(err), "2147483647", fixed = TRUE)
 })
 
+test_that("as_nonnegative_whole_number accepts 0 and positive whole numbers as integers", {
+  expect_identical(picsure:::as_nonnegative_whole_number(0, "page"), 0L)
+  expect_identical(picsure:::as_nonnegative_whole_number(0L, "page"), 0L)
+  expect_identical(picsure:::as_nonnegative_whole_number(7, "page"), 7L)
+})
+
+test_that("as_nonnegative_whole_number rejects negatives, fractions and nonsense", {
+  bad <- list(NULL, NA, NaN, Inf, -1, 0.5, "0", TRUE, c(0, 1), 3e9)
+  for (value in bad) {
+    err <- tryCatch(picsure:::as_nonnegative_whole_number(value, "page"), error = function(e) e)
+    expect_s3_class(err, "picsureValidationError")
+    expect_match(conditionMessage(err), "`page`", fixed = TRUE)
+  }
+  err <- tryCatch(picsure:::as_nonnegative_whole_number(-1, "page"), error = function(e) e)
+  expect_match(conditionMessage(err), "0 or greater", fixed = TRUE)
+})
+
 test_that("check_optional_number allows NULL, negatives and fractions but not nonsense", {
   expect_null(picsure:::check_optional_number(NULL, "min"))
   expect_identical(picsure:::check_optional_number(40L, "min"), 40L)
