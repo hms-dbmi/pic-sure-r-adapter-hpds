@@ -105,9 +105,9 @@ agg_vcf  <- picsure::runQuery(bdc, genomic_query, type = "aggregate_vcf_excerpt"
 picsure::exportAsPFB(bdc, full_query, "~/cohort.pfb")
 ```
 
-PFB export requires the Python `picsure[pfb]` optional dependency. If the
-Python env was provisioned without it, `exportAsPFB()` raises a
-`picsureError` pointing you at the install hint.
+The server builds the PFB file and the adapter writes it to disk as it
+arrives, so no PFB library needs to be installed. Reading the file back is
+a separate step, for which any Avro reader works.
 
 `exportCSV()` and `exportTSV()` serialize an R `data.frame` — the typical
 flow is to run the query first and then write the result:

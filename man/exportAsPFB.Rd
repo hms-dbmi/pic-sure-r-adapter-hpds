@@ -19,8 +19,10 @@ The path, invisibly.
 }
 \description{
 Runs the query and writes the result as a PFB (Portable Format for
-Bioinformatics) file at `path`. Requires the Python `picsure[pfb]` optional
-dependency on the Python side.
+Bioinformatics) file at `path`. The server builds the PFB file as a job,
+and the Python adapter streams it to disk unchanged, so no PFB library is
+needed on either side. The wait for the job is bounded by `connect()`'s
+`timeout`.
 }
 \examples{
 \dontrun{
