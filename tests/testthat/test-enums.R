@@ -222,6 +222,8 @@ test_that("QueryType exposes variant result-type members", {
 test_that("VariantFrequency enum mirrors Python values", {
   expect_equal(picsure::VariantFrequency$RARE$value, "Rare")
   expect_equal(picsure::VariantFrequency$COMMON$value, "Common")
+  expect_equal(picsure::VariantFrequency$LOW_FREQUENCY$value, "Low_frequency")
+  expect_equal(picsure::VariantFrequency$ULTRA_RARE$value, "Ultra_rare")
   expect_equal(picsure::VariantFrequency$NOVEL$value, "Novel")
 })
 

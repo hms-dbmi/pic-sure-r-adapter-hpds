@@ -15,7 +15,7 @@ test_that("names() on a str-mixin Python enum is not its member list", {
   attributes_seen <- names(frequency)
   members <- picsure:::.py_enum_member_names(frequency)
 
-  expect_setequal(members, c("RARE", "COMMON", "NOVEL"))
+  expect_setequal(members, c("RARE", "COMMON", "LOW_FREQUENCY", "ULTRA_RARE", "NOVEL"))
   expect_true(all(c("count", "index", "format", "strip") %in% attributes_seen))
   expect_false(any(c("count", "index", "format", "strip") %in% members))
   expect_gt(length(attributes_seen), length(members))

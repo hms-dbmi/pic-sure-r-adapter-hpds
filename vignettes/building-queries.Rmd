@@ -174,9 +174,12 @@ combined_query <- picsure::buildQuery(
 )
 ```
 
-`VariantFrequency` members (`RARE`, `COMMON`, `NOVEL`) are coerced to their
-string value before the request is sent, so they are equivalent to passing
-the string `"Rare"`, `"Common"`, or `"Novel"` directly.
+`VariantFrequency` members (`RARE`, `COMMON`, `LOW_FREQUENCY`, `ULTRA_RARE`,
+and the deprecated `NOVEL`) are coerced to their string value before the
+request is sent, so `VariantFrequency$RARE` is equivalent to passing the
+string `"Rare"` directly. The members are a convenience rather than an
+allowlist: `searchGenomicValues(bdc, "Variant_frequency_as_text")` returns
+the values the deployment actually carries.
 
 ## Editing an existing query
 

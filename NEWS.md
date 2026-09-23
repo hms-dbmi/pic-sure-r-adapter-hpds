@@ -1,13 +1,50 @@
 # picsure 2.0.0.9000
 
+- The pinned Python adapter moves to `9419c26`, the merge of its PR #49 on
+  `pic_sure_api_rewrite`. Current PIC-SURE servers refuse participant,
+  timestamp, and PFB queries on the synchronous query route with HTTP 400,
+  so under the old pin `runQuery(type = "participant")`,
+  `runQuery(type = "timestamp")`, and their `runQueryByID()` equivalents
+  failed against them. Participant and timestamp queries now run as server
+  jobs, as `exportAsPFB()` already did: the adapter submits the query,
+  polls its status, and downloads the result once it is available. The
+  R calls are unchanged. The wait is bounded by `connect()`'s new `timeout`
+  argument, ten minutes by default, and a job still unfinished when it
+  runs out raises a `picsureConnectionError` naming the query id. Other
+  changes the new build brings:
+  - `connect()` checks the token's shape and expiry locally, then sends one
+    `GET /psama/user/me` request to confirm the deployment is reachable and
+    accepts the token. A malformed or expired token fails before any
+    request with a `picsureAuthenticationError`. `validate = FALSE` skips
+    both.
+  - `searchDictionary()` fetches its results in pages of 500 and refuses an
+    unpaged search matching more than 100,000 concepts; see the paging
+    bullet below.
+  - `VariantFrequency` gains `LOW_FREQUENCY` and `ULTRA_RARE`, and the
+    Python adapter now calls `NOVEL` deprecated, since no observed
+    deployment's annotations carry it.
+  - A PFB export whose server job ends in `ERROR` raises a
+    `picsureQueryError`, not a `picsureConnectionError`.
+  - The finer error classes now arrive as leaves:
+    `picsureAuthenticationError`, `picsureAuthorizationError`,
+    `picsureTLSError`, and `picsureServerError`. A handler written for
+    `picsureAuthError` or `picsureConnectionError` still catches them.
+
+- `searchDictionary()` takes `page` and `page_size`. Leaving `page` as
+  `NULL` returns every match, as before, up to the new 100,000-concept
+  limit, past which the Python adapter raises a `picsureValidationError`
+  telling you to read page 0, then page 1, and so on. That advice could
+  not be followed from R before: `page = 0` reached Python as the float
+  `0.0`, which the adapter rejects because it requires an integer. Both
+  arguments are now validated in R, `page` as a whole number 0 or greater
+  and `page_size` as a positive one, and sent as integers.
+
 - **Breaking:** `connect()` no longer accepts `resource_uuid`. PIC-SURE v3
   routes by URL path (`/hpds/auth` vs `/hpds/open`, chosen by the `Platform`
-  member), so a resource UUID never selected anything. The Python adapter
-  still takes the argument for backwards compatibility, storing it on the
-  session and ignoring it. Forwarding a value that cannot affect the
-  result is worse than refusing it, so this wrapper drops it from the
-  accepted extras: passing it raises a `picsureValidationError` listing the
-  valid ones.
+  member), so a resource UUID never selected anything. The pinned Python
+  adapter no longer takes the argument either, and this wrapper refuses it
+  before it reaches Python: passing it raises a `picsureValidationError`
+  listing the valid extras.
   There is no replacement; delete the argument. `Platform` members never
   carried a resource UUID, so nothing else in the R API changes.
 
@@ -27,20 +64,12 @@
   `tryCatch(picsureError = ...)` missed them; they are now
   `picsureValidationError`s. And the R side derives a condition's ancestry
   from its own table rather than from the installed Python exception's MRO,
-  so the hierarchy does not change shape when the pin moves. How finely
-  the leaf is identified does. The currently pinned Python build is flatter:
-  it defines `PicSureAuthError` but no `PicSureAuthenticationError`,
-  `PicSureAuthorizationError`, `PicSureTLSError`, or `PicSureServerError`.
-  Against it, a server-side token refusal is a plain `picsureAuthError` and a
-  transport failure a plain `picsureConnectionError`. `picsureTLSError` cannot
-  arrive at all yet, and `picsureAuthenticationError` and
-  `picsureAuthorizationError` cannot arrive as the leaf that identifies a
-  condition; those three start arriving only once the pin is bumped to a build
-  that defines the matching Python classes. The rest of the tree is live today,
-  ancestors included, so `picsureServerError` does reach a handler: not as a
-  leaf, but on every `picsureConsentLookupError`, which the R table places
-  beneath it, the same way `picsureAuthorizationError` comes along on every
-  `picsureConsentDeniedError`.
+  so the hierarchy does not change shape when the pin moves. The pinned
+  Python build defines a class for every node in the tree, with the same
+  ancestry, so every class can arrive as the leaf that identifies a
+  condition. `picsureValidationError` covers a server answer of HTTP 400,
+  or any other 4xx that is not 401, 403, 404, or 429, as well as input
+  rejected before a request was sent.
 
 - Two R options are now read on every `connect()` call and forwarded as
   call-time arguments. `picsure.ssl_verify` takes `TRUE`, `FALSE`, or the
@@ -73,34 +102,47 @@
   interpreter's *start* is the boundary, not `import picsure`.) An option
   read on every `connect()` has no such window.
 
-- `connect()` does not accept `timeout` or `validate` yet. The currently
-  pinned Python adapter has no such parameters, so either one is rejected up
-  front like any other unknown key, with a `picsureValidationError` naming
-  the argument and listing the extras that are valid. Both arrive when the
-  pin moves to a build that takes them: `timeout` will be the per-request
-  deadline in seconds for the data operations the session performs, counts,
-  participant downloads, and export polls, defaulting to the Python adapter's
-  ten minutes, and `validate = FALSE` will skip both the local token check
-  and the one request that confirms the deployment is reachable and accepts
-  the token, for offline or mocked use.
+- `connect()` accepts `timeout` and `validate`, both forwarded to the Python
+  adapter. `timeout` is a positive number of seconds, ten minutes by
+  default. It is the deadline for each data request, such as a count or a
+  download, and for participant queries, timestamp queries, and
+  `exportAsPFB()`, which run as server jobs, it is also the overall budget
+  for submitting the job and waiting on it. The final status poll and the
+  download each carry their own deadline of the same length, so such a
+  call can still run past `timeout` end to end. The connect-time check
+  keeps its own 15-second deadline. `validate = FALSE` skips the local
+  token check, the one request that confirms the deployment is reachable
+  and accepts the token, and the consent probe a custom URL would get, for
+  offline or mocked use. Both are checked in R before anything is sent,
+  because the Python adapter checks neither: a `timeout` that is not a
+  single positive finite number, or a `validate` that is not a single
+  `TRUE` or `FALSE`, raises a `picsureValidationError`. The string
+  `"FALSE"` in particular would otherwise have read as true.
 
 - A missing token on an auth-required platform now raises
   `picsureValidationError` rather than `picsureAuthenticationError`, matching
   the Python adapter, and `requires_auth = FALSE` on an `_AUTHORIZED`
-  `Platform` member no longer demands a token.
+  `Platform` member no longer demands a token. On a consent-scoped member
+  such as `Platform$BDC_AUTHORIZED`, pass `include_consents = FALSE` with
+  it: the Python adapter refuses `include_consents = TRUE` together with
+  `requires_auth = FALSE`, because the consent list comes from an
+  authenticated endpoint.
 
 - `connect()`'s documentation of `include_consents`, `requires_auth`, and
   `supports_genomic` was wrong: it described each as having one fixed
   default. All three are resolved per platform. For a `Platform` member each
   defaults to that member's own flag; for a **custom URL string**
-  `requires_auth` defaults to `TRUE` while `include_consents` and
-  `supports_genomic` default to `FALSE`. The URL case matters. A
-  consent-gated deployment reached by URL connects with an empty consent
-  list, and since the consent list is what scopes dictionary results,
-  `searchDictionary()` then returns every concept in the index instead of the
-  ones the user's consents cover. Pass `include_consents = TRUE` explicitly
-  in that case. `supports_genomic` is also `TRUE` for
-  `Platform$NHANES_AUTHORIZED`, not only for the BDC authorized platforms.
+  `requires_auth` defaults to `TRUE` and `supports_genomic` to `FALSE`,
+  while `include_consents` is detected: with a token and `validate = TRUE`,
+  `connect()` asks PSAMA for the account's consents and turns scoping on if
+  any come back. When it cannot tell, it prints a warning naming
+  `include_consents=True` and connects with an empty consent list, and
+  since the consent list is what scopes dictionary results,
+  `searchDictionary()` then returns every concept in the index instead of
+  the ones the user's consents cover. Pass `include_consents = TRUE`
+  explicitly for a consent-gated deployment reached by URL.
+  `supports_genomic` is also `TRUE` for `Platform$NHANES_AUTHORIZED`, not
+  only for the BDC authorized platforms.
 
 - Facet documentation and error messages named `study_ids`, a category no
   deployment publishes. The category names come from the server's facets

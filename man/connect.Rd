@@ -25,27 +25,28 @@ authenticated platforms. Defaults to `""`.}
 
 \item{...}{Optional keyword arguments forwarded to the Python
 `picsure.connect()` call. Unknown keys raise a `picsureError` with the
-list of valid keys. Every one of them defaults to the *platform's* own
-setting rather than to a fixed value, and a `Platform` member and a URL
-string resolve differently. See the "Defaults" section below.
+list of valid keys. `include_consents`, `requires_auth`, and
+`supports_genomic` default to the *platform's* own setting rather than
+to a fixed value, and a `Platform` member and a URL string resolve
+differently. See the "Defaults" section below.
 Supported keys:
 \describe{
   \item{`include_consents`}{Logical. When `TRUE`, `connect()` fetches the
     user's approved consent identifiers from PSAMA and the session sends
     them on every dictionary call, which is what scopes search results to
     the studies the user may see. `TRUE` for the BDC authorized
-    `Platform` members, `FALSE` for every other member **and for a
-    custom URL string**.}
+    `Platform` members and `FALSE` for every other member. For a custom
+    URL string it is detected rather than fixed; see the "Defaults"
+    section below. It cannot be `TRUE` together with
+    `requires_auth = FALSE`, because the consent list is read from an
+    authenticated PSAMA endpoint.}
   \item{`requires_auth`}{Logical. When `FALSE`, neither this package nor
-    the Python adapter asks for a token, even on an `_AUTHORIZED`
-    member. It does not on its own move the session to the open HPDS
-    backend: the pinned adapter picks that backend only when neither
-    `requires_auth` nor `include_consents` is in force, and
-    `include_consents` still defaults to the member's own flag, which is
-    `TRUE` for the BDC authorized members. To connect anonymously
-    against the open backend on such a member, pass
-    `include_consents = FALSE` as well; otherwise `connect()` calls
-    PSAMA's consent endpoint with no token. When `TRUE`, a token is
+    the Python adapter asks for a token, and the session uses the open
+    HPDS backend. On a consent-scoped member such as
+    `Platform$BDC_AUTHORIZED`, `include_consents` still defaults to the
+    member's own `TRUE`, and the Python adapter refuses that combination
+    with a `picsureValidationError`, so pass `include_consents = FALSE`
+    as well to connect anonymously there. When `TRUE`, a token is
     required, even for a custom URL string. Defaults to `TRUE` for the
     `_AUTHORIZED` members and for a custom URL string, `FALSE` for the
     `_OPEN` members.}
@@ -70,21 +71,29 @@ Supported keys:
     bundle. Defaults to `getOption("picsure.ssl_verify")`, then to the
     `PICSURE_SSL_VERIFY` environment variable read Python-side, then to
     verifying.}
-}
-`timeout` and `validate` are **not accepted by this wrapper yet**. The
-pinned Python adapter has no such parameters, so either one is rejected
-up front like any other unknown key, with a `picsureValidationError`
-naming it. Both arrive when the pin moves to a build that takes them.
-`timeout` will be a number, the per-request deadline in seconds for the
-data operations the session performs, counts, participant downloads, and
-export polls, defaulting to the Python adapter's ten minutes, because a
-large dataset can take minutes to assemble server-side; the connect-time
-validation request will keep its own short deadline. `validate` will be
-a logical: `TRUE`, the Python adapter's default, will make `connect()`
-check the token's shape and expiry locally and then send one request to
-confirm the deployment is reachable and accepts the token, and `FALSE`
-will skip both for offline or mocked use, so that nothing is sent or
-checked and the returned session may not work.}
+  \item{`timeout`}{A single positive number of seconds. Defaults to the
+    Python adapter's ten minutes, because a large dataset can take
+    minutes to assemble server-side. It is the deadline for each request
+    the session makes for a data operation, such as a count or a
+    download. Participant and timestamp queries and
+    [`exportAsPFB()`][picsure::exportAsPFB] run as server jobs, and for
+    those it is also the overall budget for submitting the job and
+    waiting on it, measured from just before the submit. The final
+    status poll and the download after it each get their own deadline
+    of the same length, so such a call can still run past `timeout` end
+    to end. A job still running when the budget is spent raises a
+    `picsureConnectionError`. The connect-time check below keeps its own
+    deadline of 15 seconds, so a mistyped host fails fast whatever
+    `timeout` is.}
+  \item{`validate`}{A single `TRUE` or `FALSE`. `TRUE`, the default,
+    makes `connect()` check the token's shape and expiry locally and
+    then send one `GET /psama/user/me` request to confirm the deployment
+    is reachable and accepts the token. `FALSE` skips those checks, that
+    request, and the consent-scoping probe a custom URL string would
+    otherwise get, for offline or mocked use, so the returned session
+    may not work. A consent-scoped platform still fetches its consent
+    list either way.}
+}}
 }
 \value{
 An opaque session object. Pass it as the first argument to
@@ -111,15 +120,21 @@ single default value for any of them:
   genomic-capable; `Platform$NHANES_AUTHORIZED` is auth-required and
   genomic-capable but **not** consent-scoped; the `_OPEN` members are none
   of the three.
-- For a **custom URL string**, `requires_auth` defaults to `TRUE` while
-  `include_consents` and `supports_genomic` default to `FALSE`.
+- For a **custom URL string**, `requires_auth` defaults to `TRUE` and
+  `supports_genomic` to `FALSE`. `include_consents` has no fixed default:
+  when you pass none, and a token is required and `validate` is `TRUE`,
+  `connect()` asks PSAMA for the account's consents and turns scoping on
+  if any come back, saying so in a message.
 
-The URL case is the one that bites. A consent-gated deployment reached by
-URL connects with an **empty consent list**, and because the consent list
-is what scopes dictionary results, `searchDictionary()` then returns every
-concept in the index rather than the ones your consents cover. Pass
+The URL case is the one that can still bite. When the probe cannot answer,
+because `validate = FALSE`, PSAMA does not serve the consents route, or
+the account has no consents, the session connects with an **empty
+consent list** and the Python adapter prints a warning naming
+`include_consents=True`. Because the consent list is what scopes
+dictionary results, `searchDictionary()` then returns every concept in the
+index rather than the ones your consents cover. Pass
 `include_consents = TRUE` explicitly when connecting to a consent-gated
-deployment by URL:
+deployment by URL, which fetches the list without relying on the probe:
 
 \preformatted{
 session <- picsure::connect(

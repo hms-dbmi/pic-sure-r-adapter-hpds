@@ -15,17 +15,14 @@
 #     `tryCatch(picsureError = ...)` missed them. They are now
 #     `picsureValidationError`s, which are `picsureError`s.
 #
-# The class hierarchy mirrors the shape the Python adapter is moving to, so a
-# handler written against either language reads the same once the pin catches
-# up. It runs ahead of the pinned build in two places. Pinned
-# `PicSureConsentDeniedError` derives straight from `PicSureError`, while R
-# already places `picsureConsentDeniedError` under `picsureAuthorizationError`
-# and so under `picsureAuthError`. Pinned `PicSureConsentLookupError` derives
-# straight from `PicSureConnectionError`, while R already inserts
-# `picsureServerError` between the two. The R side owns its own ancestry. A
+# The class hierarchy mirrors the Python adapter's, so a handler written
+# against either language reads the same. The pinned build's MRO matches the
+# tree below class for class, `PicSureConsentDeniedError` under
+# `PicSureAuthorizationError` and `PicSureConsentLookupError` under
+# `PicSureServerError` included. The R side still owns its own ancestry. A
 # mapped Python class is expanded through `.PICSURE_CONDITION_PARENTS` rather
 # than by copying the installed Python build's MRO, so the R hierarchy keeps
-# its shape when the pinned Python commit moves.
+# its shape if a later Python commit moves a class.
 
 # The immediate parent of each condition class, or `character()` for a root.
 # One name per row, never a chain: `.picsure_condition_ancestors()` walks the
@@ -42,7 +39,7 @@
 #   |  \- picsureServerError             5xx
 #   |     \- picsureConsentLookupError   server could not resolve consents (502)
 #   |- picsureQueryError                 server rejected the query
-#   \- picsureValidationError            invalid input to a picsure function
+#   \- picsureValidationError            invalid input, caught here or by the server (other 4xx)
 #
 # PSAMA answers 403, not 401, for a bad or absent token on /user/me, so a
 # server-side token rejection arrives as an authorization error while a
@@ -62,8 +59,7 @@
 # Adding a class to either table therefore means adding a row here too.
 # `test-errors.R` guards that subset relation for both tables. The reverse
 # does not hold: a name here with no Python class mapped to it is
-# legitimate, and several are, because the R hierarchy runs ahead of the
-# pinned build.
+# legitimate, for a class the R side defines before a Python build does.
 .PICSURE_CONDITION_PARENTS <- list(
   picsureAuthError           = character(),
   picsureAuthenticationError = "picsureAuthError",
@@ -80,13 +76,14 @@
 # Python exception class to R condition class. Keys are the module-qualified
 # names reticulate puts in the condition's class vector.
 #
-# The pinned Python build and the current Python source disagree on the shape
-# of the hierarchy. The pinned one has a flat `PicSureAuthError` and defines
-# none of `PicSureAuthenticationError`, `PicSureAuthorizationError`,
-# `PicSureTLSError`, or `PicSureServerError`. Mapping the leaf class name and
-# re-deriving the ancestry R-side means both builds produce a well-formed R
-# condition. A pinned-build refusal is a `picsureAuthError`, and a newer
-# build's refusal refines to the authentication or authorization subclass.
+# The pinned Python build defines every class below. Mapping the leaf class
+# name and re-deriving the ancestry R-side means an older build, one with a
+# flat `PicSureAuthError` and no `PicSureAuthenticationError`,
+# `PicSureAuthorizationError`, `PicSureTLSError`, or `PicSureServerError`,
+# still produces a well-formed R condition, only a coarser one.
+# `EmptyBodyError` is the Python adapter's `PicSureQueryError` for a response
+# that carried no body where JSON was expected. It has no R class of its own,
+# because a handler cannot do anything different with it.
 .PICSURE_PY_CONDITION_CLASSES <- c(
   "picsure.errors.PicSureConsentDeniedError"  = "picsureConsentDeniedError",
   "picsure.errors.PicSureConsentLookupError"  = "picsureConsentLookupError",
@@ -96,6 +93,7 @@
   "picsure.errors.PicSureTLSError"            = "picsureTLSError",
   "picsure.errors.PicSureServerError"         = "picsureServerError",
   "picsure.errors.PicSureConnectionError"     = "picsureConnectionError",
+  "picsure.errors.EmptyBodyError"             = "picsureQueryError",
   "picsure.errors.PicSureQueryError"          = "picsureQueryError",
   "picsure.errors.PicSureValidationError"     = "picsureValidationError"
 )
@@ -246,9 +244,13 @@
 #' Catch `picsureAuthError` for "refresh the token and retry",
 #' `picsureConnectionError` for "the deployment is unreachable, back off and
 #' retry", `picsureQueryError` for "the query itself is wrong", and
-#' `picsureValidationError` for an argument this package rejected before any
-#' request was made. A token that is missing where one is required is a
-#' `picsureValidationError`, the same as any other rejected argument. PSAMA
+#' `picsureValidationError` for invalid input. Most validation errors are
+#' raised before any request is sent, by this package or by the Python
+#' adapter, but a server answer of HTTP 400, or any other 4xx that is not
+#' 401, 403, 404, or 429, is a `picsureValidationError` too. A 404 is a
+#' `picsureQueryError`, and a 429 a `picsureConnectionError`. A token that
+#' is missing where one is required is a `picsureValidationError`, the same
+#' as any other rejected argument. PSAMA
 #' answers 403, not 401, for a bad token on `/user/me`, so a server-side
 #' token rejection arrives as an authorization error while a locally-detected
 #' one (malformed, expired) arrives as an authentication error. That is why
@@ -261,28 +263,13 @@
 #' **What the pinned Python build distinguishes.** The R side derives
 #' ancestry from its own table rather than from the installed Python
 #' exception's MRO, so the tree above is the shape of the R conditions on any
-#' build. What varies is how finely the leaf is identified. The pinned Python
-#' adapter has a flatter hierarchy. It defines `PicSureAuthError` but none of
-#' `PicSureAuthenticationError`, `PicSureAuthorizationError`,
-#' `PicSureTLSError`, or `PicSureServerError`.
-#'
-#' Against that build a server-side token refusal arrives as a plain
-#' `picsureAuthError` and a transport failure as a plain
-#' `picsureConnectionError`. `picsureTLSError` never arrives at all, and
-#' neither `picsureAuthenticationError` nor `picsureAuthorizationError`
-#' arrives as the leaf that identifies a condition. Those three start
-#' arriving once the pin moves to a build that defines the matching Python
-#' classes.
-#'
-#' Everything else in the tree arrives today. `picsureConsentDeniedError`,
-#' `picsureConsentLookupError`, `picsureQueryError`, and
-#' `picsureValidationError` are identified as leaves on the pinned build, as
-#' are the `picsureValidationError`s this package raises itself, and each
-#' carries the ancestors the R table gives it. That is how
-#' `picsureServerError` reaches a handler on the pinned build: not as a leaf,
-#' but on every `picsureConsentLookupError`, which the table places beneath
-#' it. `picsureAuthorizationError` and `picsureAuthError` reach a handler the
-#' same way, on every `picsureConsentDeniedError`.
+#' build. What varies with the build is how finely the leaf is identified.
+#' The pinned Python adapter defines a class for every node in the tree, and
+#' its own hierarchy matches the tree exactly, so every class above can
+#' arrive as the leaf that identifies a condition: a 401 as
+#' `picsureAuthenticationError`, a 403 as `picsureAuthorizationError`, an
+#' untrusted certificate as `picsureTLSError`, and a 5xx as
+#' `picsureServerError`.
 #' @examples
 #' \dontrun{
 #' tryCatch(

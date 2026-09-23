@@ -180,3 +180,18 @@ test_that("the consequences schema matches the pinned Python adapter's column li
     )
   )
 })
+
+test_that("the pinned adapter accepts the page and page_size searchDictionary() sends", {
+  skip_unless_python_module()
+
+  search <- reticulate::import("picsure._services.search", convert = FALSE)
+  page <- picsure:::as_nonnegative_whole_number(0, "page")
+  page_size <- picsure:::as_positive_whole_number(100, "page_size")
+
+  expect_no_error(search$`_validate_page`(page))
+  expect_equal(reticulate::py_to_r(search$`_resolve_page_size`(page_size)), 100L)
+
+  bare <- tryCatch(search$`_validate_page`(0), error = function(e) e)
+  expect_s3_class(bare, "picsure.errors.PicSureValidationError")
+  expect_match(conditionMessage(bare), "must be an integer", fixed = TRUE)
+})

@@ -145,10 +145,10 @@ tryCatch(
 Subclasses let you tell the kinds of failure apart. `picsureAuthError` means
 the server refused you, so refresh the token; `picsureConnectionError` means no
 usable response came back; `picsureQueryError` means the query itself was
-rejected; `picsureValidationError` means this package rejected an argument
-before any request was made. `?picsure::picsureError` has the full tree,
-including which distinctions the currently pinned Python build can actually
-report.
+rejected; `picsureValidationError` means the input was invalid, usually
+caught before any request was sent, though a server answer of HTTP 400 lands
+there too. `?picsure::picsureError` has the full tree and what each class
+means.
 
 ```{r}
 tryCatch(
@@ -177,8 +177,12 @@ snapshots the environment when the interpreter starts, and reticulate runs
 that interpreter inside the R process, so setting the environment variable
 after the first call that provisions Python has no effect.
 
-Note that a **custom URL** does not default to consent scoping the way
-`Platform$BDC_AUTHORIZED` does. Pass `include_consents = TRUE` when
-connecting by URL to a consent-gated deployment, or the session carries an
-empty consent list and `searchDictionary()` returns every concept in the
-index rather than the ones your consents cover.
+Note that a **custom URL** has no recorded consent policy the way
+`Platform$BDC_AUTHORIZED` does. When you connect by URL with a token and do
+not pass `include_consents`, `connect()` asks PSAMA for your consents and
+turns scoping on if any come back. If it cannot tell, for example with
+`validate = FALSE`, it prints a warning, and the session carries an empty
+consent list, so `searchDictionary()` returns every concept in the index
+rather than the ones your consents cover. Pass `include_consents = TRUE`
+when connecting by URL to a consent-gated deployment to fetch the list
+without relying on that check.
