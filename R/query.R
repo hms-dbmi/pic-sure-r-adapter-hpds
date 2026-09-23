@@ -8,8 +8,9 @@
 #'
 #' - `"count"` — a `CountResult` object with `$value` (exact count, or
 #'   `NULL` for obfuscated small cohorts), `$margin`, and `$cap`.
-#' - `"cross_count"` — a dict-like mapping of concept paths to
-#'   `CountResult` objects.
+#' - `"cross_count"`: a named list of `CountResult` objects keyed by
+#'   concept path. Reticulate converts the Python `dict`, and the values stay
+#'   Python objects.
 #' - `"participant"` — data.frame with one row per matching participant
 #'   across all included concepts.
 #' - `"timestamp"` — data.frame of participant-level timestamps for
@@ -36,10 +37,19 @@
 #'   `Session.runQuery()` call.
 #' @return For `type = "count"` or `"variant_count"`, a Python `CountResult`
 #'   object with `$value` (exact count, or `NULL` for obfuscated small
-#'   cohorts), `$margin`, and `$cap`. For `type = "cross_count"`, a dict-like
-#'   mapping concept paths to CountResults. For `"participant"`,
+#'   cohorts), `$margin`, and `$cap`. For `type = "cross_count"`, a named
+#'   list of `CountResult`s keyed by concept path. For `"participant"`,
 #'   `"timestamp"`, `"vcf_excerpt"`, and `"aggregate_vcf_excerpt"`, a
 #'   `data.frame`. For `"variant_list"`, a character vector.
+#'
+#'   A `"timestamp"` result is typed from the fixed timeseries schema HPDS
+#'   declares rather than inferred from the rows: `PATIENT_NUM` integer,
+#'   `CONCEPT_PATH` character, `NVAL_NUM` numeric, `TVAL_CHAR` character,
+#'   `TIMESTAMP` character. HPDS fills exactly one of `NVAL_NUM` and
+#'   `TVAL_CHAR` per row, so a query over numeric concepts alone leaves
+#'   `TVAL_CHAR` empty in every row, and inference used to hand that column
+#'   back as numeric. `"participant"` and the VCF-excerpt results have one
+#'   column per concept, so their columns are left as they arrive.
 #' @examples
 #' \dontrun{
 #' count <- picsure::runQuery(bdc, full_query, type = "count")
@@ -50,16 +60,48 @@
 #' @export
 runQuery <- function(session, query, type = "count", ...) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery().")
+    .picsure_reject(
+      "`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery."
+    )
   }
 
+  type_name <- resolve_enum_member_name(
+    type, picsure_py$QueryType, "QueryType", "picsure_query_type"
+  )
   kwargs <- drop_nulls(list(
     query = query,
-    type  = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type"),
+    type  = if (is.null(type_name)) NULL else .py_enum_member(picsure_py$QueryType, type_name),
     ...
   ))
 
-  with_picsure_error(do.call(session$runQuery, kwargs))
+  apply_query_result_schema(
+    with_picsure_error(do.call(session$runQuery, kwargs)),
+    type_name
+  )
+}
+
+#' Type a query result from the schema its result type declares.
+#'
+#' Only the timeseries result has a fixed, server-declared column set, since
+#' HPDS's TimeseriesProcessor always writes the same five columns. A
+#' participant or VCF-excerpt result's columns are the concepts the query
+#' asked for, so there is no schema to apply and the frame is returned as it
+#' arrived.
+#'
+#' @param result Whatever the Python `runQuery` call returned.
+#' @param type_name The requested query type as the Python `QueryType` enum
+#'   spells the member, already resolved by `resolve_enum_member_name()`, or
+#'   `NULL` when the caller named no type and Python's own default applied.
+#'   Taking the resolved name rather than the raw argument is what keeps one
+#'   query type from being decided twice by two rules: the wrapper resolves
+#'   against `__members__`, and this reads the answer.
+#' @return `result`, retyped when the query type is the timeseries one.
+#' @noRd
+apply_query_result_schema <- function(result, type_name) {
+  if (is.null(type_name) || !identical(toupper(type_name), "TIMESTAMP")) {
+    return(result)
+  }
+  apply_result_schema(result, .TIMESERIES_RESULT_SCHEMA)
 }
 
 #' Load a previously-saved PIC-SURE query by its query ID.
@@ -79,11 +121,8 @@ runQuery <- function(session, query, type = "count", ...) {
 #' }
 #' @export
 loadQueryByID <- function(session, query_id) {
-  if (missing(query_id) || is.null(query_id) ||
-      !is.character(query_id) || length(query_id) != 1L ||
-      is.na(query_id) || !nzchar(query_id)) {
-    stop("`query_id` must be a non-empty character string (the saved query's UUID).")
-  }
+  if (missing(query_id)) query_id <- NULL
+  as_single_string(query_id, "query_id", hint = "It is the saved query's UUID.")
 
   with_picsure_error(session$loadQueryByID(query_id))
 }
@@ -103,7 +142,8 @@ loadQueryByID <- function(session, query_id) {
 #'   `"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
 #'   or `"aggregate_vcf_excerpt"`.
 #' @return Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
-#'   `"count"` or `"variant_count"`, a dict-like mapping for `"cross_count"`,
+#'   `"count"` or `"variant_count"`, a named list of `CountResult`s keyed by
+#'   concept path for `"cross_count"`,
 #'   a `data.frame` for `"participant"` / `"timestamp"` / `"vcf_excerpt"` /
 #'   `"aggregate_vcf_excerpt"` (not served by BDC primary environments yet),
 #'   or a character vector for `"variant_list"` (not served by BDC primary
@@ -115,16 +155,17 @@ loadQueryByID <- function(session, query_id) {
 #' }
 #' @export
 runQueryByID <- function(session, query_id, type = "count") {
-  if (missing(query_id) || is.null(query_id) ||
-      !is.character(query_id) || length(query_id) != 1L ||
-      is.na(query_id) || !nzchar(query_id)) {
-    stop("`query_id` must be a non-empty character string (the saved query's UUID).")
-  }
+  if (missing(query_id)) query_id <- NULL
+  as_single_string(query_id, "query_id", hint = "It is the saved query's UUID.")
 
-  with_picsure_error(session$runQueryByID(
-    query_id,
-    type = to_py_enum(type, picsure_py$QueryType, "QueryType", "picsure_query_type")
-  ))
+  type_name <- resolve_enum_member_name(
+    type, picsure_py$QueryType, "QueryType", "picsure_query_type"
+  )
+  query_type <- if (is.null(type_name)) NULL else .py_enum_member(picsure_py$QueryType, type_name)
+  apply_query_result_schema(
+    with_picsure_error(session$runQueryByID(query_id, type = query_type)),
+    type_name
+  )
 }
 
 #' Return a copy of a query with all matches of a sub-query removed.
@@ -144,10 +185,14 @@ runQueryByID <- function(session, query_id, type = "count") {
 #' @export
 removeSubQuery <- function(query, target) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required.")
+    .picsure_reject(
+      "`query` is required. Pass the clause, clause-group, or query handle to edit."
+    )
   }
   if (missing(target) || is.null(target)) {
-    stop("`target` is required.")
+    .picsure_reject(
+      "`target` is required. Pass the clause or clause-group handle to remove."
+    )
   }
   with_picsure_error(picsure_py$removeSubQuery(query, target))
 }
@@ -169,7 +214,9 @@ replaceClause <- function(query, target, replacement) {
   if (missing(query) || is.null(query) ||
       missing(target) || is.null(target) ||
       missing(replacement) || is.null(replacement)) {
-    stop("`query`, `target`, and `replacement` are all required.")
+    .picsure_reject(
+      "`query`, `target`, and `replacement` are all required."
+    )
   }
   with_picsure_error(picsure_py$replaceClause(query, target, replacement))
 }
@@ -199,15 +246,12 @@ replaceClause <- function(query, target, replacement) {
 #' @export
 saveQueryByName <- function(session, query, name, overwrite = FALSE) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery().")
+    .picsure_reject(
+      "`query` is required. Build one with picsure::buildClause(), picsure::buildClauseGroup(), or picsure::buildQuery."
+    )
   }
-  if (missing(name) || is.null(name) ||
-      !is.character(name) || length(name) != 1L ||
-      is.na(name) || !nzchar(name)) {
-    stop("`name` must be a non-empty character scalar.")
-  }
-  if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
-    stop("`overwrite` must be a single logical (TRUE or FALSE).")
-  }
+  if (missing(name)) name <- NULL
+  as_single_string(name, "name")
+  as_single_flag(overwrite, "`overwrite`")
   with_picsure_error(session$saveQueryByName(query, name, overwrite = overwrite))
 }

@@ -24,14 +24,22 @@ test_that("buildGenomicFilter coerces a list of mixed members and strings", {
   expect_equal(gf$values, c("Rare", "Common"))
 })
 
-test_that("buildGenomicFilter does not accept numeric range (min/max) args", {
+test_that("buildGenomicFilter forwards min and max as unknown kwargs, not parameters", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py(), .package = "picsure")
-  # Numeric range filtering was removed to match the categorical-only genomic
-  # filters the PIC-SURE frontend sends; min/max are forwarded as unknown
-  # kwargs, which the Python adapter rejects.
-  gf <- picsure::buildGenomicFilter("Gene_with_variant", values = "BRCA1")
-  expect_null(gf$min)
-  expect_null(gf$max)
+
+  expect_false(any(c("min", "max") %in% names(formals(picsure::buildGenomicFilter))))
+
+  plain <- picsure::buildGenomicFilter("Gene_with_variant", values = "BRCA1")
+  expect_false("min" %in% names(plain$extra))
+  expect_false("max" %in% names(plain$extra))
+
+  ranged <- picsure::buildGenomicFilter(
+    "Gene_with_variant", values = "BRCA1", min = 1, max = 2
+  )
+  expect_identical(ranged$extra$min, 1)
+  expect_identical(ranged$extra$max, 2)
+  expect_null(ranged$min)
+  expect_null(ranged$max)
 })
 
 test_that("buildGenomicFilter rejects an empty key", {

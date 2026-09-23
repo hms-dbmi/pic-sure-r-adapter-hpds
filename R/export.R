@@ -1,8 +1,10 @@
 #' Export query results to a PFB file.
 #'
 #' Runs the query and writes the result as a PFB (Portable Format for
-#' Bioinformatics) file at `path`. Requires the Python `picsure[pfb]` optional
-#' dependency on the Python side.
+#' Bioinformatics) file at `path`. The server builds the PFB file as a job,
+#' and the Python adapter streams it to disk unchanged, so no PFB library is
+#' needed on either side. The wait for the job is bounded by `connect()`'s
+#' `timeout`.
 #'
 #' @param session A session object produced by [`connect()`][picsure::connect].
 #' @param query A clause group from
@@ -16,11 +18,12 @@
 #' @export
 exportAsPFB <- function(session, query, path) {
   if (missing(query) || is.null(query)) {
-    stop("`query` is required. Build one with picsure::buildQuery().")
+    .picsure_reject(
+      "`query` is required. Build one with picsure::buildQuery."
+    )
   }
-  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
-    stop("`path` is required. Provide a writable file path as a string.")
-  }
+  if (missing(path)) path <- NULL
+  as_single_string(path, "path", hint = "Provide a writable file path.")
 
   with_picsure_error(session$exportAsPFB(query, path))
   invisible(path)
@@ -47,11 +50,12 @@ exportAsPFB <- function(session, query, path) {
 #' @export
 exportCSV <- function(session, data, path) {
   if (missing(data) || is.null(data) || !is.data.frame(data)) {
-    stop("`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result.")
+    .picsure_reject(
+      "`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result."
+    )
   }
-  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
-    stop("`path` is required. Provide a writable file path as a string.")
-  }
+  if (missing(path)) path <- NULL
+  as_single_string(path, "path", hint = "Provide a writable file path.")
 
   with_picsure_error(session$exportCSV(data, path))
   invisible(path)
@@ -72,11 +76,12 @@ exportCSV <- function(session, data, path) {
 #' @export
 exportTSV <- function(session, data, path) {
   if (missing(data) || is.null(data) || !is.data.frame(data)) {
-    stop("`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result.")
+    .picsure_reject(
+      "`data` must be a data.frame. Run picsure::runQuery(session, query, type = \"participant\") first and pass its result."
+    )
   }
-  if (missing(path) || is.null(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
-    stop("`path` is required. Provide a writable file path as a string.")
-  }
+  if (missing(path)) path <- NULL
+  as_single_string(path, "path", hint = "Provide a writable file path.")
 
   with_picsure_error(session$exportTSV(data, path))
   invisible(path)

@@ -28,10 +28,8 @@ test_that("with_picsure_error: conditionMessage extracts the user-friendly Pytho
 
   # Document the divergence from reticulate::py_last_error()$message: the
   # latter returns a *full traceback*, which is useful for debugging but
-  # never appropriate as a user-facing error. The design spec originally
-  # called for py_last_error()$message; this probe locks in why we don't
-  # use it. See I1 in 2026-04-21-query-v3-review.md and the corresponding
-  # spec note in 2026-04-20-r-adapter-rewrite-design.md.
+  # never appropriate as a user-facing error. This probe locks in why we
+  # use the captured condition message instead of py_last_error()$message.
   py_err <- reticulate::py_last_error()
   if (!is.null(py_err) && !is.null(py_err$message)) {
     expect_true(

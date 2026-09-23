@@ -56,3 +56,510 @@ test_that("with_picsure_error converts a python.builtin.Exception to picsureErro
   expect_match(conditionMessage(err), "token expired", fixed = TRUE)
   expect_identical(err$py_cause, fake_py_exception)
 })
+
+test_that("with_picsure_error maps consent_denied to a catchable R-native condition", {
+  fake_py_exception <- structure(
+    list(
+      message = "You have not accepted the required data-use agreement.",
+      error_type = "consent_denied"
+    ),
+    class = c("python.builtin.Exception", "error", "condition")
+  )
+
+  err <- tryCatch(
+    with_picsure_error(stop(fake_py_exception)),
+    picsureError = function(e) e
+  )
+
+  expect_s3_class(err, "picsureConsentDeniedError")
+  expect_s3_class(err, "picsureError")
+  expect_identical(err$py_cause, fake_py_exception)
+  expect_equal(conditionMessage(err), "You have not accepted the required data-use agreement.")
+})
+
+test_that("with_picsure_error maps consent_lookup_failed to a catchable R-native condition", {
+  fake_py_exception <- structure(
+    list(
+      message = "PIC-SURE could not determine your consent status.",
+      error_type = "consent_lookup_failed"
+    ),
+    class = c("python.builtin.Exception", "error", "condition")
+  )
+
+  err <- tryCatch(
+    with_picsure_error(stop(fake_py_exception)),
+    picsureError = function(e) e
+  )
+
+  expect_s3_class(err, "picsureConsentLookupError")
+  expect_s3_class(err, "picsureError")
+  expect_identical(err$py_cause, fake_py_exception)
+  expect_equal(conditionMessage(err), "PIC-SURE could not determine your consent status.")
+})
+
+test_that("with_picsure_error leaves unknown or absent error types as picsureError", {
+  fake_py_exceptions <- list(
+    structure(
+      list(
+        message = "An unclassified Python error occurred.",
+        error_type = "not_a_consent_error"
+      ),
+      class = c("python.builtin.Exception", "error", "condition")
+    ),
+    structure(
+      list(message = "An unclassified Python error occurred."),
+      class = c("python.builtin.Exception", "error", "condition")
+    )
+  )
+
+  for (fake_py_exception in fake_py_exceptions) {
+
+    err <- tryCatch(
+      with_picsure_error(stop(fake_py_exception)),
+      error = function(e) e
+    )
+
+    expect_s3_class(err, "picsureError")
+    expect_false(inherits(err, "picsureConsentDeniedError"))
+    expect_false(inherits(err, "picsureConsentLookupError"))
+    expect_identical(err$py_cause, fake_py_exception)
+  }
+})
+
+test_that("with_picsure_error strips reticulate's class prefix and footer", {
+  framed <- structure(
+    list(message = paste0(
+      "picsure.errors.PicSureAuthError: Your PIC-SURE token was rejected.\n",
+      "Run `reticulate::py_last_error()` for details."
+    )),
+    class = c("picsure.errors.PicSureAuthError", "picsure.errors.PicSureError",
+              "python.builtin.Exception", "error", "condition")
+  )
+
+  err <- tryCatch(with_picsure_error(stop(framed)), error = function(e) e)
+
+  expect_equal(conditionMessage(err), "Your PIC-SURE token was rejected.")
+  expect_false(grepl("picsure.errors", conditionMessage(err), fixed = TRUE))
+  expect_false(grepl("py_last_error", conditionMessage(err), fixed = TRUE))
+})
+
+test_that("the Python origin stays reachable on the condition", {
+  framed <- structure(
+    list(message = "picsure.errors.PicSureQueryError: The server rejected the query."),
+    class = c("picsure.errors.PicSureQueryError", "picsure.errors.PicSureError",
+              "python.builtin.Exception", "error", "condition")
+  )
+
+  err <- tryCatch(with_picsure_error(stop(framed)), error = function(e) e)
+
+  expect_identical(err$py_cause, framed)
+  expect_equal(err$python_class, "picsure.errors.PicSureQueryError")
+})
+
+test_that("options(picsure.python_detail) puts the Python class back in the message", {
+  framed <- structure(
+    list(message = "picsure.errors.PicSureQueryError: The server rejected the query."),
+    class = c("picsure.errors.PicSureQueryError", "picsure.errors.PicSureError",
+              "python.builtin.Exception", "error", "condition")
+  )
+
+  with_picsure_options(list(picsure.python_detail = TRUE), {
+    err <- tryCatch(with_picsure_error(stop(framed)), error = function(e) e)
+  })
+
+  expect_match(conditionMessage(err), "The server rejected the query.", fixed = TRUE)
+  expect_match(conditionMessage(err), "picsure.errors.PicSureQueryError", fixed = TRUE)
+  expect_match(conditionMessage(err), "py_last_error", fixed = TRUE)
+})
+
+test_that("a message whose own text is colon-shaped is not truncated", {
+  framed <- structure(
+    list(message = "picsure.errors.PicSureError: Note: consents were not applied."),
+    class = c("picsure.errors.PicSureError", "python.builtin.Exception",
+              "error", "condition")
+  )
+
+  err <- tryCatch(with_picsure_error(stop(framed)), error = function(e) e)
+
+  expect_equal(conditionMessage(err), "Note: consents were not applied.")
+})
+
+test_that("an R condition carrying no Python object has no python_class", {
+  err <- picsureError("plain")
+  expect_null(err$python_class)
+  expect_null(err$py_cause)
+})
+
+test_that("picsureError() rejects a class name it does not know", {
+  expect_error(
+    picsureError("m", class = "picsureAuthErorr"),
+    "should be one of"
+  )
+  expect_error(picsureError("m", class = ""), "should be one of")
+  expect_error(picsureError("m", class = NA_character_), "should be one of")
+  expect_error(
+    picsureError("m", class = c("picsureAuthError", "picsureQueryError")),
+    "must be of length 1"
+  )
+})
+
+test_that("picsureError() expands a class to its documented ancestors", {
+  expect_identical(
+    class(picsureError("m", class = "picsureConsentDeniedError")),
+    c("picsureConsentDeniedError", "picsureAuthorizationError", "picsureAuthError",
+      "picsureError", "error", "condition")
+  )
+  expect_identical(
+    class(picsureError("m", class = "picsureConsentLookupError")),
+    c("picsureConsentLookupError", "picsureServerError", "picsureConnectionError",
+      "picsureError", "error", "condition")
+  )
+  expect_identical(
+    class(picsureError("m", class = "picsureAuthenticationError")),
+    c("picsureAuthenticationError", "picsureAuthError",
+      "picsureError", "error", "condition")
+  )
+  expect_identical(
+    class(picsureError("m")),
+    c("picsureError", "error", "condition")
+  )
+})
+
+test_that("every row names one immediate parent, and the chain is derived", {
+  for (parent in picsure:::.PICSURE_CONDITION_PARENTS) {
+    expect_lte(length(parent), 1L)
+  }
+  expect_identical(
+    picsure:::.picsure_condition_ancestors("picsureConsentLookupError"),
+    c("picsureServerError", "picsureConnectionError")
+  )
+  expect_identical(
+    picsure:::.picsure_condition_ancestors("picsureQueryError"),
+    character()
+  )
+})
+
+test_that("a row naming a parent with no row of its own fails loudly", {
+  testthat::local_mocked_bindings(
+    .PICSURE_CONDITION_PARENTS = list(picsureQueryError = "picsureNoSuchError")
+  )
+
+  expect_error(
+    picsureError("m", class = "picsureQueryError"),
+    "has no row for", fixed = TRUE
+  )
+})
+
+test_that("a cycle in the rows fails loudly instead of looping", {
+  testthat::local_mocked_bindings(
+    .PICSURE_CONDITION_PARENTS = list(
+      picsureAuthError           = "picsureAuthenticationError",
+      picsureAuthenticationError = "picsureAuthError"
+    )
+  )
+
+  expect_error(
+    picsureError("m", class = "picsureAuthError"),
+    "is its own ancestor", fixed = TRUE
+  )
+})
+
+test_that("a row that stores a whole chain fails loudly", {
+  testthat::local_mocked_bindings(
+    .PICSURE_CONDITION_PARENTS = list(
+      picsureAuthError          = character(),
+      picsureAuthorizationError = "picsureAuthError",
+      picsureConsentDeniedError = c("picsureAuthorizationError", "picsureAuthError")
+    )
+  )
+
+  expect_error(
+    picsureError("m", class = "picsureConsentDeniedError"),
+    "names 2 parents", fixed = TRUE
+  )
+})
+
+test_that("every condition class in the hierarchy is catchable as picsureError", {
+  for (cls in names(picsure:::.PICSURE_CONDITION_PARENTS)) {
+    err <- tryCatch(stop(picsureError("m", class = cls)), picsureError = function(e) e)
+    expect_s3_class(err, cls)
+    expect_s3_class(err, "picsureError")
+  }
+})
+
+missing_ancestry_message <- function(table_name, missing) {
+  paste0(
+    table_name, " maps to ", paste(missing, collapse = ", "),
+    ", which .PICSURE_CONDITION_PARENTS has no row for. ",
+    ".picsure_condition_classes() resolves the class through ",
+    "match.arg(class, names(.PICSURE_CONDITION_PARENTS)), so the first real ",
+    "error of that kind would reach the researcher as a bare simpleError ",
+    "reading \"'arg' should be one of ...\", with their own message gone and ",
+    "tryCatch(picsureError = ...) no longer matching it. Add a row to ",
+    ".PICSURE_CONDITION_PARENTS naming that class's one immediate parent, ",
+    "character() if it is a root, and document it in the hierarchy diagrams ",
+    "in R/errors.R. The rest of the chain is derived from the rows."
+  )
+}
+
+test_that("every Python class the map names has an ancestry row", {
+  known <- names(picsure:::.PICSURE_CONDITION_PARENTS)
+  mapped <- unname(picsure:::.PICSURE_PY_CONDITION_CLASSES)
+  missing <- setdiff(mapped, known)
+
+  expect_equal(
+    missing, character(0),
+    info = missing_ancestry_message(".PICSURE_PY_CONDITION_CLASSES", missing)
+  )
+})
+
+test_that("every errorType the map names has an ancestry row", {
+  known <- names(picsure:::.PICSURE_CONDITION_PARENTS)
+  mapped <- unname(picsure:::.PICSURE_ERROR_TYPE_CLASSES)
+  missing <- setdiff(mapped, known)
+
+  expect_equal(
+    missing, character(0),
+    info = missing_ancestry_message(".PICSURE_ERROR_TYPE_CLASSES", missing)
+  )
+})
+
+test_that("both token-problem leaves are catchable as picsureAuthError", {
+  for (cls in c("picsureAuthenticationError", "picsureAuthorizationError")) {
+    caught <- tryCatch(
+      stop(picsureError("token trouble", class = cls)),
+      picsureAuthError = function(e) class(e)[[1L]]
+    )
+    expect_equal(caught, cls)
+  }
+})
+
+test_that("the Python exception class picks the R condition class", {
+  cases <- list(
+    list("picsure.errors.PicSureAuthenticationError", "picsureAuthenticationError"),
+    list("picsure.errors.PicSureAuthorizationError",  "picsureAuthorizationError"),
+    list("picsure.errors.PicSureAuthError",           "picsureAuthError"),
+    list("picsure.errors.PicSureTLSError",            "picsureTLSError"),
+    list("picsure.errors.PicSureServerError",         "picsureServerError"),
+    list("picsure.errors.PicSureConnectionError",     "picsureConnectionError"),
+    list("picsure.errors.PicSureQueryError",          "picsureQueryError"),
+    list("picsure.errors.PicSureValidationError",     "picsureValidationError")
+  )
+  for (case in cases) {
+    fake <- structure(
+      list(message = paste0(case[[1L]], ": something went wrong")),
+      class = c(case[[1L]], "picsure.errors.PicSureError",
+                "python.builtin.Exception", "error", "condition")
+    )
+    err <- tryCatch(with_picsure_error(stop(fake)), error = function(e) e)
+    expect_s3_class(err, case[[2L]])
+    expect_equal(conditionMessage(err), "something went wrong")
+  }
+})
+
+test_that("the most specific Python class in the MRO wins over its ancestors", {
+  fake <- structure(
+    list(message = "picsure.errors.PicSureConsentDeniedError: consents do not cover this"),
+    class = c("picsure.errors.PicSureConsentDeniedError",
+              "picsure.errors.PicSureAuthorizationError",
+              "picsure.errors.PicSureAuthError",
+              "picsure.errors.PicSureError",
+              "python.builtin.Exception", "error", "condition")
+  )
+  err <- tryCatch(with_picsure_error(stop(fake)), error = function(e) e)
+  expect_identical(class(err)[[1L]], "picsureConsentDeniedError")
+})
+
+test_that("a consent refusal from the pinned build's flat hierarchy still gets its R ancestors", {
+  fake <- structure(
+    list(message = "picsure.errors.PicSureConsentDeniedError: consents do not cover this"),
+    class = c("picsure.errors.PicSureConsentDeniedError",
+              "picsure.errors.PicSureError",
+              "python.builtin.Exception", "error", "condition")
+  )
+  err <- tryCatch(with_picsure_error(stop(fake)), picsureAuthError = function(e) e)
+  expect_s3_class(err, "picsureConsentDeniedError")
+  expect_s3_class(err, "picsureAuthorizationError")
+})
+
+test_that("argument validation raises a picsureValidationError, not a simpleError", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  fs <- picsure::facets(bdc)
+  df <- data.frame(a = 1)
+
+  rejections <- list(
+    function() picsure::searchDictionary(bdc, c("a", "b")),
+    function() picsure::searchGenomicValues(bdc, ""),
+    function() picsure::searchGenomicValues(bdc, "Gene_with_variant", page = 0),
+    function() picsure::runQuery(bdc),
+    function() picsure::loadQueryByID(bdc, 123),
+    function() picsure::runQueryByID(bdc, ""),
+    function() picsure::removeSubQuery(query = "Q"),
+    function() picsure::replaceClause(query = "Q"),
+    function() picsure::saveQueryByName(bdc, "Q", ""),
+    function() picsure::saveQueryByName(bdc, "Q", "n", overwrite = NA),
+    function() picsure::exportAsPFB(bdc, "Q"),
+    function() picsure::exportCSV(bdc, list(a = 1), tempfile()),
+    function() picsure::exportTSV(bdc, df),
+    function() picsure::addFacet(fs, c("a", "b"), "v"),
+    function() picsure::removeFacet(fs, "dataset_id"),
+    function() picsure::buildClause(type = "FILTER"),
+    function() picsure::buildClause("x"),
+    function() picsure::buildClause("x", type = "FILTER", min = "low"),
+    function() picsure::buildClauseGroup(list()),
+    function() picsure::buildGenomicFilter(values = "x"),
+    function() picsure::buildQuery(includeConcepts = list(1, 2)),
+    function() picsure::connect(),
+    function() picsure::connect(platform = "BDC Authorized"),
+    function() picsure::connect(platform = "https://picsure.test", token = "t", nope = 1)
+  )
+
+  for (i in seq_along(rejections)) {
+    err <- tryCatch(rejections[[i]](), condition = function(e) e)
+    expect_s3_class(err, "picsureError")
+    expect_s3_class(err, "error")
+    expect_false(inherits(err, "simpleError"),
+                 info = paste("rejection", i, "was a bare simpleError"))
+  }
+})
+
+test_that(".picsure_raw_message survives a python.builtin.object whose Python object is missing", {
+  malformed <- structure(
+    list(message = "the real message"),
+    class = c("python.builtin.Exception", "python.builtin.object",
+              "error", "condition")
+  )
+  expect_equal(picsure:::.picsure_raw_message(malformed), "the real message")
+
+  no_message <- structure(
+    list(),
+    class = c("python.builtin.Exception", "python.builtin.object",
+              "error", "condition")
+  )
+  expect_equal(picsure:::.picsure_raw_message(no_message), "")
+})
+
+test_that("a rejected argument reports the wrapper the user called, not stop()", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  rejected_call <- function(expr) {
+    conditionCall(tryCatch(expr, picsureValidationError = function(e) e))
+  }
+
+  expect_identical(
+    rejected_call(picsure::buildQuery(includeConcepts = 1:3)),
+    quote(picsure::buildQuery(includeConcepts = 1:3))
+  )
+  expect_identical(
+    rejected_call(picsure::searchDictionary(bdc, term = 1:3)),
+    quote(picsure::searchDictionary(bdc, term = 1:3))
+  )
+  expect_identical(
+    rejected_call(picsure::saveQueryByName(bdc, NULL, "a name")),
+    quote(picsure::saveQueryByName(bdc, NULL, "a name"))
+  )
+  expect_identical(
+    rejected_call(picsure::connect(platform = 42)),
+    quote(picsure::connect(platform = 42))
+  )
+})
+
+test_that("a rejection from a shared validator reports the wrapper too", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+
+  rejected_call <- function(expr) {
+    conditionCall(tryCatch(expr, picsureValidationError = function(e) e))
+  }
+
+  expect_identical(
+    rejected_call(picsure::searchGenomicValues(bdc, genomicConceptPath = 1)),
+    quote(picsure::searchGenomicValues(bdc, genomicConceptPath = 1))
+  )
+  expect_identical(
+    rejected_call(picsure::searchGenomicValues(bdc, "Gene_with_variant", page = 1.7)),
+    quote(picsure::searchGenomicValues(bdc, "Gene_with_variant", page = 1.7))
+  )
+  expect_identical(
+    rejected_call(picsure::runQuery(bdc, "q", type = "no-such-type")),
+    quote(picsure::runQuery(bdc, "q", type = "no-such-type"))
+  )
+  expect_identical(
+    rejected_call(picsure::runQueryByID(bdc, "an-id", type = "no-such-type")),
+    quote(picsure::runQueryByID(bdc, "an-id", type = "no-such-type"))
+  )
+  expect_identical(
+    rejected_call(picsure::buildClause("\\phs1\\bmi\\", type = "FILTER", min = "x")),
+    quote(picsure::buildClause("\\phs1\\bmi\\", type = "FILTER", min = "x"))
+  )
+  expect_identical(
+    rejected_call(picsure::exportCSV(bdc, "data", path = 1)),
+    quote(picsure::exportCSV(bdc, "data", path = 1))
+  )
+  expect_identical(
+    rejected_call(
+      picsure::connect(platform = "https://picsure.test", token = "t", dev_mode = "x")
+    ),
+    quote(
+      picsure::connect(platform = "https://picsure.test", token = "t", dev_mode = "x")
+    )
+  )
+  expect_identical(
+    rejected_call(
+      picsure::connect(platform = "https://picsure.test", token = "t", verify = NA)
+    ),
+    quote(
+      picsure::connect(platform = "https://picsure.test", token = "t", verify = NA)
+    )
+  )
+})
+
+test_that("a setting rejected from its R option still reports connect()", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+
+  err <- with_picsure_options(
+    list(picsure.dev_mode = "x"),
+    tryCatch(
+      picsure::connect(platform = "https://picsure.test", token = "t"),
+      picsureValidationError = function(e) e
+    )
+  )
+
+  expect_identical(
+    conditionCall(err),
+    quote(picsure::connect(platform = "https://picsure.test", token = "t"))
+  )
+  expect_match(conditionMessage(err), "options(picsure.dev_mode)", fixed = TRUE)
+})
+
+test_that(".check_facet_key still reports the facet wrapper that threaded the call", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  fs <- picsure::facets(bdc)
+
+  err <- tryCatch(
+    picsure::addFacet(fs, c("a", "b"), "v"),
+    picsureValidationError = function(e) e
+  )
+  expect_identical(conditionCall(err), quote(picsure::addFacet(fs, c("a", "b"), "v")))
+})
+
+test_that("an error raised from Python reports no call rather than an internal helper", {
+  fake_py_exception <- structure(
+    list(message = "Your token expired on 2026-03-14."),
+    class = c("python.builtin.Exception", "error", "condition")
+  )
+
+  err <- tryCatch(
+    with_picsure_error(stop(fake_py_exception)),
+    error = function(e) e
+  )
+
+  expect_null(conditionCall(err))
+  expect_s3_class(err, "picsureError")
+  expect_equal(conditionMessage(err), "Your token expired on 2026-03-14.")
+  expect_identical(err$py_cause, fake_py_exception)
+  expect_identical(err$python_class, "python.builtin.Exception")
+})

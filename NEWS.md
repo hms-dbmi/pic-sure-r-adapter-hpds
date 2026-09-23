@@ -1,3 +1,227 @@
+# picsure 2.0.0.9000
+
+- The pinned Python adapter moves to its v3.0.0 release (`70d5679`, the
+  merge of its PR #35 into `main`). Current PIC-SURE servers refuse participant,
+  timestamp, and PFB queries on the synchronous query route with HTTP 400,
+  so under the old pin `runQuery(type = "participant")`,
+  `runQuery(type = "timestamp")`, and their `runQueryByID()` equivalents
+  failed against them. Participant and timestamp queries now run as server
+  jobs, as `exportAsPFB()` already did: the adapter submits the query,
+  polls its status, and downloads the result once it is available. The
+  R calls are unchanged. The wait is bounded by `connect()`'s new `timeout`
+  argument, ten minutes by default, and a job still unfinished when it
+  runs out raises a `picsureConnectionError` naming the query id. Other
+  changes the new build brings:
+  - `connect()` checks the token's shape and expiry locally, then sends one
+    `GET /psama/user/me` request to confirm the deployment is reachable and
+    accepts the token. A malformed or expired token fails before any
+    request with a `picsureAuthenticationError`. A connection with no token
+    sends `GET /picsure/system/status` instead: `RUNNING` connects,
+    `ONE OR MORE COMPONENTS DEGRADED` connects with a warning, and any other
+    answer raises a `picsureConnectionError` naming the URL.
+    `validate = FALSE` skips these checks.
+  - `searchDictionary()` fetches its results in pages of 500 and refuses an
+    unpaged search matching more than 100,000 concepts; see the paging
+    bullet below.
+  - `VariantFrequency` gains `LOW_FREQUENCY` and `ULTRA_RARE`, and the
+    Python adapter now calls `NOVEL` deprecated, since no observed
+    deployment's annotations carry it.
+  - A PFB export whose server job ends in `ERROR` raises a
+    `picsureQueryError`, not a `picsureConnectionError`.
+  - The finer error classes now arrive as leaves:
+    `picsureAuthenticationError`, `picsureAuthorizationError`,
+    `picsureTLSError`, and `picsureServerError`. A handler written for
+    `picsureAuthError` or `picsureConnectionError` still catches them.
+
+- `searchDictionary()` takes `page` and `page_size`. Leaving `page` as
+  `NULL` returns every match, as before, up to the new 100,000-concept
+  limit, past which the Python adapter raises a `picsureValidationError`
+  telling you to read page 0, then page 1, and so on. That advice could
+  not be followed from R before: `page = 0` reached Python as the float
+  `0.0`, which the adapter rejects because it requires an integer. Both
+  arguments are now validated in R, `page` as a whole number 0 or greater
+  and `page_size` as a positive one, and sent as integers.
+
+- **Breaking:** `connect()` no longer accepts `resource_uuid`. PIC-SURE v3
+  routes by URL path (`/hpds/auth` vs `/hpds/open`, chosen by the `Platform`
+  member), so a resource UUID never selected anything. The pinned Python
+  adapter no longer takes the argument either, and this wrapper refuses it
+  before it reaches Python: passing it raises a `picsureValidationError`
+  listing the valid extras.
+  There is no replacement; delete the argument. `Platform` members never
+  carried a resource UUID, so nothing else in the R API changes.
+
+- Errors now arrive as **specialized condition classes**, all of which still
+  inherit `picsureError`, so an existing `tryCatch(picsureError = ...)`
+  handler keeps working unchanged. New classes: `picsureAuthError` (with
+  `picsureAuthenticationError` and `picsureAuthorizationError` beneath it,
+  and `picsureConsentDeniedError` beneath that), `picsureConnectionError`
+  (with `picsureTLSError` and `picsureServerError`, and
+  `picsureConsentLookupError` beneath that), `picsureQueryError`, and
+  `picsureValidationError`. Catch `picsureAuthError` for "refresh the token",
+  `picsureConnectionError` for "the deployment is unreachable". See
+  `?picsure::picsureError` for the tree and what each class means.
+
+  Two things worth knowing. Arguments this package rejects itself used to be
+  plain `simpleError`s, so a handler written from the documented
+  `tryCatch(picsureError = ...)` missed them; they are now
+  `picsureValidationError`s. And the R side derives a condition's ancestry
+  from its own table rather than from the installed Python exception's MRO,
+  so the hierarchy does not change shape when the pin moves. The pinned
+  Python build defines a class for every node in the tree, with the same
+  ancestry, so every class can arrive as the leaf that identifies a
+  condition. `picsureValidationError` covers a server answer of HTTP 400,
+  or any other 4xx that is not 401, 403, 404, or 429, as well as input
+  rejected before a request was sent.
+
+- Two R options are now read on every `connect()` call and forwarded as
+  call-time arguments. `picsure.ssl_verify` takes `TRUE`, `FALSE`, or the
+  path to a CA bundle:
+
+  ```r
+  options(picsure.ssl_verify = FALSE)
+  options(picsure.dev_mode   = TRUE)
+  ```
+
+  An explicit `verify =` / `dev_mode =` argument to `connect()` wins over the
+  option, and both go through the same checks: `dev_mode` must be `TRUE` or
+  `FALSE`, and `verify` must be `TRUE`, `FALSE`, or a path to a CA bundle. An
+  unusable value, such as the string `"false"`, raises a
+  `picsureValidationError` naming the argument or option and the logical to
+  pass, rather than failing later inside Python. When the `verify` argument
+  or `options(picsure.ssl_verify)` turns verification off, `connect()` prints
+  a message naming which of the two did it. Verification turned off
+  Python-side through `PICSURE_SSL_VERIFY` is silent on the R side, one more
+  reason to prefer the option.
+
+  They exist because the environment variables that used to be the only way
+  in, `PICSURE_SSL_VERIFY` and `PICSURE_DEV_MODE`, work only if they are
+  set *before the Python interpreter starts*. CPython snapshots the
+  environment into `os.environ` at startup and never refreshes it, and
+  reticulate runs that interpreter inside the R process, so once the first
+  call has provisioned Python a later `Sys.setenv(PICSURE_SSL_VERIFY =
+  "false")` changes the R process's environment and Python cannot see it.
+  (The Python adapter reads the variables per call, not at import; the
+  interpreter's *start* is the boundary, not `import picsure`.) An option
+  read on every `connect()` has no such window.
+
+- `connect()` accepts `timeout` and `validate`, both forwarded to the Python
+  adapter. `timeout` is a positive number of seconds, ten minutes by
+  default. It is the deadline for each data request, such as a count or a
+  download, and for participant queries, timestamp queries, and
+  `exportAsPFB()`, which run as server jobs, it is also the overall budget
+  for submitting the job and waiting on it. The final status poll and the
+  download each carry their own deadline of the same length, so such a
+  call can still run past `timeout` end to end. The connect-time check
+  keeps its own 15-second deadline. `validate = FALSE` skips the local
+  token check, the one request that confirms the deployment is reachable
+  and accepts the token, and the consent probe a custom URL would get, for
+  offline or mocked use. Both are checked in R before anything is sent,
+  because the Python adapter checks neither: a `timeout` that is not a
+  single positive finite number, or a `validate` that is not a single
+  `TRUE` or `FALSE`, raises a `picsureValidationError`. The string
+  `"FALSE"` in particular would otherwise have read as true.
+
+- A missing token on an auth-required platform now raises
+  `picsureValidationError` rather than `picsureAuthenticationError`, matching
+  the Python adapter, and `requires_auth = FALSE` on an `_AUTHORIZED`
+  `Platform` member no longer demands a token. On a consent-scoped member
+  such as `Platform$BDC_AUTHORIZED`, pass `include_consents = FALSE` with
+  it: the Python adapter refuses `include_consents = TRUE` together with
+  `requires_auth = FALSE`, because the consent list comes from an
+  authenticated endpoint.
+
+- `connect()`'s documentation of `include_consents`, `requires_auth`, and
+  `supports_genomic` was wrong: it described each as having one fixed
+  default. All three are resolved per platform. For a `Platform` member each
+  defaults to that member's own flag; for a **custom URL string**
+  `requires_auth` defaults to `TRUE` and `supports_genomic` to `FALSE`,
+  while `include_consents` is detected: with a token and `validate = TRUE`,
+  `connect()` asks PSAMA for the account's consents and turns scoping on if
+  any come back. When it cannot tell, it prints a warning naming
+  `include_consents=True` and connects with an empty consent list, and
+  since the consent list is what scopes dictionary results,
+  `searchDictionary()` then returns every concept in the index instead of
+  the ones the user's consents cover. Pass `include_consents = TRUE`
+  explicitly for a consent-gated deployment reached by URL.
+  `supports_genomic` is also `TRUE` for `Platform$NHANES_AUTHORIZED`, not
+  only for the BDC authorized platforms.
+
+- Facet documentation and error messages named `study_ids`, a category no
+  deployment publishes. The category names come from the server's facets
+  endpoint, and the dictionary serves `dataset_id`, `data_type`, and
+  `data_source`. Examples and messages now use those, and passing a name the
+  server does not publish raises an error listing the ones it does.
+
+- `platforms()` works against a real interpreter. It read the Python
+  `Platform` enum's `__members__`, which crosses the reticulate boundary as a
+  `mappingproxy`, a type reticulate has no converter for, so iterating it
+  failed with "cannot coerce type 'environment' to vector of type 'list'" on
+  every call. The mapping is now copied into a `dict` and converted
+  explicitly. `platforms()` is now covered by tests that build a genuine
+  Python enum through reticulate. The test double that hid the bug, a plain
+  character vector of labels, is still in place: it is documented as
+  `connect()`'s name-to-label lookup table and no longer stands in for the
+  enum.
+
+- Enum parity against the Python adapter now fails loudly, and once, when no
+  Python interpreter is available, naming the interpreter it looked for and
+  stating that parity was not verified. The old guard trusted
+  `inherits(picsure_py, "python.builtin.module")`, which the `delay_load`
+  proxy satisfies before Python exists, so a missing interpreter produced
+  eight opaque "Installation of Python not found" errors that were
+  indistinguishable from the enums genuinely disagreeing.
+
+- `removeFacet()` works. It called `FacetSet.remove()`, a method the Python
+  adapter has never defined, so every call failed with an `AttributeError`.
+  It now rebuilds the category's selections without the removed values,
+  accepts a vector of values like `addFacet()` does, and rejects an empty
+  `value` with a `picsureValidationError`.
+
+- `connect()` now sources the user's consent list from PSAMA's
+  `/psama/user/me/consents` endpoint instead of the query template. This is a
+  change in the pinned Python adapter; the R API is unchanged, including the
+  `include_consents` argument. Connecting with `include_consents = TRUE`
+  requires a backend that serves that endpoint.
+
+- Dictionary, timeseries, genomic-value, and consequence results are now
+  typed from a declared schema rather than inferred from the rows that came
+  back, so a search that matched nothing hands back the same column types as
+  one that matched everything. Previously an empty dictionary result arrived
+  with every column character, `min`, `max`, and `allowFiltering` included,
+  and a `type = "timestamp"` query over numeric concepts alone handed back
+  `TVAL_CHAR` as numeric. Columns the schema does not name (a participant
+  result's concept-path columns, a deployment-specific dictionary field) are
+  left exactly as they arrive.
+
+- Argument validation is consistent and names what arrived. `page` and `size`
+  went through `as.integer()` with no check, so `page = 1.7` was silently
+  truncated and `page = "two"` became `NA` and was forwarded to Python; a
+  length-2 facet `key` reached an `if()` and produced base R's "'length = 2'
+  in coercion to 'logical(1)'". Every rejection is now a
+  `picsureValidationError` naming the argument and the value it got.
+
+- A fresh install can provision its Python backend again. The pinned Python
+  adapter commit was a pull-request head, a commit reachable from no branch.
+  Tools that fetch a SHA directly resolve one, so `uv pip install` succeeded
+  and the pin looked fine, but `reticulate` can fall back to fetching branches
+  and tags and then resolving the SHA locally, which fails outright for a
+  commit no branch contains, and fails for good if the pull request is ever
+  deleted. The pin now names the squash-merged commit on
+  `pic_sure_api_rewrite`, whose source tree is identical.
+
+- The package now warns when the Python `picsure` that loaded is not the
+  pinned build. An already-active virtual environment takes precedence over
+  the pin whenever `reticulate` attaches to it, and nothing reported the
+  substitution, so whole test runs could pass against an unpinned build. The
+  version installed is now read through `importlib.metadata` and checked
+  against the pinned commit. A build naming a different commit or release
+  raises a warning naming both, not an error, so a deliberate local override
+  stays a supported workflow. A build that cannot be compared, because it
+  has no distribution metadata or its version carries no commit suffix and
+  no tag to check against, emits a startup message saying the pin could not
+  be confirmed. A build made at the tagged pinned commit counts as a match.
+
 # picsure 2.0.0
 
 First release of the rewritten R adapter. This is a clean break from the
@@ -13,25 +237,33 @@ the 1.x adapter to 2.0.0.
   provisioned automatically on first use.
 - **Connecting.** `connect(platform, token)` replaces the 1.x
   `initializeSession()` / `setResource()` calls. Platforms are selected
-  with the `Platform` enum (e.g. `Platform$BDC_AUTHORIZED`).
+  with the `Platform` enum (e.g. `Platform$BDC_AUTHORIZED`); `platforms()`
+  lists the human-readable labels.
 - **Query construction.** Build nested AND/OR cohorts with
-  `buildClause()`, `buildClauseGroup()`, and `buildQuery()`. Output
-  concepts are attached via `buildQuery(includeConcepts = ...)` rather
-  than the 1.x `SELECT` clause.
+  `buildClause()`, `buildClauseGroup()`, and `buildQuery()`, and add
+  variant filters with `buildGenomicFilter()`. Output concepts are
+  attached via `buildQuery(includeConcepts = ...)` rather than the 1.x
+  `SELECT` clause.
 - **Query editing.** `removeSubQuery()` and `replaceClause()` edit an
   existing query tree by structural match.
 - **Execution.** `runQuery(session, query, type = ...)` returns a
-  `CountResult` (count), a named list of `CountResult`s (cross-count),
-  or a data frame (participant / timestamp). `runQueryByID()`,
-  `loadQueryByID()`, and `saveQueryByName()` cover saved queries.
+  `CountResult` (`"count"`, `"variant_count"`), a named list of
+  `CountResult`s keyed by concept path (`"cross_count"`), a data frame
+  (`"participant"`, `"timestamp"`, `"vcf_excerpt"`,
+  `"aggregate_vcf_excerpt"`), or a character vector (`"variant_list"`).
+  `runQueryByID()`, `loadQueryByID()`, and `saveQueryByName()` cover
+  saved queries.
 - **Search.** `searchDictionary()` searches the data dictionary;
-  `facets()`, `addFacet()`, and `removeFacet()` build facet filters.
+  `facets()`, `addFacet()`, and `removeFacet()` build facet filters;
+  `searchGenomicValues()` and `genomicConsequences()` cover genomic
+  annotation values.
 - **Export.** `exportAsPFB()`, `exportCSV()`, and `exportTSV()`.
 - **Errors.** Failures surface as `picsureError` R conditions carrying
   researcher-facing messages, replacing the 1.x adapter's raw `httr`
   errors.
-- **Enums.** `PhenotypicFilterType`, `GroupOperator`, `QueryType`, and
-  `Platform` mirror the Python adapter's enums.
+- **Enums.** `PhenotypicFilterType`, `GroupOperator`, `QueryType`,
+  `Platform`, `GenomicFilterKey`, `VariantFrequency`, and
+  `VariantSeverity` mirror the Python adapter's enums.
 
 The legacy 1.x adapter remains available on the `main` branch during the
 migration window.

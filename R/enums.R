@@ -141,11 +141,22 @@ QueryType <- list(
 #' `values` argument for the `"Variant_frequency_as_text"` key. Mirrors
 #' Python's `picsure.VariantFrequency`.
 #'
+#' The members are a convenience, not an allowlist. The real vocabulary is
+#' whatever the deployment's variant annotations carry, so
+#' `searchGenomicValues(session, "Variant_frequency_as_text")` is the
+#' authoritative list, and `buildGenomicFilter()` accepts any string for this
+#' key.
+#'
 #' @format A list of `picsure_enum_member` objects:
 #' \describe{
 #'   \item{`RARE`}{Rare variants.}
 #'   \item{`COMMON`}{Common variants.}
-#'   \item{`NOVEL`}{Novel variants.}
+#'   \item{`LOW_FREQUENCY`}{Low-frequency variants.}
+#'   \item{`ULTRA_RARE`}{Ultra-rare variants.}
+#'   \item{`NOVEL`}{Novel variants. Deprecated in the Python adapter: it is
+#'     absent from every annotation set observed on a PIC-SURE deployment,
+#'     and is kept only so existing code keeps working. Prefer a value
+#'     returned by `searchGenomicValues()`.}
 #' }
 #' @examples
 #' \dontrun{
@@ -156,9 +167,11 @@ QueryType <- list(
 #' }
 #' @export
 VariantFrequency <- list(
-  RARE   = .enum_member("RARE",   "Rare",   enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
-  COMMON = .enum_member("COMMON", "Common", enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
-  NOVEL  = .enum_member("NOVEL",  "Novel",  enum_name = "VariantFrequency", subclass = "picsure_variant_frequency")
+  RARE          = .enum_member("RARE",          "Rare",          enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
+  COMMON        = .enum_member("COMMON",        "Common",        enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
+  LOW_FREQUENCY = .enum_member("LOW_FREQUENCY", "Low_frequency", enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
+  ULTRA_RARE    = .enum_member("ULTRA_RARE",    "Ultra_rare",    enum_name = "VariantFrequency", subclass = "picsure_variant_frequency"),
+  NOVEL         = .enum_member("NOVEL",         "Novel",         enum_name = "VariantFrequency", subclass = "picsure_variant_frequency")
 )
 
 #' Genomic annotation keys for `buildGenomicFilter()`.
@@ -229,7 +242,9 @@ VariantSeverity <- list(
 #'
 #' Pass a member to [`connect()`][picsure::connect]'s `platform`
 #' argument. Mirrors Python's `picsure.Platform`. Each member exposes
-#' the connection URL, default resource UUID, label, and policy flags.
+#' the connection URL, label, and policy flags. The gateway now selects
+#' the HPDS backend by URL path (`/hpds/auth` vs `/hpds/open`), so
+#' members no longer carry a resource UUID.
 #'
 #' @format A list of `picsure_enum_member` (subclass `picsure_platform`)
 #' objects:
@@ -253,19 +268,17 @@ Platform <- local({
   # flat fields mirror Python's @property accessors. Both shapes are
   # exposed so R users can read either way and Python docs translate
   # 1:1.
-  mk <- function(name, url, resource_uuid, label, include_consents, requires_auth, supports_genomic) {
+  mk <- function(name, url, label, include_consents, requires_auth, supports_genomic) {
     .enum_member(
       name             = name,
       value            = list(
         url              = url,
-        resource_uuid    = resource_uuid,
         label            = label,
         include_consents = include_consents,
         requires_auth    = requires_auth,
         supports_genomic = supports_genomic
       ),
       url              = url,
-      resource_uuid    = resource_uuid,
       label            = label,
       include_consents = include_consents,
       requires_auth    = requires_auth,
@@ -275,14 +288,14 @@ Platform <- local({
     )
   }
   list(
-    BDC_AUTHORIZED        = mk("BDC_AUTHORIZED",        "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE,  TRUE),
-    BDC_OPEN              = mk("BDC_OPEN",              "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE, FALSE),
-    BDC_DEV_AUTHORIZED    = mk("BDC_DEV_AUTHORIZED",    "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE,  TRUE),
-    BDC_DEV_OPEN          = mk("BDC_DEV_OPEN",          "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE, FALSE),
-    BDC_PREDEV_AUTHORIZED = mk("BDC_PREDEV_AUTHORIZED", "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "02e23f52-f354-4e8b-992c-d37c8b9ba140", "BDC Authorized",    TRUE,  TRUE,  TRUE),
-    BDC_PREDEV_OPEN       = mk("BDC_PREDEV_OPEN",       "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "ac004461-1b47-4832-80e2-22a4aecabe39", "BDC Open",          FALSE, FALSE, FALSE),
-    NHANES_AUTHORIZED     = mk("NHANES_AUTHORIZED",     "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Authorized", FALSE, TRUE,  TRUE),
-    NHANES_OPEN           = mk("NHANES_OPEN",           "https://nhanes.hms.harvard.edu/",                      "ded89b08-faa9-435c-b7c4-55b81922ee5f", "Nhanes Open",       FALSE, FALSE, FALSE)
+    BDC_AUTHORIZED        = mk("BDC_AUTHORIZED",        "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "BDC Authorized",    TRUE,  TRUE,  TRUE),
+    BDC_OPEN              = mk("BDC_OPEN",              "https://picsure.biodatacatalyst.nhlbi.nih.gov",        "BDC Open",          FALSE, FALSE, FALSE),
+    BDC_DEV_AUTHORIZED    = mk("BDC_DEV_AUTHORIZED",    "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "BDC Authorized",    TRUE,  TRUE,  TRUE),
+    BDC_DEV_OPEN          = mk("BDC_DEV_OPEN",          "https://dev.picsure.biodatacatalyst.nhlbi.nih.gov",    "BDC Open",          FALSE, FALSE, FALSE),
+    BDC_PREDEV_AUTHORIZED = mk("BDC_PREDEV_AUTHORIZED", "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "BDC Authorized",    TRUE,  TRUE,  TRUE),
+    BDC_PREDEV_OPEN       = mk("BDC_PREDEV_OPEN",       "https://predev.picsure.biodatacatalyst.nhlbi.nih.gov", "BDC Open",          FALSE, FALSE, FALSE),
+    NHANES_AUTHORIZED     = mk("NHANES_AUTHORIZED",     "https://nhanes.hms.harvard.edu/",                      "Nhanes Authorized", FALSE, TRUE,  TRUE),
+    NHANES_OPEN           = mk("NHANES_OPEN",           "https://nhanes.hms.harvard.edu/",                      "Nhanes Open",       FALSE, FALSE, FALSE)
   )
 })
 
@@ -290,7 +303,6 @@ Platform <- local({
 print.picsure_platform <- function(x, ...) {
   cat(format(x), "\n", sep = "")
   cat("  url:              ", x$url,              "\n", sep = "")
-  cat("  resource_uuid:    ", x$resource_uuid,    "\n", sep = "")
   cat("  label:            ", x$label,            "\n", sep = "")
   cat("  include_consents: ", x$include_consents, "\n", sep = "")
   cat("  requires_auth:    ", x$requires_auth,    "\n", sep = "")
