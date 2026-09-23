@@ -28,9 +28,8 @@ picsure_py <- NULL
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
 # earlier drift (R silently pinned at pre-rewrite @main) went unnoticed. This
-# SHA is the head of the Python `pic_sure_api_rewrite` branch, the merge
-# commit of PR #49, which runs participant and timestamp queries as server
-# jobs instead of on the synchronous query route.
+# SHA is on the Python `main` branch, the merge commit of PR #35, which
+# brought the whole `pic_sure_api_rewrite` branch into `main`.
 #
 # The SHA must name a commit reachable from a branch, never a pull-request
 # head. GitHub publishes PR heads under refs/pull/<n>/head, so `uv pip
@@ -51,7 +50,7 @@ picsure_py <- NULL
 # commit reachable from a branch, for the reason above, and `.PICSURE_PY_TAG`
 # below is set when the new commit is one a release tag points at and left
 # NA_character_ otherwise.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@9419c26adab56d864b5e2d759cefd7f7fc5fd3d9"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@70d567988e5b07108353e80a70cb886a5d25c3ea"
 
 # Release tag that points at the pinned commit, or NA_character_ when no tag
 # does. hatch-vcs versions a build made exactly at a tag as the bare tag

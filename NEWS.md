@@ -1,7 +1,7 @@
 # picsure 2.0.0.9000
 
-- The pinned Python adapter moves to `9419c26`, the merge of its PR #49 on
-  `pic_sure_api_rewrite`. Current PIC-SURE servers refuse participant,
+- The pinned Python adapter moves to `70d5679`, the merge of its PR #35
+  into `main`. Current PIC-SURE servers refuse participant,
   timestamp, and PFB queries on the synchronous query route with HTTP 400,
   so under the old pin `runQuery(type = "participant")`,
   `runQuery(type = "timestamp")`, and their `runQueryByID()` equivalents
@@ -15,8 +15,11 @@
   - `connect()` checks the token's shape and expiry locally, then sends one
     `GET /psama/user/me` request to confirm the deployment is reachable and
     accepts the token. A malformed or expired token fails before any
-    request with a `picsureAuthenticationError`. `validate = FALSE` skips
-    both.
+    request with a `picsureAuthenticationError`. A connection with no token
+    sends `GET /picsure/system/status` instead: `RUNNING` connects,
+    `ONE OR MORE COMPONENTS DEGRADED` connects with a warning, and any other
+    answer raises a `picsureConnectionError` naming the URL.
+    `validate = FALSE` skips these checks.
   - `searchDictionary()` fetches its results in pages of 500 and refuses an
     unpaged search matching more than 100,000 concepts; see the paging
     bullet below.

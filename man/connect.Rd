@@ -88,8 +88,11 @@ Supported keys:
   \item{`validate`}{A single `TRUE` or `FALSE`. `TRUE`, the default,
     makes `connect()` check the token's shape and expiry locally and
     then send one `GET /psama/user/me` request to confirm the deployment
-    is reachable and accepts the token. `FALSE` skips those checks, that
-    request, and the consent-scoping probe a custom URL string would
+    is reachable and accepts the token. A connection with no token sends
+    `GET /picsure/system/status` instead, and a deployment reporting
+    `ONE OR MORE COMPONENTS DEGRADED` connects with a warning. `FALSE`
+    skips those checks, that request, and the consent-scoping probe a
+    custom URL string would
     otherwise get, for offline or mocked use, so the returned session
     may not work. A consent-scoped platform still fetches its consent
     list either way.}
