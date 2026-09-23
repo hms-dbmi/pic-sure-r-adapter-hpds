@@ -15,8 +15,9 @@
 
 # Raises a named exception from the Python `picsure.errors` module.
 #
-# The structured consent errors take five constructor arguments. Everything
-# else takes the message alone.
+# The structured consent errors take five constructor arguments and
+# `EmptyBodyError` takes a status code before the message. Everything else
+# takes the message alone.
 picsure_raise <- function(name, message = "the human-readable message") {
   reticulate::py_run_string(
     "
@@ -27,6 +28,8 @@ def _picsure_raise(name, message):
     cls = getattr(_E, name)
     if name in ('PicSureConsentDeniedError', 'PicSureConsentLookupError'):
         raise cls(403, '{}', 'consent_denied', 'the server said so', message)
+    if name == 'EmptyBodyError':
+        raise cls(200, message)
     raise cls(message)
 ",
     convert = TRUE
@@ -36,7 +39,7 @@ def _picsure_raise(name, message):
 
 # Whether the installed Python build defines the named exception class.
 #
-# The pinned Python build predates part of the hierarchy, so the mapping tests
+# An older Python build predates part of the hierarchy, so the mapping tests
 # assert only on the classes the installed build defines. Skipping absent
 # ones is what lets those tests outlive a pin bump in either direction.
 python_error_defines <- function(name) {
@@ -109,6 +112,7 @@ test_that("each Python error class maps to its R condition class", {
     PicSureServerError          = "picsureServerError",
     PicSureConsentLookupError   = "picsureConsentLookupError",
     PicSureQueryError           = "picsureQueryError",
+    EmptyBodyError              = "picsureQueryError",
     PicSureValidationError      = "picsureValidationError"
   )
 

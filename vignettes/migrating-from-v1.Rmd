@@ -145,10 +145,10 @@ tryCatch(
 Subclasses let you tell the kinds of failure apart. `picsureAuthError` means
 the server refused you, so refresh the token; `picsureConnectionError` means no
 usable response came back; `picsureQueryError` means the query itself was
-rejected; `picsureValidationError` means this package rejected an argument
-before any request was made. `?picsure::picsureError` has the full tree,
-including which distinctions the currently pinned Python build can actually
-report.
+rejected; `picsureValidationError` means the input was invalid, usually
+caught before any request was sent, though a server answer of HTTP 400 lands
+there too. `?picsure::picsureError` has the full tree and what each class
+means.
 
 ```{r}
 tryCatch(
