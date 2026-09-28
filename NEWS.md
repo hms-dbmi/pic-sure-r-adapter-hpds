@@ -1,5 +1,12 @@
 # picsure 2.0.0.9000
 
+- The pinned Python adapter moves to `2b3ad4b` (ALS-13099), which retargets
+  every HPDS query request from the `/v3` path prefix to the unversioned
+  route. The adapter's public functions are unchanged, so no R code or
+  R-visible behavior differs; only the URLs the Python layer sends change.
+  The new commit carries no release tag yet, so `.PICSURE_PY_TAG` is
+  `NA_character_` until a tagged release includes it.
+
 - The pinned Python adapter moves to its v3.0.0 release (`70d5679`, the
   merge of its PR #35 into `main`). Current PIC-SURE servers refuse participant,
   timestamp, and PFB queries on the synchronous query route with HTTP 400,

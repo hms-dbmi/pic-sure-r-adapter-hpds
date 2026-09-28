@@ -17,12 +17,12 @@ The bridge lives in [`R/zzz.R`](../../R/zzz.R). The relevant moves:
   `picsure_py$PhenotypicFilterType`, etc.).
 - `.onLoad()` calls `reticulate::py_require(.PICSURE_PY_SPEC)` to
   declare the Python dependency. The spec is a PEP 508 direct
-  reference pinned to an immutable commit SHA, the Python v3.0.0
-  release commit, with `.PICSURE_PY_TAG` recording the tag. Python
-  releases before v3.0.0 404 at `connect()` against the new gateway,
-  so they must not be used here; the comment in `R/zzz.R` says
-  why a pull-request head is never a valid pin, and
-  [`pinned-python-build.md`](pinned-python-build.md) is the checklist of
+  reference pinned to an immutable commit SHA, with `.PICSURE_PY_TAG`
+  recording the release tag at that commit, or `NA_character_` when the
+  pin has moved past the latest tag. Python releases before v3.0.0 404 at
+  `connect()` against the new gateway, so they must not be used here; the
+  comment in `R/zzz.R` says why a pull-request head is never a valid pin,
+  and [`pinned-python-build.md`](pinned-python-build.md) is the checklist of
   every site a bump touches.
 - `.onLoad()` then assigns `picsure_py <<- reticulate::import("picsure",
   delay_load = list(on_load = .picsure_warn_on_pin_mismatch))`. The
