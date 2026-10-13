@@ -1,5 +1,14 @@
 # picsure 2.0.0.9000
 
+- The pinned Python adapter moves to `96f730f` (ALS-13141), which sends
+  the query status poll and the result download as body-less GET requests
+  instead of POSTs that repeated the query. The R calls are unchanged, but
+  `runQuery(type = "participant")`, `runQuery(type = "timestamp")`, their
+  `runQueryByID()` equivalents, and `exportAsPFB()` now need a PIC-SURE
+  server that serves the query status and result routes as GET; a server
+  that serves them only as POST rejects these requests. The new commit
+  carries no release tag yet, so `.PICSURE_PY_TAG` stays `NA_character_`.
+
 - The pinned Python adapter moves to `2b3ad4b` (ALS-13099), which retargets
   every HPDS query request from the `/v3` path prefix to the unversioned
   route. The adapter's public functions are unchanged, so no R code or
