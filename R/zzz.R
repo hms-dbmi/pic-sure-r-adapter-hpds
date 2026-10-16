@@ -17,8 +17,9 @@ picsure_py <- NULL
 #
 # Installed directly from the upstream GitHub repository via PEP 508
 # direct-reference syntax (resolved by uv under `reticulate::py_require`).
-# The same build is published to PyPI as `picsure` 3.0.0, but the git
-# reference names the exact commit, which an index version cannot.
+# The git reference names the exact commit, which lets the pin move ahead of
+# the latest tagged PyPI release when a fix needs to land before the next
+# one is cut.
 #
 # The R adapter has no HTTP code of its own, so backend compatibility is
 # whatever this ref resolves to. Python releases before v3.0.0 discover
@@ -27,8 +28,11 @@ picsure_py <- NULL
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
 # earlier drift (R silently pinned at a pre-rewrite @main) went unnoticed.
-# This SHA is the Python v3.0.0 release commit, the merge of PR #35 into
-# `main`.
+# This SHA is the ALS-13099 commit that retargets HPDS query requests off
+# the `/v3` path prefix, one commit past the v3.0.0 tag on the
+# pic-sure-python-adapter-hpds branch `ALS-13099-unversioned-query-paths`.
+# No release tag points at it, so `.PICSURE_PY_TAG` below is
+# `NA_character_`.
 #
 # The SHA must name a commit reachable from a branch, never a pull-request
 # head. GitHub publishes PR heads under refs/pull/<n>/head, so `uv pip
@@ -49,14 +53,14 @@ picsure_py <- NULL
 # commit reachable from a branch, for the reason above, and `.PICSURE_PY_TAG`
 # below is set when the new commit is one a release tag points at and left
 # NA_character_ otherwise.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@70d567988e5b07108353e80a70cb886a5d25c3ea"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@2b3ad4b02daae4d018caafc6cc7df275ca0ac459"
 
 # Release tag that points at the pinned commit, or NA_character_ when no tag
 # does. hatch-vcs versions a build made exactly at a tag as the bare tag
 # version with no commit suffix, so the pin check needs the tag to recognize
 # such a build as the pinned one. Set it alongside the SHA whenever the pin
 # moves to a tagged commit.
-.PICSURE_PY_TAG <- "v3.0.0"
+.PICSURE_PY_TAG <- NA_character_
 
 # Records whether the pinned-build check has already run, so its report is
 # emitted at most once per session.
