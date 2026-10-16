@@ -40,7 +40,11 @@ and that reasoning belongs next to the pin rather than here.
     exact SHA again.
   - "a hatch-vcs version built from the pinned commit is recognized as a
     match" carries the pinned commit's abbreviation inside a sample version
-    string and compares it against the live pin.
+    string and compares it against the live pin. Use the version the real
+    build reports, not an invented one: the provisioned
+    `picsure-<version>.dist-info` directory names it, and hatch-vcs derives
+    it from `git describe` on the adapter (`v3.0.0-3-g4cc615b` builds as
+    `3.0.1.dev3+g4cc615bd7`).
 
   The fourth checks `.PICSURE_PY_TAG` against the pin. When the pinned
   commit is tagged, it checks the tag by identity and confirms a bare

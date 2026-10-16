@@ -57,7 +57,7 @@ test_that(".picsure_build_sha returns NA for a version carrying no commit", {
 
 test_that("a hatch-vcs version built from the pinned commit is recognized as a match", {
   pinned <- picsure:::.picsure_pinned_sha()
-  built <- picsure:::.picsure_build_sha("2.0.1.dev161+g4cc615bd7")
+  built <- picsure:::.picsure_build_sha("3.0.1.dev3+g4cc615bd7")
 
   expect_true(startsWith(pinned, built))
   expect_false(startsWith(pinned, picsure:::.picsure_build_sha("2.0.1.dev11+ga023f367")))
