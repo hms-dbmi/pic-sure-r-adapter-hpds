@@ -28,9 +28,12 @@ picsure_py <- NULL
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
 # earlier drift (R silently pinned at a pre-rewrite @main) went unnoticed.
-# This SHA is the ALS-13099 commit that retargets HPDS query requests off
-# the `/v3` path prefix, one commit past the v3.0.0 tag on the
-# pic-sure-python-adapter-hpds branch `ALS-13099-unversioned-query-paths`.
+# This SHA is the head of the pic-sure-python-adapter-hpds branch
+# `ALS-13141-query-lifecycle-get`, which makes the query status poll and the
+# result download body-less GETs. It sits three commits past the v3.0.0 tag:
+# the ALS-13099 commit that retargets HPDS query requests off the `/v3` path
+# prefix, the ALS-13141 commit that switches both calls to GET, and a
+# test-only commit on top that changes no behavior.
 # No release tag points at it, so `.PICSURE_PY_TAG` below is
 # `NA_character_`.
 #
@@ -53,7 +56,7 @@ picsure_py <- NULL
 # commit reachable from a branch, for the reason above, and `.PICSURE_PY_TAG`
 # below is set when the new commit is one a release tag points at and left
 # NA_character_ otherwise.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@2b3ad4b02daae4d018caafc6cc7df275ca0ac459"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@4cc615bd757a3960a6d1ec2d77728428153c9bd9"
 
 # Release tag that points at the pinned commit, or NA_character_ when no tag
 # does. hatch-vcs versions a build made exactly at a tag as the bare tag
