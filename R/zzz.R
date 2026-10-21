@@ -28,14 +28,12 @@ picsure_py <- NULL
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
 # earlier drift (R silently pinned at a pre-rewrite @main) went unnoticed.
-# This SHA is the head of the pic-sure-python-adapter-hpds branch
-# `ALS-13141-query-lifecycle-get`, which makes the query status poll and the
-# result download body-less GETs. It sits three commits past the v3.0.0 tag:
-# the ALS-13099 commit that retargets HPDS query requests off the `/v3` path
-# prefix, the ALS-13141 commit that switches both calls to GET, and a
-# test-only commit on top that changes no behavior.
-# No release tag points at it, so `.PICSURE_PY_TAG` below is
-# `NA_character_`.
+# This SHA is the merge of pic-sure-python-adapter-hpds PR #54 into `main`.
+# Past the v3.0.0 tag it carries the ALS-13099 commit that retargets HPDS
+# query requests off the `/v3` path prefix, the ALS-13141 commit that makes
+# the query status poll and the result download body-less GETs, and a
+# test-only commit that changes no behavior. The v3.0.3rc release candidate
+# tag points at it, so `.PICSURE_PY_TAG` below records that tag.
 #
 # The SHA must name a commit reachable from a branch, never a pull-request
 # head. GitHub publishes PR heads under refs/pull/<n>/head, so `uv pip
@@ -63,7 +61,7 @@ picsure_py <- NULL
 # version with no commit suffix, so the pin check needs the tag to recognize
 # such a build as the pinned one. Set it alongside the SHA whenever the pin
 # moves to a tagged commit.
-.PICSURE_PY_TAG <- NA_character_
+.PICSURE_PY_TAG <- "v3.0.3rc"
 
 # Records whether the pinned-build check has already run, so its report is
 # emitted at most once per session.
@@ -93,9 +91,10 @@ picsure_py <- NULL
 }
 
 # Normalizes a git tag to the version string hatch-vcs derives from it, which
-# drops a leading `v`.
+# drops a leading `v` and, following PEP 440, gives a pre-release marker with
+# no number an implicit 0, so `v3.0.3rc` becomes `3.0.3rc0`.
 .picsure_tag_version <- function(tag) {
-  sub("^v", "", tag)
+  sub("([0-9])(a|b|rc)$", "\\1\\20", sub("^v", "", tag), perl = TRUE)
 }
 
 # Drops the local version segment (`+...`) from an installed version string,

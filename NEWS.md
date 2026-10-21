@@ -10,8 +10,11 @@
   (`connect(dev_mode = TRUE)` or `options(picsure.dev_mode = TRUE)`), only
   the query submit's `http` event now carries `redacted: "participant"`;
   the status poll and result download events no longer do, because those
-  requests send no body. The new commit carries no release tag yet, so
-  `.PICSURE_PY_TAG` stays `NA_character_`.
+  requests send no body. The Python release candidate tag `v3.0.3rc`
+  points at the new commit, so `.PICSURE_PY_TAG` records it and a build
+  reporting `3.0.3rc0` passes the pin check. A tag with a bare `rc`, `a`,
+  or `b` marker now compares against the `0`-numbered version PEP 440
+  derives from it, where before it reported a mismatch.
 
 - The pinned Python adapter moves to `2b3ad4b` (ALS-13099), which retargets
   every HPDS query request from the `/v3` path prefix to the unversioned
