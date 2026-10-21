@@ -22,13 +22,13 @@ test_that("Python dependency pin parses as a direct reference to the upstream ad
   sha <- substr(reference, sha_start[[1L]] + 1L, nchar(reference))
 
   expect_identical(repository, "https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git")
-  expect_identical(sha, "4cc615bd757a3960a6d1ec2d77728428153c9bd9")
+  expect_identical(sha, "ce7c8e44ffebad8cf093a6321b6f3fcad9dd4429")
 })
 
 test_that(".picsure_pinned_sha reads the commit off the dependency spec", {
   expect_identical(
     picsure:::.picsure_pinned_sha(),
-    "4cc615bd757a3960a6d1ec2d77728428153c9bd9"
+    "ce7c8e44ffebad8cf093a6321b6f3fcad9dd4429"
   )
   expect_identical(
     picsure:::.picsure_pinned_sha("picsure @ git+https://example.test/x.git@0123456789abcdef0123456789abcdef01234567"),
@@ -57,7 +57,7 @@ test_that(".picsure_build_sha returns NA for a version carrying no commit", {
 
 test_that("a hatch-vcs version built from the pinned commit is recognized as a match", {
   pinned <- picsure:::.picsure_pinned_sha()
-  built <- picsure:::.picsure_build_sha("3.0.1.dev3+g4cc615bd7")
+  built <- picsure:::.picsure_build_sha("3.0.1.dev6+gce7c8e44f")
 
   expect_true(startsWith(pinned, built))
   expect_false(startsWith(pinned, picsure:::.picsure_build_sha("2.0.1.dev11+ga023f367")))

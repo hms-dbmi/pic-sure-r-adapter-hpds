@@ -1,6 +1,6 @@
 # picsure 2.0.0.9000
 
-- The pinned Python adapter moves to `4cc615b` (ALS-13141), which sends
+- The pinned Python adapter moves to `ce7c8e4` (ALS-13141), which sends
   the query status poll and the result download as body-less GET requests
   instead of POSTs that repeated the query. The R calls are unchanged, but
   `runQuery(type = "participant")`, `runQuery(type = "timestamp")`, their

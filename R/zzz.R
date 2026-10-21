@@ -56,7 +56,7 @@ picsure_py <- NULL
 # commit reachable from a branch, for the reason above, and `.PICSURE_PY_TAG`
 # below is set when the new commit is one a release tag points at and left
 # NA_character_ otherwise.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@4cc615bd757a3960a6d1ec2d77728428153c9bd9"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@ce7c8e44ffebad8cf093a6321b6f3fcad9dd4429"
 
 # Release tag that points at the pinned commit, or NA_character_ when no tag
 # does. hatch-vcs versions a build made exactly at a tag as the bare tag
