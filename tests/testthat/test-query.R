@@ -308,7 +308,7 @@ test_that("runQueryByID() re-raises Python exceptions as picsureError", {
   fake <- fake_picsure_py()
   testthat::local_mocked_bindings(picsure_py = fake)
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
-  bdc$runQueryByID <- function(query_id, type = "count") {
+  bdc$runQueryByID <- function(query_id, type = NULL) {
     stop(structure(
       list(message = "query 'abc-123' not found"),
       class = c("python.builtin.Exception", "error", "condition")
@@ -441,7 +441,7 @@ test_that("a non-timestamp result keeps its server-driven column types", {
 test_that("runQueryByID(type = 'timestamp') applies the same schema", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
-  bdc$runQueryByID <- function(query_id, type = "count") {
+  bdc$runQueryByID <- function(query_id, type = NULL) {
     data.frame(
       PATIENT_NUM = "1", NVAL_NUM = 42, TVAL_CHAR = NA_real_,
       stringsAsFactors = FALSE

@@ -136,7 +136,8 @@ loadQueryByID <- function(session, query_id) {
 
 #' Load a saved PIC-SURE query by ID and execute it in one call.
 #'
-#' Fetches a previously-saved query by UUID and runs it. Semantically
+#' Fetches a previously-saved query by UUID and runs it, as the type it was
+#' saved as unless `type` names another. With a `type`, semantically
 #' equivalent to [`loadQueryByID()`][picsure::loadQueryByID] followed by
 #' [`runQuery()`][picsure::runQuery], but delegated to the Python adapter
 #' as a single call. Returns the same result shapes as `runQuery()`.
