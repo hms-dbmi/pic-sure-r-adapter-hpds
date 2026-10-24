@@ -168,7 +168,9 @@ enum-shaped argument means. `to_py_enum()` is that plus the
 `__members__` fetch, for the callers that want only the member.
 `runQuery()` and `runQueryByID()` want both, because the query type
 chooses the result schema as well as the Python call, so they resolve
-the name once and derive each from it. `.py_enum_members()`,
+the name once and derive each from it. `runQueryByID()` called without a
+type leaves the choice to Python, which runs the saved query's type, so
+the schema step recognizes a timeseries result by its five columns. `.py_enum_members()`,
 `.py_enum_member_names()`, and `.py_enum_member()` are the lookups
 underneath: they go through `__members__`, copying that `mappingproxy`
 into a real `dict` because reticulate has no converter for it.

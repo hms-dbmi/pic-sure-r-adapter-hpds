@@ -1,5 +1,20 @@
 # picsure 2.0.0.9000
 
+- **Breaking:** `runQueryByID()` called without a `type` now runs the query
+  as the type it was saved as, instead of always counting. A dataset saved
+  for export in the PIC-SURE UI comes back as participant (or timestamp)
+  rows, so `runQueryByID(session, query_id)` is enough, where it used to
+  return a `CountResult`. A query saved as a count, as `saveQueryByName()`
+  saves them, is still counted, and an explicit `type` still wins. A saved
+  type `runQuery()` cannot produce, such as a PFB export, raises a
+  `picsureValidationError` naming it; export those with
+  `exportAsPFB(session, loadQueryByID(session, query_id), path)`. A
+  timeseries result reached this way gets the same column types as
+  `type = "timestamp"`. The pinned Python adapter moves from `ce7c8e4` to
+  `19e2e2c`, the head of its unmerged PR #55, which makes this change on the
+  Python side and nothing else. No release tag points at it, so
+  `.PICSURE_PY_TAG` is `NA_character_` again.
+
 - The pinned Python adapter moves to `ce7c8e4` (ALS-13141), which sends
   the query status poll and the result download as body-less GET requests
   instead of POSTs that repeated the query. The R calls are unchanged, but

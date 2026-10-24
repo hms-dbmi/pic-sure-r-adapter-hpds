@@ -4,7 +4,7 @@
 \alias{runQueryByID}
 \title{Load a saved PIC-SURE query by ID and execute it in one call.}
 \usage{
-runQueryByID(session, query_id, type = "count")
+runQueryByID(session, query_id, type = NULL)
 }
 \arguments{
 \item{session}{A session object produced by [`connect()`][picsure::connect].}
@@ -13,9 +13,11 @@ runQueryByID(session, query_id, type = "count")
 
 \item{type}{A `QueryType` member (e.g.
 [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
-string: `"count"` (default), `"participant"`, `"timestamp"`,
+string: `"count"`, `"participant"`, `"timestamp"`,
 `"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
-or `"aggregate_vcf_excerpt"`.}
+or `"aggregate_vcf_excerpt"`. Defaults to the type the query was saved
+as, so a dataset saved for export from the PIC-SURE UI comes back as
+participant (or timestamp) rows and a query saved as a count is counted.}
 }
 \value{
 Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
@@ -34,7 +36,7 @@ as a single call. Returns the same result shapes as `runQuery()`.
 }
 \examples{
 \dontrun{
-count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
-df    <- picsure::runQueryByID(bdc, "XXXXX-ID", type = "participant")
+df    <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
+count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555", type = "count")
 }
 }

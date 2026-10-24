@@ -216,15 +216,47 @@ test_that("runQueryByID() forwards query_id and type to session$runQueryByID", {
   expect_equal(tolower(call$type), "count")
 })
 
-test_that("runQueryByID() defaults type to 'count'", {
+test_that("runQueryByID() without a type leaves it to the saved query", {
   testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
   bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
 
-  result <- picsure::runQueryByID(bdc, "abc-123")
+  picsure::runQueryByID(bdc, "abc-123")
 
-  expect_equal(result$value, 42L)
   call <- bdc$.calls$runQueryByID[[1]]
-  expect_equal(tolower(call$type), "count")
+  expect_null(call$type)
+})
+
+test_that("runQueryByID() without a type retypes a saved timeseries result", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  bdc$runQueryByID <- function(query_id, type = NULL) {
+    data.frame(
+      PATIENT_NUM  = c("1", "2"),
+      CONCEPT_PATH = c("\\phs1\\age\\", "\\phs1\\age\\"),
+      NVAL_NUM     = c(42, 51),
+      TVAL_CHAR    = c(NA_real_, NA_real_),
+      TIMESTAMP    = c("2020-01-01", "2020-01-02"),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  result <- picsure::runQueryByID(bdc, "an-id")
+
+  expect_type(result$PATIENT_NUM, "integer")
+  expect_type(result$TVAL_CHAR, "character")
+})
+
+test_that("runQueryByID() without a type leaves a saved participant result as it arrived", {
+  testthat::local_mocked_bindings(picsure_py = fake_picsure_py())
+  bdc <- picsure::connect(platform = "https://picsure.test", token = "tok")
+  bdc$runQueryByID <- function(query_id, type = NULL) {
+    data.frame(PATIENT_NUM = c("1", "2"), TVAL_CHAR = c("x", "y"),
+               stringsAsFactors = FALSE)
+  }
+
+  result <- picsure::runQueryByID(bdc, "an-id")
+
+  expect_type(result$PATIENT_NUM, "character")
 })
 
 test_that("runQueryByID() with type='participant' returns a data.frame", {

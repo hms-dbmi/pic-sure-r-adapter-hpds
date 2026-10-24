@@ -91,14 +91,21 @@ runQuery <- function(session, query, type = "count", ...) {
 #' @param result Whatever the Python `runQuery` call returned.
 #' @param type_name The requested query type as the Python `QueryType` enum
 #'   spells the member, already resolved by `resolve_enum_member_name()`, or
-#'   `NULL` when the caller named no type and Python's own default applied.
+#'   `NULL` when the caller named no type and Python chose it.
 #'   Taking the resolved name rather than the raw argument is what keeps one
 #'   query type from being decided twice by two rules: the wrapper resolves
 #'   against `__members__`, and this reads the answer.
-#' @return `result`, retyped when the query type is the timeseries one.
+#' @return `result`, retyped when the query type is the timeseries one. With
+#'   no `type_name`, as when `runQueryByID()` runs a saved timeseries export
+#'   as saved, a frame carrying all five timeseries columns counts as one.
 #' @noRd
 apply_query_result_schema <- function(result, type_name) {
-  if (is.null(type_name) || !identical(toupper(type_name), "TIMESTAMP")) {
+  is_timeseries <- if (is.null(type_name)) {
+    is.data.frame(result) && all(names(.TIMESERIES_RESULT_SCHEMA) %in% names(result))
+  } else {
+    identical(toupper(type_name), "TIMESTAMP")
+  }
+  if (!is_timeseries) {
     return(result)
   }
   apply_result_schema(result, .TIMESERIES_RESULT_SCHEMA)
@@ -138,9 +145,11 @@ loadQueryByID <- function(session, query_id) {
 #' @param query_id The UUID string of a previously-saved query.
 #' @param type A `QueryType` member (e.g.
 #'   [`QueryType$COUNT`][picsure::QueryType]) or a case-insensitive
-#'   string: `"count"` (default), `"participant"`, `"timestamp"`,
+#'   string: `"count"`, `"participant"`, `"timestamp"`,
 #'   `"cross_count"`, `"variant_count"`, `"variant_list"`, `"vcf_excerpt"`,
-#'   or `"aggregate_vcf_excerpt"`.
+#'   or `"aggregate_vcf_excerpt"`. Defaults to the type the query was saved
+#'   as, so a dataset saved for export from the PIC-SURE UI comes back as
+#'   participant (or timestamp) rows and a query saved as a count is counted.
 #' @return Same as [`runQuery()`][picsure::runQuery]: a `CountResult` for
 #'   `"count"` or `"variant_count"`, a named list of `CountResult`s keyed by
 #'   concept path for `"cross_count"`,
@@ -150,11 +159,11 @@ loadQueryByID <- function(session, query_id) {
 #'   environments yet).
 #' @examples
 #' \dontrun{
-#' count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
-#' df    <- picsure::runQueryByID(bdc, "XXXXX-ID", type = "participant")
+#' df    <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
+#' count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555", type = "count")
 #' }
 #' @export
-runQueryByID <- function(session, query_id, type = "count") {
+runQueryByID <- function(session, query_id, type = NULL) {
   if (missing(query_id)) query_id <- NULL
   as_single_string(query_id, "query_id", hint = "It is the saved query's UUID.")
 
