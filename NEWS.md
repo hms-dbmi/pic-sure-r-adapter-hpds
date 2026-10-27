@@ -11,9 +11,10 @@
   `exportAsPFB(session, loadQueryByID(session, query_id), path)`. A
   timeseries result reached this way gets the same column types as
   `type = "timestamp"`. The pinned Python adapter moves from `ce7c8e4` to
-  `19e2e2c`, the head of its unmerged PR #55, which makes this change on the
-  Python side and nothing else. No release tag points at it, so
-  `.PICSURE_PY_TAG` is `NA_character_` again.
+  `44a381a`, the commit the release candidate tag `v3.0.4rc` points at,
+  which makes this change on the Python side and nothing else.
+  `.PICSURE_PY_TAG` records `v3.0.4rc`, so a build reporting `3.0.4rc0`
+  passes the pin check.
 
 - The pinned Python adapter moves to `ce7c8e4` (ALS-13141), which sends
   the query status poll and the result download as body-less GET requests

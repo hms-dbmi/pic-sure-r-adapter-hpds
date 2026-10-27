@@ -22,13 +22,13 @@ test_that("Python dependency pin parses as a direct reference to the upstream ad
   sha <- substr(reference, sha_start[[1L]] + 1L, nchar(reference))
 
   expect_identical(repository, "https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git")
-  expect_identical(sha, "19e2e2cdfd1b1285729a6b472a0dff8e0bb17956")
+  expect_identical(sha, "44a381ad5616e429f905dffff9900561405db125")
 })
 
 test_that(".picsure_pinned_sha reads the commit off the dependency spec", {
   expect_identical(
     picsure:::.picsure_pinned_sha(),
-    "19e2e2cdfd1b1285729a6b472a0dff8e0bb17956"
+    "44a381ad5616e429f905dffff9900561405db125"
   )
   expect_identical(
     picsure:::.picsure_pinned_sha("picsure @ git+https://example.test/x.git@0123456789abcdef0123456789abcdef01234567"),
@@ -57,22 +57,22 @@ test_that(".picsure_build_sha returns NA for a version carrying no commit", {
 
 test_that("a hatch-vcs version built from the pinned commit is recognized as a match", {
   pinned <- picsure:::.picsure_pinned_sha()
-  built <- picsure:::.picsure_build_sha("3.0.3rc1.dev2+g19e2e2cdf")
+  built <- picsure:::.picsure_build_sha("3.0.4.dev1+g44a381ad5")
 
   expect_true(startsWith(pinned, built))
   expect_false(startsWith(pinned, picsure:::.picsure_build_sha("2.0.1.dev11+ga023f367")))
 })
 
-test_that(".PICSURE_PY_TAG is NA_character_ when the pinned commit carries no release tag", {
-  expect_true(is.na(picsure:::.PICSURE_PY_TAG))
+test_that(".PICSURE_PY_TAG names the release tag at the pinned commit", {
+  expect_identical(picsure:::.PICSURE_PY_TAG, "v3.0.4rc")
   expect_identical(
-    picsure:::.picsure_pin_verdict("3.0.3rc0", picsure:::.picsure_pinned_sha(), picsure:::.PICSURE_PY_TAG),
-    "unconfirmed"
+    picsure:::.picsure_pin_verdict("3.0.4rc0", picsure:::.picsure_pinned_sha(), picsure:::.PICSURE_PY_TAG),
+    "match"
   )
 })
 
 test_that(".picsure_tag_version gives a bare pre-release marker an implicit 0", {
-  expect_identical(picsure:::.picsure_tag_version("v3.0.3rc"), "3.0.3rc0")
+  expect_identical(picsure:::.picsure_tag_version("v3.0.4rc"), "3.0.4rc0")
   expect_identical(picsure:::.picsure_tag_version("v3.0.3a"), "3.0.3a0")
   expect_identical(picsure:::.picsure_tag_version("v3.0.3b"), "3.0.3b0")
   expect_identical(picsure:::.picsure_tag_version("v3.0.3rc1"), "3.0.3rc1")
