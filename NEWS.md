@@ -4,6 +4,19 @@
   `.PICSURE_PY_TAG` records `v4.0.0`, so a build reporting `4.0.0` passes the
   pin check. The adapter's public functions are unchanged for R callers.
 
+- **Breaking:** `runQueryByID()` called without a `type` now runs the query
+  as the type it was saved as, instead of always counting. A dataset saved
+  for export in the PIC-SURE UI comes back as participant (or timestamp)
+  rows, so `runQueryByID(session, query_id)` is enough, where it used to
+  return a `CountResult`. A query saved as a count, as `saveQueryByName()`
+  saves them, is still counted, and an explicit `type` still wins. A saved
+  type `runQuery()` cannot produce, such as a PFB export, raises a
+  `picsureValidationError` naming it; export those with
+  `exportAsPFB(session, loadQueryByID(session, query_id), path)`. A
+  timeseries result reached this way gets the same column types as
+  `type = "timestamp"`. The pinned
+  Python adapter, v4.0.0, makes this change on the Python side.
+
 - The query status poll and the result download are now body-less GET
   requests instead of POSTs that repeated the query (ALS-13141). The R calls
   are unchanged, but `runQuery(type = "participant")`,

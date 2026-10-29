@@ -82,7 +82,7 @@ new_fake_session <- function(platform = "Demo", token = "tok") {
         list(kind = "group", clauses = list(), operator = "AND",
              loaded_from = query_id)
       },
-      runQueryByID = function(query_id, type = "count") {
+      runQueryByID = function(query_id, type = NULL) {
         calls$runQueryByID <- c(
           calls$runQueryByID,
           list(list(query_id = query_id, type = type))
