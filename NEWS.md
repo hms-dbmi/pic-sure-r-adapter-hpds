@@ -1,27 +1,26 @@
 # picsure 2.0.0.9000
 
-- The pinned Python adapter moves to `ce7c8e4` (ALS-13141), which sends
-  the query status poll and the result download as body-less GET requests
-  instead of POSTs that repeated the query. The R calls are unchanged, but
-  `runQuery(type = "participant")`, `runQuery(type = "timestamp")`, their
-  `runQueryByID()` equivalents, and `exportAsPFB()` now need a PIC-SURE
-  server that serves the query status and result routes as GET; a server
-  that serves them only as POST rejects these requests. With dev mode on
-  (`connect(dev_mode = TRUE)` or `options(picsure.dev_mode = TRUE)`), only
-  the query submit's `http` event now carries `redacted: "participant"`;
-  the status poll and result download events no longer do, because those
-  requests send no body. The Python release candidate tag `v3.0.3rc`
-  points at the new commit, so `.PICSURE_PY_TAG` records it and a build
-  reporting `3.0.3rc0` passes the pin check. A tag with a bare `rc`, `a`,
-  or `b` marker now compares against the `0`-numbered version PEP 440
-  derives from it, where before it reported a mismatch.
+- The pinned Python adapter moves to its v4.0.0 release (`964579c`).
+  `.PICSURE_PY_TAG` records `v4.0.0`, so a build reporting `4.0.0` passes the
+  pin check. The adapter's public functions are unchanged for R callers.
+
+- The query status poll and the result download are now body-less GET
+  requests instead of POSTs that repeated the query (ALS-13141). The R calls
+  are unchanged, but `runQuery(type = "participant")`,
+  `runQuery(type = "timestamp")`, their `runQueryByID()` equivalents, and
+  `exportAsPFB()` now need a PIC-SURE server that serves the query status
+  and result routes as GET; a server that serves them only as POST rejects
+  these requests. With dev mode on (`connect(dev_mode = TRUE)` or
+  `options(picsure.dev_mode = TRUE)`), only the query submit's `http` event
+  now carries `redacted: "participant"`; the status poll and result download
+  events no longer do, because those requests send no body. A tag with a
+  bare `rc`, `a`, or `b` marker now compares against the `0`-numbered
+  version PEP 440 derives from it, where before it reported a mismatch.
 
 - The pinned Python adapter moves to `2b3ad4b` (ALS-13099), which retargets
   every HPDS query request from the `/v3` path prefix to the unversioned
   route. The adapter's public functions are unchanged, so no R code or
   R-visible behavior differs; only the URLs the Python layer sends change.
-  The new commit carries no release tag yet, so `.PICSURE_PY_TAG` is
-  `NA_character_` until a tagged release includes it.
 
 - The pinned Python adapter moves to its v3.0.0 release (`70d5679`, the
   merge of its PR #35 into `main`). Current PIC-SURE servers refuse participant,
