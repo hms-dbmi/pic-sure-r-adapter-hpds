@@ -71,6 +71,15 @@ test_that(".PICSURE_PY_TAG names the release tag at the pinned commit", {
   )
 })
 
+test_that(".picsure_tag_version gives a bare pre-release marker an implicit 0", {
+  expect_identical(picsure:::.picsure_tag_version("v3.0.3rc"), "3.0.3rc0")
+  expect_identical(picsure:::.picsure_tag_version("v3.0.3a"), "3.0.3a0")
+  expect_identical(picsure:::.picsure_tag_version("v3.0.3b"), "3.0.3b0")
+  expect_identical(picsure:::.picsure_tag_version("v3.0.3rc1"), "3.0.3rc1")
+  expect_identical(picsure:::.picsure_tag_version("v3.0.3"), "3.0.3")
+  expect_identical(picsure:::.picsure_tag_version("2.0.0rc1"), "2.0.0rc1")
+})
+
 test_that(".picsure_pinned_tag prefers a recorded tag over the spec", {
   sha_spec <- "picsure @ git+https://example.test/x.git@0123456789abcdef0123456789abcdef01234567"
   expect_identical(picsure:::.picsure_pinned_tag(sha_spec, "v2.1.0"), "v2.1.0")
@@ -104,6 +113,8 @@ test_that(".picsure_pin_verdict accepts the bare tag version for a tagged pin", 
   expect_identical(picsure:::.picsure_pin_verdict("2.1.0+d20260918", pinned, "v2.1.0"), "match")
   expect_identical(picsure:::.picsure_pin_verdict("2.1.0", NA_character_, "v2.1.0"), "match")
   expect_identical(picsure:::.picsure_pin_verdict("2.0.0", pinned, "v2.1.0"), "mismatch")
+  expect_identical(picsure:::.picsure_pin_verdict("2.1.0rc0", pinned, "v2.1.0rc"), "match")
+  expect_identical(picsure:::.picsure_pin_verdict("2.1.0rc1", pinned, "v2.1.0rc"), "mismatch")
 })
 
 test_that(".picsure_pin_verdict is unconfirmed without a commit suffix or a tag to compare", {

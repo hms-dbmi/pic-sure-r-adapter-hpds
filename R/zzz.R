@@ -88,9 +88,10 @@ picsure_py <- NULL
 }
 
 # Normalizes a git tag to the version string hatch-vcs derives from it, which
-# drops a leading `v`.
+# drops a leading `v` and, following PEP 440, gives a pre-release marker with
+# no number an implicit 0, so `v3.0.3rc` becomes `3.0.3rc0`.
 .picsure_tag_version <- function(tag) {
-  sub("^v", "", tag)
+  sub("([0-9])(a|b|rc)$", "\\1\\20", sub("^v", "", tag), perl = TRUE)
 }
 
 # Drops the local version segment (`+...`) from an installed version string,

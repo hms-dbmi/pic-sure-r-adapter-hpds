@@ -40,14 +40,20 @@ and that reasoning belongs next to the pin rather than here.
     exact SHA again.
   - "a hatch-vcs version built from the pinned commit is recognized as a
     match" carries the pinned commit's abbreviation inside a sample version
-    string and compares it against the live pin.
+    string and compares it against the live pin. Use the version the real
+    build reports, not an invented one: the provisioned
+    `picsure-<version>.dist-info` directory names it. Only the tag and
+    distance come from `git describe`, so a commit `n` commits past tag
+    `vX.Y.Z` builds as `X.Y.(Z+1).dev<n>+g<first 9 hex of the SHA>`.
 
   The fourth checks `.PICSURE_PY_TAG` against the pin. When the pinned
   commit is tagged, it checks the tag by identity and confirms a bare
   tag-version build such as `3.0.0` counts as a match, and it breaks
   whenever the tag moves, as in ".PICSURE_PY_TAG names the release tag at
-  the pinned commit". When the pinned commit carries no release tag, it is
-  an `is.na()` check instead.
+  the pinned commit". A release candidate tag counts too. Record the tag
+  exactly as pushed (`v3.0.3rc`) and use the version the build reports
+  (`3.0.3rc0`) in the match assertion. When the pinned commit carries no
+  release tag, it is an `is.na()` check instead.
 
   Grepping for the old abbreviation over-reports: ".picsure_build_sha reads
   the commit out of a hatch-vcs version" spells it too, but only as input to
