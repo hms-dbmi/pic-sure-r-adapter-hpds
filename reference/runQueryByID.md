@@ -1,6 +1,7 @@
 # Load a saved PIC-SURE query by ID and execute it in one call.
 
-Fetches a previously-saved query by UUID and runs it. Semantically
+Fetches a previously-saved query by UUID and runs it, as the type it was
+saved as unless \`type\` names another. With a \`type\`, semantically
 equivalent to \[\`loadQueryByID()\`\]\[picsure::loadQueryByID\] followed
 by \[\`runQuery()\`\]\[picsure::runQuery\], but delegated to the Python
 adapter as a single call. Returns the same result shapes as
@@ -9,7 +10,7 @@ adapter as a single call. Returns the same result shapes as
 ## Usage
 
 ``` r
-runQueryByID(session, query_id, type = "count")
+runQueryByID(session, query_id, type = NULL)
 ```
 
 ## Arguments
@@ -26,9 +27,12 @@ runQueryByID(session, query_id, type = "count")
 
   A \`QueryType\` member (e.g.
   \[\`QueryType\$COUNT\`\]\[picsure::QueryType\]) or a case-insensitive
-  string: \`"count"\` (default), \`"participant"\`, \`"timestamp"\`,
+  string: \`"count"\`, \`"participant"\`, \`"timestamp"\`,
   \`"cross_count"\`, \`"variant_count"\`, \`"variant_list"\`,
-  \`"vcf_excerpt"\`, or \`"aggregate_vcf_excerpt"\`.
+  \`"vcf_excerpt"\`, or \`"aggregate_vcf_excerpt"\`. Defaults to the
+  type the query was saved as, so a dataset saved for export from the
+  PIC-SURE UI comes back as participant (or timestamp) rows and a query
+  saved as a count is counted.
 
 ## Value
 
@@ -44,7 +48,7 @@ primary environments yet).
 
 ``` r
 if (FALSE) { # \dontrun{
-count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
-df    <- picsure::runQueryByID(bdc, "XXXXX-ID", type = "participant")
+df    <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555")
+count <- picsure::runQueryByID(bdc, "11111111-2222-3333-4444-555555555555", type = "count")
 } # }
 ```

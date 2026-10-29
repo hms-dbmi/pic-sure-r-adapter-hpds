@@ -2,6 +2,52 @@
 
 ## picsure 2.0.0.9000
 
+- The pinned Python adapter moves to its v4.0.0 release (`964579c`).
+  `.PICSURE_PY_TAG` records `v4.0.0`, so a build reporting `4.0.0`
+  passes the pin check. The adapter’s public functions are unchanged for
+  R callers.
+
+- **Breaking:**
+  [`runQueryByID()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQueryByID.md)
+  called without a `type` now runs the query as the type it was saved
+  as, instead of always counting. A dataset saved for export in the
+  PIC-SURE UI comes back as participant (or timestamp) rows, so
+  `runQueryByID(session, query_id)` is enough, where it used to return a
+  `CountResult`. A query saved as a count, as
+  [`saveQueryByName()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/saveQueryByName.md)
+  saves them, is still counted, and an explicit `type` still wins. A
+  saved type
+  [`runQuery()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQuery.md)
+  cannot produce, such as a PFB export, raises a
+  `picsureValidationError` naming it; export those with
+  `exportAsPFB(session, loadQueryByID(session, query_id), path)`. A
+  timeseries result reached this way gets the same column types as
+  `type = "timestamp"`. The pinned Python adapter, v4.0.0, makes this
+  change on the Python side.
+
+- The query status poll and the result download are now body-less GET
+  requests instead of POSTs that repeated the query (ALS-13141). The R
+  calls are unchanged, but `runQuery(type = "participant")`,
+  `runQuery(type = "timestamp")`, their
+  [`runQueryByID()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQueryByID.md)
+  equivalents, and
+  [`exportAsPFB()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/exportAsPFB.md)
+  now need a PIC-SURE server that serves the query status and result
+  routes as GET; a server that serves them only as POST rejects these
+  requests. With dev mode on (`connect(dev_mode = TRUE)` or
+  `options(picsure.dev_mode = TRUE)`), only the query submit’s `http`
+  event now carries `redacted: "participant"`; the status poll and
+  result download events no longer do, because those requests send no
+  body. A tag with a bare `rc`, `a`, or `b` marker now compares against
+  the `0`-numbered version PEP 440 derives from it, where before it
+  reported a mismatch.
+
+- The pinned Python adapter moves to `2b3ad4b` (ALS-13099), which
+  retargets every HPDS query request from the `/v3` path prefix to the
+  unversioned route. The adapter’s public functions are unchanged, so no
+  R code or R-visible behavior differs; only the URLs the Python layer
+  sends change.
+
 - The pinned Python adapter moves to its v3.0.0 release (`70d5679`, the
   merge of its PR \#35 into `main`). Current PIC-SURE servers refuse
   participant, timestamp, and PFB queries on the synchronous query route

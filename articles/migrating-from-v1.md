@@ -22,7 +22,7 @@ patterns end-to-end.
 | `runQuery(q, "COUNT")` | `runQuery(session, query, type = "count")`, which returns a `CountResult`, not a number (see below) |
 | `runQuery(q, "DATA_FRAME")` | `runQuery(session, query, type = "participant")` |
 | `getQueryByUUID(session, uuid)` | `loadQueryByID(session, query_id)`, which rebuilds the saved query as a handle |
-| `getResultByQueryUUID(session, uuid)` | `runQueryByID(session, query_id, type = "count")`, which fetches and runs in one call |
+| `getResultByQueryUUID(session, uuid)` | `runQueryByID(session, query_id)`, which fetches and runs in one call, as the type the query was saved as |
 
 New in 2.0.0, with no v1 equivalent:
 

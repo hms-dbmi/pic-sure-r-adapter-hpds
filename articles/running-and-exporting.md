@@ -160,6 +160,19 @@ restored <- picsure::loadQueryByID(bdc, qid)
 df       <- picsure::runQueryByID(bdc, qid, type = "participant")
 ```
 
+Without a `type`,
+[`runQueryByID()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/runQueryByID.md)
+runs the query as the type it was saved as.
+[`saveQueryByName()`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/reference/saveQueryByName.md)
+saves queries as counts, so name the type you want for those. A dataset
+saved for export in the PIC-SURE UI comes back as participant (or
+timestamp) rows with just its ID:
+
+``` r
+
+df <- picsure::runQueryByID(bdc, "22222222-3333-4444-5555-666666666666")
+```
+
 By default, saving a second time under the same name is rejected. To
 repoint the existing record at a freshly-built query, pass
 `overwrite = TRUE`:
