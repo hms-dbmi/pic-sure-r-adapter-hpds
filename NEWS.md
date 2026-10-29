@@ -1,6 +1,6 @@
 # picsure 2.0.0.9000
 
-- The pinned Python adapter moves to its v4.0.0 release (`44a381a`).
+- The pinned Python adapter moves to its v4.0.0 release (`964579c`).
   `.PICSURE_PY_TAG` records `v4.0.0`, so a build reporting `4.0.0` passes the
   pin check. The adapter's public functions are unchanged for R callers.
 
