@@ -28,14 +28,9 @@ picsure_py <- NULL
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
 # earlier drift (R silently pinned at a pre-rewrite @main) went unnoticed.
-# This SHA is the head of the pic-sure-python-adapter-hpds branch
-# `runquerybyid-saved-type` (its PR #55), where runQueryByID() without a type
-# runs the saved query's own result type. It sits two commits past the merge
-# of PR #54 into `main`, which carries the ALS-13099 `/v3` retargeting and the
-# ALS-13141 body-less GET status poll and result download. PR #55 is not
-# merged yet: once it is, move the pin to the commit it lands as on `main`,
-# since a squash-merge makes a new one. No release tag points at it, so
-# `.PICSURE_PY_TAG` below is `NA_character_`.
+# This SHA is the commit the v4.0.0 release tag of
+# pic-sure-python-adapter-hpds points at, reachable from its `main` branch.
+# `.PICSURE_PY_TAG` below records that tag.
 #
 # The SHA must name a commit reachable from a branch, never a pull-request
 # head. GitHub publishes PR heads under refs/pull/<n>/head, so `uv pip
@@ -56,14 +51,14 @@ picsure_py <- NULL
 # commit reachable from a branch, for the reason above, and `.PICSURE_PY_TAG`
 # below is set when the new commit is one a release tag points at and left
 # NA_character_ otherwise.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@19e2e2cdfd1b1285729a6b472a0dff8e0bb17956"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@964579cb306436670a96cb8a06edde866cec7980"
 
 # Release tag that points at the pinned commit, or NA_character_ when no tag
 # does. hatch-vcs versions a build made exactly at a tag as the bare tag
 # version with no commit suffix, so the pin check needs the tag to recognize
 # such a build as the pinned one. Set it alongside the SHA whenever the pin
 # moves to a tagged commit.
-.PICSURE_PY_TAG <- NA_character_
+.PICSURE_PY_TAG <- "v4.0.0"
 
 # Records whether the pinned-build check has already run, so its report is
 # emitted at most once per session.

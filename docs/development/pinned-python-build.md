@@ -49,11 +49,11 @@ and that reasoning belongs next to the pin rather than here.
   The fourth checks `.PICSURE_PY_TAG` against the pin. When the pinned
   commit is tagged, it checks the tag by identity and confirms a bare
   tag-version build such as `3.0.0` counts as a match, and it breaks
-  whenever the tag moves. A release candidate tag counts too. Record the tag
+  whenever the tag moves, as in ".PICSURE_PY_TAG names the release tag at
+  the pinned commit". A release candidate tag counts too. Record the tag
   exactly as pushed (`v3.0.3rc`) and use the version the build reports
-  (`3.0.3rc0`) in the match assertion. When the pinned commit carries no release tag, it
-  is an `is.na()` check instead, as in ".PICSURE_PY_TAG is NA_character_
-  when the pinned commit carries no release tag".
+  (`3.0.3rc0`) in the match assertion. When the pinned commit carries no
+  release tag, it is an `is.na()` check instead.
 
   Grepping for the old abbreviation over-reports: ".picsure_build_sha reads
   the commit out of a hatch-vcs version" spells it too, but only as input to
