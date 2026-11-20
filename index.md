@@ -92,8 +92,7 @@ picsure::exportAsPFB(bdc, query, "~/cohort.pfb")
 ## Migrating from v1
 
 This is the 2.0.0 rewrite of the adapter, released as the `v2.0.0` tag.
-The legacy 1.x adapter remains on `main` during the migration window.
-See
+The legacy 1.x adapter is preserved on the `legacy-main` branch. See
 [`vignettes/migrating-from-v1.Rmd`](https://hms-dbmi.github.io/pic-sure-r-adapter-hpds/vignettes/migrating-from-v1.Rmd)
 for a side-by-side mapping of every 1.x function to its 2.0.0
 equivalent.
