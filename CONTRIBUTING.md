@@ -6,12 +6,9 @@ their way around. If you're looking for end-user documentation, see
 [`README.md`](README.md) and the vignettes in
 [`vignettes/`](vignettes/) instead.
 
-> **Note on branches.** The 2.0.0 rewrite lives on the `query_v3`
-> branch and is released as the `v2.0.0` tag. The legacy 1.x adapter
-> remains on `main` during the migration window, so the two coexist;
-> `query_v3` is **not** being merged into `main` for now. Branch from
-> and target `query_v3` for all new work. See [`TODO.md`](TODO.md) for
-> the eventual `main` cutover.
+> **Note on branches.** `main` holds the 2.0.0 rewrite, released as the
+> `v2.0.0` tag and later. The legacy 1.x adapter is preserved on the
+> `legacy-main` branch and is not under active development.
 
 ## Where to go next
 
@@ -58,9 +55,7 @@ R CMD check .
 
 ## Branching and pull requests
 
-Branch from `query_v3` for new work and open a PR against `query_v3`
-(see the note on branches at the top). The legacy 1.x adapter on `main`
-is not under active development.
+Branch from `main` for new work and open a PR against `main`.
 
 - Keep commit messages descriptive — explain why, not just what.
 - PRs must pass the `R CMD check` matrix in CI before merge

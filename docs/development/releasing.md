@@ -11,7 +11,7 @@ an in-progress development track on top of the last released version, so
 this is the track above `2.0.0`, the first full release of the rewritten
 adapter. Drop the suffix when you cut the next release.
 
-The release tag is `v2.0.0` (cut from the `query_v3` branch); the only
+The release tag is `v2.0.0` (cut from the rewrite branch before it became `main`); the only
 prior tag was `v1.0.0-alpha`. Confirm the next release tag with
 maintainers before cutting.
 
@@ -52,7 +52,7 @@ maintainers before cutting.
 
 ## Cutting the release
 
-The current release tag is `v2.0.0` (cut from `query_v3`); the only
+The current release tag is `v2.0.0` (cut from the branch that is now `main`); the only
 prior tag was `v1.0.0-alpha`. New tags follow `vX.Y.Z`. Confirm the
 convention with maintainers before cutting.
 
