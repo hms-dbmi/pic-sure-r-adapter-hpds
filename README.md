@@ -16,7 +16,7 @@ The required Python environment is provisioned automatically on first use.
 
 ```r
 # install.packages("remotes")
-remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@v2.0.0")
+remotes::install_github("hms-dbmi/pic-sure-r-adapter-hpds@*release")
 ```
 
 The package requires R ≥ 4.1 and `reticulate` ≥ 1.41. On first call,

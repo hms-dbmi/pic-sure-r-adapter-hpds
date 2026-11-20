@@ -48,7 +48,9 @@ Every R release note names the Python version it pins.
 The same six-month window as Python applies:
 
 1. Ship the replacement in a minor release, and make the old function warn every time it runs with
-   `.Deprecated("newName")`, or `lifecycle::deprecate_warn()` if the package takes on lifecycle.
+   `.Deprecated("newName", msg = "...")`, where the message names the replacement and the removal
+   release. If the package takes on lifecycle, use `lifecycle::deprecate_warn(..., always = TRUE)`,
+   because its default warns once every 8 hours.
 2. The warning and the `NEWS.md` entry name the replacement and the earliest release that removes
    the old function.
 3. Remove it only in a major release, six months or more after the warning shipped.
@@ -64,8 +66,9 @@ server requirement.
 
 | R adapter | Pins Python | Minimum PIC-SURE | Last PIC-SURE tested |
 | --- | --- | --- | --- |
-| 4.0.x | 4.0.0 | 5.0.0 | Not recorded |
-| 3.0.x | 3.0.0 | 4.1.0, and 4.1.x only | 4.1.x |
+| 4.0.9 | 4.0.9 | 5.0.0 | Not recorded |
+| 4.0.0 | 4.0.0 | 5.0.0 | Not recorded |
+| 3.0.0 | 3.0.0 | 4.1.0, and 4.1.x only | 4.1.x |
 
 The gate is the Python one. The Python release owner checks the routes before the Python rc. The R
 release owner confirms the pinned Python release passed that gate, and updates this table in the R
@@ -74,24 +77,28 @@ release PR.
 ## Release steps
 
 Each step has an owner. Owners are not assigned yet. Until they are, the person cutting the release
-owns every step. Steps 1 and 2 run during the Python code freeze. Steps 6 onward wait for the final
-Python release.
+owns every step. Step 1 runs during the Python code freeze. Steps 2 to 4 start as soon as the
+Python rc is published, so R QA runs alongside Python QA. Steps 6 onward wait for the final Python
+release.
 
 1. **Merge the work.** R changes reach `main` through reviewed PRs, each with a line in `NEWS.md`
    under the development heading.
    - Owner: to be assigned
-2. **Open the rc pin PR.** Once the Python rc is tagged, pin it: its commit SHA and its rc tag (next
-   section). In the same PR, set `DESCRIPTION` to the release version (`4.1.0`), rename the
+2. **Open the rc pin PR.** Pin the Python rc as soon as it is published: its commit SHA and its rc
+   tag (next section). In the same PR, set `DESCRIPTION` to the release version (`4.1.0`), rename the
    `NEWS.md` heading to `# picsure 4.1.0`, and update the compatibility table. Before merging:
    - `devtools::document()` leaves `man/` and `NAMESPACE` unchanged.
-   - `check.yml` is green across its R versions, and `R CMD check --as-cran .` is clean locally.
+   - `check.yml` is green across its R versions, and
+     `Rscript -e 'rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))'` is clean locally. It
+     checks a built tarball, as CI does.
    - `devtools::build_vignettes()` and `pkgdown::build_site()` succeed.
    - Owner: to be assigned
 3. **Tag the R release candidate.** Push an annotated tag on the tip of `main`, with **no GitHub
    Release**: `git tag -a v4.1.0rc1 -m "v4.1.0rc1" && git push origin v4.1.0rc1`.
    - Owner: to be assigned
 4. **QA the release candidate.** Run the QA checklist below. If anything fails, fix by PR and tag
-   `v4.1.0rc2`. If the failure is in Python, wait for the next Python rc and re-pin.
+   `v4.1.0rc2`. If the failure is in Python, wait for the next Python rc and re-pin as soon as it is
+   published.
    - Owner: to be assigned
 5. **Wait for Python.** The Python release ships after the BDC and NHANES production upgrades.
    - Owner: to be assigned
@@ -105,7 +112,7 @@ Python release.
 8. **Verify.** In a fresh R session, install with `@*release`, check `packageVersion("picsure")`,
    and call `connect()` so reticulate builds the pinned environment without a pin-mismatch warning.
    - Owner: to be assigned
-9. **Reopen development.** Bump `DESCRIPTION` to `X.Y.(Z+1).9000` and add a
+9. **Reopen development.** Bump `DESCRIPTION` to `X.Y.Z.9000` and add a
    `# picsure (development version)` heading at the top of `NEWS.md`.
    - Owner: to be assigned
 
@@ -123,7 +130,7 @@ The pin is two constants in [`R/zzz.R`](../../R/zzz.R):
   real users. A squash merge creates a new commit, so read the SHA off `main` after the Python PR
   merges, and confirm it with `git branch -r --contains <sha>`.
 - `.PICSURE_PY_TAG` is the Python tag on that commit: the rc tag for an R rc (`"v4.1.0rc1"`), the
-  final tag for a release. The load-time pin check needs it to recognize a build made at a tag.
+  final tag for a release. The pin check needs it to recognize a build made at a tag.
 
 Moving the pin touches more than these two lines. Work through
 [`pinned-python-build.md`](pinned-python-build.md) every time. Its ten sections cover the pin and
@@ -134,7 +141,7 @@ have to check by hand against the Python source.
 
 When users upgrade, reticulate sees the new pin and rebuilds its environment on the first call that
 needs Python. If a user has `RETICULATE_PYTHON` set, reticulate uses that interpreter instead, and
-the adapter warns at load that the build does not match the pin.
+the adapter warns on the first call that needs Python that the build does not match the pin.
 
 ## Release candidates and QA
 
@@ -169,8 +176,9 @@ the exact tag instead: `@v4.1.0`.
    [Access-to-Data-using-PIC-SURE-API](https://github.com/hms-dbmi/Access-to-Data-using-PIC-SURE-API/tree/release_2026)
    install with `ref="query_v3"` or `ref="main"`. Before running each notebook and Rmd, change that
    to the rc tag. Nothing does this for you.
-2. **Start a fresh R session** so reticulate builds the pinned Python environment. A pin-mismatch
-   warning at load means the wrong build is loaded: unset `RETICULATE_PYTHON` and restart.
+2. **Start a fresh R session** so reticulate builds the pinned Python environment. The pin check
+   runs on the first call that needs Python, not at `library(picsure)`. A pin-mismatch warning there
+   means another build loaded: unset `RETICULATE_PYTHON`, deactivate any virtualenv, and restart.
 3. **Use a server that already runs the target PIC-SURE version.** The notebooks connect to
    `BDC_AUTHORIZED`, which is production.
 4. **Run the integration tests on the rc tag:** Actions > Integration tests > Run workflow, then
@@ -199,8 +207,12 @@ installs.
 
 ## NEWS, DESCRIPTION and release notes
 
-Between releases, `DESCRIPTION` carries a development version (`4.1.0.9000`) and `NEWS.md` opens
-with `# picsure (development version)`. Changes collect under that heading as they merge.
+Between releases, `DESCRIPTION` carries a development version, the last release plus `.9000`
+(`4.0.9.9000` before 4.1.0 is released), and `NEWS.md` opens with `# picsure (development version)`.
+Changes collect under that heading as they merge.
+
+Releases up to v4.0.9 did not follow this. `DESCRIPTION` reads `2.0.0.9000` at each of those tags
+and `NEWS.md` still opens with `# picsure 2.0.0.9000`. The next release PR sets both.
 
 The rc pin PR turns them into a release:
 
@@ -233,7 +245,7 @@ None.
 
 A hotfix is always a patch release. There are two kinds.
 
-**A Python hotfix.** After Python releases `v4.0.1`, R ships a pin-only patch:
+**A Python hotfix.** After Python releases `v4.0.10`, R ships a pin-only patch:
 
 1. Open a PR on `main` that moves the pin to the Python hotfix's SHA and tag, sets `DESCRIPTION` to
    the next R patch version, and adds a `NEWS.md` entry. The Python hotfix commit sits on its
@@ -242,9 +254,11 @@ A hotfix is always a patch release. There are two kinds.
 
 **An R-only hotfix.**
 
-1. Branch from the release tag being fixed: `git switch -c hotfix/v4.0.1 v4.0.0`, then push it.
-2. Fix by PR into that branch, with a `NEWS.md` entry and `DESCRIPTION` set to `4.0.1`.
-3. Tag `v4.0.1rc1` on the branch (tag only, no Release) and QA the fix.
-4. Create the GitHub Release for `v4.0.1` on the branch. This is the one case where a release tag is
+1. Branch from the release tag being fixed: `git switch -c hotfix/v4.0.10 v4.0.9`, then push it.
+   This works only for the latest release. `@*release` takes the first Release GitHub lists, the
+   most recent one whatever its version number.
+2. Fix by PR into that branch, with a `NEWS.md` entry and `DESCRIPTION` set to `4.0.10`.
+3. Tag `v4.0.10rc1` on the branch (tag only, no Release) and QA the fix.
+4. Create the GitHub Release for `v4.0.10` on the branch. This is the one case where a release tag is
    not on `main`.
 5. The same day, open a second PR that brings the fix into `main`.
