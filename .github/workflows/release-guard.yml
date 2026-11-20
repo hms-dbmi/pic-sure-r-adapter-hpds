@@ -29,9 +29,13 @@ jobs:
             echo "$TAG is a final release. Keeping it."
             exit 0
           fi
-          if ! gh release view "$TAG" --repo "$REPO" > /dev/null 2>&1; then
-            echo "The Release for $TAG is already gone."
-            exit 0
+          if ! out=$(gh api "repos/$REPO/releases/tags/$TAG" 2>&1); then
+            if [[ "$out" == *"HTTP 404"* ]]; then
+              echo "The Release for $TAG is already gone."
+              exit 0
+            fi
+            echo "$out"
+            exit 1
           fi
           gh release delete "$TAG" --repo "$REPO" --yes
           echo "::warning::Deleted the GitHub Release for $TAG. The tag is kept."
