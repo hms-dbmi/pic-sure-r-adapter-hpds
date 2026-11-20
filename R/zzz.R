@@ -28,7 +28,7 @@ picsure_py <- NULL
 #
 # Pinned to an immutable commit SHA, not a branch: a moving branch is how the
 # earlier drift (R silently pinned at a pre-rewrite @main) went unnoticed.
-# This SHA is the commit the v4.0.0 release tag of
+# This SHA is the commit the v4.0.9 release tag of
 # pic-sure-python-adapter-hpds points at, reachable from its `main` branch.
 # `.PICSURE_PY_TAG` below records that tag.
 #
@@ -51,14 +51,14 @@ picsure_py <- NULL
 # commit reachable from a branch, for the reason above, and `.PICSURE_PY_TAG`
 # below is set when the new commit is one a release tag points at and left
 # NA_character_ otherwise.
-.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@964579cb306436670a96cb8a06edde866cec7980"
+.PICSURE_PY_SPEC <- "picsure @ git+https://github.com/hms-dbmi/pic-sure-python-adapter-hpds.git@3240ed4e792d005ff6db1752a3420b8fbeb4b7b0"
 
 # Release tag that points at the pinned commit, or NA_character_ when no tag
 # does. hatch-vcs versions a build made exactly at a tag as the bare tag
 # version with no commit suffix, so the pin check needs the tag to recognize
 # such a build as the pinned one. Set it alongside the SHA whenever the pin
 # moves to a tagged commit.
-.PICSURE_PY_TAG <- "v4.0.0"
+.PICSURE_PY_TAG <- "v4.0.9"
 
 # Records whether the pinned-build check has already run, so its report is
 # emitted at most once per session.
