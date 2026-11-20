@@ -3,7 +3,7 @@
 The test suite has two tiers: a fast unit tier that mocks the
 reticulate boundary, and an integration tier that runs against a live
 PIC-SURE backend. The unit tier runs on every PR; the integration
-tier runs nightly and on demand.
+tier runs only when someone starts it by hand.
 
 ## Layout
 
@@ -164,7 +164,7 @@ is locked.
 
 The same two lines are what
 [`tests/testthat.R`](../../tests/testthat.R) runs under `R CMD check` when
-`PICSURE_INTEGRATION=1`, and what the nightly workflow runs.
+`PICSURE_INTEGRATION=1`, and what the integration workflow runs.
 
 The session is cached across tests in a single process (see
 `.live_session_cache` in `helper-integration.R`); connecting is
@@ -185,14 +185,15 @@ Three workflows under [`.github/workflows/`](../../.github/workflows/):
   **80% coverage floor** (with `R/zzz.R` excluded). `R/zzz.R` is
   exercised by `library()` itself rather than by tests.
 - [`integration.yml`](../../.github/workflows/integration.yml) —
-  nightly cron (`13 6 * * *`) plus manual `workflow_dispatch`. Sets
+  runs only on manual `workflow_dispatch`. It has no schedule. Sets
   `PICSURE_INTEGRATION=1` and the secrets `PICSURE_TEST_PLATFORM`,
   `PICSURE_TEST_TOKEN`, `PICSURE_TEST_REQUIRE_PATH`, then runs the unit
   tier with `testthat::test_local()` and the integration tier with an
   explicit `test_dir()` over `tests/testthat/integration`. Both are needed:
-  `test_local()` alone never descends into that directory, which is why the
-  job ran the unit tier nightly and called it integration. On a scheduled
-  failure it opens an issue tagged `integration-failure`.
+  `test_local()` alone never descends into that directory, which is why an
+  earlier version of the job ran only the unit tier and called it integration. The step that
+  opens an issue tagged `integration-failure` fires only on a scheduled
+  failure, so a manual run never opens one.
 - [`pkgdown.yml`](../../.github/workflows/pkgdown.yml) — builds the
   pkgdown site in a read-only job on every pull request, push, release
   publish, and `workflow_dispatch`. A second job with write access deploys
