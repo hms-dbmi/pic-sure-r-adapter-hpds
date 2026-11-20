@@ -1,0 +1,44 @@
+name: Release guard
+
+on:
+  release:
+    types: [published, prereleased]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: release-guard-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  delete-prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete a prerelease or rc Release and open an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+          IS_PRERELEASE: ${{ github.event.release.prerelease }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [[ "$IS_PRERELEASE" != "true" && "$TAG" != *rc* ]]; then
+            echo "$TAG is a final release. Keeping it."
+            exit 0
+          fi
+          if ! gh release view "$TAG" --repo "$REPO" > /dev/null 2>&1; then
+            echo "The Release for $TAG is already gone."
+            exit 0
+          fi
+          gh release delete "$TAG" --repo "$REPO" --yes
+          echo "::warning::Deleted the GitHub Release for $TAG. The tag is kept."
+          body=$(printf '%s\n\n%s\n\n%s\n' \
+            "@$ACTOR published a GitHub Release for \`$TAG\`, which is a prerelease or a release candidate. The release guard deleted the Release and kept the tag." \
+            "A release candidate is a tag and nothing else. \`remotes::install_github(\"hms-dbmi/pic-sure-r-adapter-hpds@*release\")\` installs the newest GitHub Release, prereleases included, so an rc Release would reach every user. QA installs the rc by its tag instead." \
+            "Run: $RUN_URL")
+          gh issue create --repo "$REPO" \
+            --title "Release guard deleted the GitHub Release for $TAG" \
+            --body "$body"
