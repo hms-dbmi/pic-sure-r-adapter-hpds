@@ -82,7 +82,7 @@ for the final Python release.
 
 1. **Merge the work.** R changes reach `main` through reviewed PRs, each with a line in `NEWS.md`
    under the development heading.
-   - Owner: Developer
+   - Owner: Software Developer
 2. **Open the rc pin PR.** Pin the Python rc as soon as it is published: its commit SHA and its rc
    tag (next section). In the same PR, set `DESCRIPTION` to the release version (`4.1.0`), rename the
    `NEWS.md` heading to `# picsure 4.1.0`, and update the compatibility table. Before merging:
@@ -91,29 +91,29 @@ for the final Python release.
      `Rscript -e 'rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))'` is clean locally. It
      checks a built tarball, as CI does.
    - `devtools::build_vignettes()` and `pkgdown::build_site()` succeed.
-   - Owner: Developer
+   - Owner: Software Developer
 3. **Tag the R release candidate.** Push an annotated tag on the tip of `main`, with **no GitHub
    Release**: `git tag -a v4.1.0rc1 -m "v4.1.0rc1" && git push origin v4.1.0rc1`.
-   - Owner: Developer
+   - Owner: Software Developer
 4. **QA the release candidate.** Run the QA checklist below. If anything fails, fix by PR and tag
    `v4.1.0rc2`. If the failure is in Python, wait for the next Python rc and re-pin as soon as it is
    published.
    - Owner: Quality Assurance
 5. **Wait for Python.** The Python release ships after the BDC and NHANES production upgrades.
-   - Owner: Developer
+   - Owner: Software Developer
 6. **Open the final pin PR.** Re-pin to the final Python tag. The SHA usually stays the same,
    because the final Python tag sits on the rc commit, but the pinned tag always changes
    (`v4.1.0rc1` becomes `v4.1.0`). Merge after review.
-   - Owner: Developer
+   - Owner: Software Developer
 7. **Publish the final release.** Create a GitHub Release for tag `vX.Y.Z` on that merge commit. It
    is not a prerelease, and it is the latest release.
-   - Owner: Developer
+   - Owner: Software Developer
 8. **Verify.** In a fresh R session, install with `@*release`, check `packageVersion("picsure")`,
    and call `connect()` so reticulate builds the pinned environment without a pin-mismatch warning.
-   - Owner: Developer and/or Quality Assurance
+   - Owner: Software Developer and/or Quality Assurance
 9. **Reopen development.** Bump `DESCRIPTION` to `X.Y.Z.9000` and add a
    `# picsure (development version)` heading at the top of `NEWS.md`.
-   - Owner: Developer
+   - Owner: Software Developer
 
 ## Pinning a Python build
 
